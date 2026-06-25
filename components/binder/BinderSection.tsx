@@ -493,7 +493,7 @@ function BinderFocusOverlay({
       <aside
         data-binder-focus-details={stage === "closing" ? "hidden" : "visible"}
         aria-hidden={stage === "closing" ? "true" : "false"}
-        className="binder-focus-details relative flex flex-col gap-4 rounded-[28px] border-4 border-ink-black bg-cream p-5 text-ink-black shadow-[8px_8px_0_rgba(26,26,26,1)] md:p-6"
+        className="binder-focus-details relative flex flex-col gap-3 sm:gap-4 rounded-[24px] sm:rounded-[28px] border-4 border-ink-black bg-cream p-4 sm:p-5 text-ink-black shadow-[4px_4px_0_rgba(26,26,26,1)] sm:shadow-[8px_8px_0_rgba(26,26,26,1)] md:p-6"
       >
         {/* Close Button */}
         <button
@@ -508,17 +508,17 @@ function BinderFocusOverlay({
         {/* Card Name and Description */}
         <div className="mt-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-headline text-3xl font-bold leading-none md:text-4xl text-ink-black">
+            <h3 className="font-headline text-2xl sm:text-3xl font-bold leading-none md:text-4xl text-ink-black">
               {card.name}
             </h3>
           </div>
-          <p className="mt-2.5 font-body text-xs leading-relaxed text-ink-black/70">
+          <p className="mt-2 sm:mt-2.5 font-body text-[11px] sm:text-xs leading-relaxed text-ink-black/70">
             {card.description}
           </p>
         </div>
 
         {/* Specifications Grid */}
-        <dl className="grid grid-cols-2 gap-2 rounded-xl border-2 border-ink-black bg-white p-3 shadow-[3px_3px_0_0_rgba(26,26,26,1)]">
+        <dl className="grid grid-cols-2 gap-1.5 sm:gap-2 rounded-xl border-2 border-ink-black bg-white p-2 sm:p-3 shadow-[2px_2px_0_0_rgba(26,26,26,1)] sm:shadow-[3px_3px_0_0_rgba(26,26,26,1)]">
           <BinderFocusSpecItem
             icon={<Calendar size={14} className="text-brand-blue" />}
             label="Set / Year"
@@ -552,7 +552,7 @@ function BinderFocusOverlay({
         </dl>
 
         {/* Price and CTA Block */}
-        <div className="relative mt-2 rounded-[22px] border-2 border-ink-black bg-brand-yellow p-4 shadow-[4px_4px_0_0_rgba(26,26,26,1)] overflow-hidden">
+        <div className="relative mt-1 sm:mt-2 rounded-[18px] sm:rounded-[22px] border-2 border-ink-black bg-brand-yellow p-3 sm:p-4 shadow-[2px_2px_0_0_rgba(26,26,26,1)] sm:shadow-[4px_4px_0_0_rgba(26,26,26,1)] overflow-hidden">
           {/* Subtle diagonal background stripes for texture */}
           <div className="absolute inset-0 bg-[linear-gradient(45deg,#ffffff08_25%,transparent_25%,transparent_50%,#ffffff08_50%,#ffffff08_75%,transparent_75%,transparent)] bg-[size:16px_16px] pointer-events-none" />
 
@@ -561,7 +561,7 @@ function BinderFocusOverlay({
               <span className="font-retro text-[6px] font-bold uppercase tracking-wider text-ink-black/50">
                 PRICE VALUE
               </span>
-              <div className="font-headline text-3xl font-black leading-none text-ink-black mt-1">
+              <div className="font-headline text-2xl sm:text-3xl font-black leading-none text-ink-black mt-0.5 sm:mt-1">
                 {formatPrice(card.price)}
               </div>
             </div>
@@ -569,7 +569,7 @@ function BinderFocusOverlay({
 
           <Link
             href={`/shop?card=${card.id}`}
-            className="relative z-10 mt-3.5 inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-ink-black bg-ink-black px-5 py-3 font-body text-xs font-black text-white hover:-translate-y-0.5 active:translate-y-0 shadow-[2px_2px_0_0_rgba(26,26,26,1)] hover:shadow-[3px_3px_0_0_rgba(26,26,26,1)] active:shadow-[1px_1px_0_0_rgba(26,26,26,1)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
+            className="relative z-10 mt-2 sm:mt-3.5 inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-ink-black bg-ink-black px-4 py-2 sm:px-5 sm:py-3 font-body text-[11px] sm:text-xs font-black text-white hover:-translate-y-0.5 active:translate-y-0 shadow-[1.5px_1.5px_0_0_rgba(26,26,26,1)] sm:shadow-[2px_2px_0_0_rgba(26,26,26,1)] hover:shadow-[3px_3px_0_0_rgba(26,26,26,1)] active:shadow-[1px_1px_0_0_rgba(26,26,26,1)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
           >
             <span>View shop listing</span>
             <svg

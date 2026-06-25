@@ -629,7 +629,7 @@ body {
     bottom: 1rem;
     width: auto;
     max-width: calc(100vw - 1.5rem);
-    max-height: 45vh;
+    max-height: 52vh;
     overflow-y: auto;
     transform: translate(0, 20px);
   }

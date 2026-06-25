@@ -240,8 +240,8 @@ export function CardDetailClient({
             </nav>
 
             {/* Search & Filter Controls */}
-            <div className="w-full border-4 border-ink-black bg-white rounded-3xl p-4 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] mb-8 z-20 relative">
-              <form onSubmit={handleSearchSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
+            <div className="w-full border-4 border-ink-black bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] sm:shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] mb-6 sm:mb-8 z-20 relative">
+              <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
                 {/* Search query input */}
                 <div className="relative flex-1 flex items-center">
                   <input
@@ -249,7 +249,7 @@ export function CardDetailClient({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search cards by name, set, type..."
-                    className="w-full rounded-2xl border-2 border-ink-black bg-cream px-4 py-3 font-body text-sm text-ink-black placeholder-ink-black/40 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className="w-full rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black placeholder-ink-black/40 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   />
                   {searchQuery && (
                     <button
@@ -280,7 +280,7 @@ export function CardDetailClient({
                     <select
                       value={typeParam}
                       onChange={handleTypeChange}
-                      className="w-full sm:w-40 rounded-2xl border-2 border-ink-black bg-cream px-4 py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_16px_center] bg-no-repeat pr-8"
+                      className="w-full sm:w-40 rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_12px_center] bg-no-repeat pr-8"
                     >
                       <option value="all">All Types</option>
                       {allTypes.map((t) => (
@@ -294,7 +294,7 @@ export function CardDetailClient({
                     <select
                       value={setParam}
                       onChange={handleSetChange}
-                      className="w-full sm:w-44 rounded-2xl border-2 border-ink-black bg-cream px-4 py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_16px_center] bg-no-repeat pr-8"
+                      className="w-full sm:w-44 rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_12px_center] bg-no-repeat pr-8"
                     >
                       <option value="all">All Sets</option>
                       {allSets.map((s) => (
@@ -308,7 +308,7 @@ export function CardDetailClient({
                     <button
                       type="button"
                       onClick={handleClearFilters}
-                      className="rounded-2xl border-2 border-ink-black bg-brand-pink text-ink-black font-body text-sm font-black px-4 py-3 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:-translate-y-0.5 active:translate-y-0.5 transition-transform duration-100"
+                      className="rounded-xl sm:rounded-2xl border-2 border-ink-black bg-brand-pink text-ink-black font-body text-sm font-black px-4 py-2.5 sm:py-3 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:-translate-y-0.5 active:translate-y-0.5 transition-transform duration-100"
                     >
                       Clear
                     </button>
@@ -343,10 +343,10 @@ export function CardDetailClient({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                 {/* Left Column: Clean borderless, backgroundless layout */}
-                <div className="lg:col-span-5 flex flex-col items-center justify-center relative min-h-[400px] lg:min-h-[500px]">
+                <div className="lg:col-span-5 flex flex-col items-center justify-center relative min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
                   {/* 3D Tilting Card Wrapper */}
                   <div
-                    className="magnetic-card-wrapper mx-auto w-full max-w-[360px] sm:max-w-[420px] focus:outline-none z-10 cursor-pointer"
+                    className="magnetic-card-wrapper mx-auto w-full max-w-[260px] xs:max-w-[320px] sm:max-w-[360px] md:max-w-[420px] focus:outline-none z-10 cursor-pointer"
                     onMouseMove={handleMouseMove}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={handleMouseLeave}
@@ -401,8 +401,8 @@ export function CardDetailClient({
                 </div>
 
                 {/* Right Column: Clean details panel */}
-                <div className="lg:col-span-7 rounded-[24px] border-4 border-ink-black bg-brand-yellow p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[400px] sm:min-h-[450px] lg:min-h-[500px]">
-                  <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+                <div className="lg:col-span-7 rounded-[24px] border-4 border-ink-black bg-brand-yellow p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] sm:shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[300px] sm:min-h-[450px] lg:min-h-[500px]">
+                  <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-6">
 
                     {/* Header Badges & Price Row */}
                     <div className="flex flex-col gap-4">
@@ -421,7 +421,7 @@ export function CardDetailClient({
                         {/* Clean Horizontal Price Badge */}
                         <div
                           data-card-price="true"
-                          className="rounded-xl border-2 border-ink-black bg-cream px-4 py-1.5 font-body text-2xl font-black text-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]"
+                          className="rounded-xl border-2 border-ink-black bg-cream px-3 py-1 sm:px-4 sm:py-1.5 font-body text-xl sm:text-2xl font-black text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]"
                         >
                           {formatPrice(card.price)}
                         </div>
@@ -449,7 +449,7 @@ export function CardDetailClient({
                     </p>
 
                     {/* Technical Specifications list */}
-                    <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 border-2 border-ink-black bg-cream p-4 rounded-xl shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
+                    <dl className="grid grid-cols-3 gap-2 sm:gap-4 border-2 border-ink-black bg-cream p-2 sm:p-4 rounded-xl shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
                       <Spec label="Condition" value={card.condition} />
                       <Spec label="Rarity" value={card.rarity} />
                       <Spec label="Year" value={String(card.year)} />
@@ -611,11 +611,11 @@ function OtherCardGridItem({ card }: { card: ShopCard }) {
 
 function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col border-2 border-ink-black p-3 bg-white rounded-xl shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] text-center relative overflow-hidden group/spec hover:-translate-y-0.5 transition-transform duration-200">
-      <dt className="font-body text-[9px] uppercase tracking-wider text-ink-black/45 leading-none">
+    <div className="flex flex-col border-2 border-ink-black p-1.5 sm:p-3 bg-white rounded-lg sm:rounded-xl shadow-[1.5px_1.5px_0px_0px_rgba(26,26,26,1)] sm:shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] text-center relative overflow-hidden group/spec hover:-translate-y-0.5 transition-transform duration-200">
+      <dt className="font-body text-[8px] sm:text-[9px] uppercase tracking-wider text-ink-black/45 leading-none">
         {label}
       </dt>
-      <dd className="mt-1 font-body text-sm sm:text-base font-black text-brand-blue leading-tight break-words uppercase">
+      <dd className="mt-1 font-body text-[10px] xs:text-xs sm:text-sm md:text-base font-black text-brand-blue leading-tight break-words uppercase">
         {value}
       </dd>
     </div>

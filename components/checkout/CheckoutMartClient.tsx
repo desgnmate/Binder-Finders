@@ -85,7 +85,7 @@ export function CheckoutMartClient({
             </Link>
             <div className="h-6 w-[2px] bg-ink-black/15 hidden sm:block" />
             <h1 className="font-body text-sm sm:text-lg md:text-xl font-black uppercase tracking-wide text-ink-black flex items-center gap-2">
-              <span className="text-xl"></span> Pokémart Hold Counter
+              <span className="text-xl">🛒</span> <span className="hidden sm:inline">Pokémart Hold Counter</span>
             </h1>
           </div>
           <div className="flex items-center gap-3 self-end sm:self-auto">
