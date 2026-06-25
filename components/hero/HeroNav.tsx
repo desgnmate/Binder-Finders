@@ -64,10 +64,10 @@ export function HeroNav() {
 
             <Link
               href="/checkout"
-              className="flex items-center gap-1.5 rounded-full bg-ink-black px-4 py-2 md:px-5 md:py-2.5 text-white border-2 border-transparent transition-all duration-200 hover:bg-brand-blue hover:text-white hover:border-ink-black hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,0)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+              className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full bg-ink-black p-2 sm:px-5 sm:py-2.5 text-white border-2 border-transparent transition-all duration-200 hover:bg-brand-blue hover:text-white hover:border-ink-black hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,0)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
             >
-              <span className="text-sm font-semibold">My Bag</span>
               <ShoppingBag size={14} aria-hidden="true" />
+              <span className="hidden sm:inline text-sm font-semibold">My Bag</span>
             </Link>
 
             {/* Mobile hamburger toggle */}

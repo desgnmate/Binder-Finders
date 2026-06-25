@@ -75,7 +75,7 @@ export function CheckoutMartClient({
       {/* Redesigned Premium Header Bar */}
       <header className="shrink-0 rounded-[24px] border-4 border-ink-black bg-cream p-4 shadow-[4px_4px_0_rgba(26,26,26,1)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <Link
               href="/shop"
               className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-ink-black bg-white px-4 py-2 font-body text-xs font-black text-ink-black shadow-[2px_2px_0_rgba(26,26,26,1)] transition-all hover:-translate-y-0.5 hover:bg-brand-yellow hover:shadow-[3px_3px_0_rgba(26,26,26,1)] active:translate-y-0 active:shadow-[1px_1px_0_rgba(26,26,26,1)]"
@@ -84,7 +84,7 @@ export function CheckoutMartClient({
               <span>Back to Shop</span>
             </Link>
             <div className="h-6 w-[2px] bg-ink-black/15 hidden sm:block" />
-            <h1 className="font-body text-lg md:text-xl font-black uppercase tracking-wide text-ink-black flex items-center gap-2">
+            <h1 className="font-body text-sm sm:text-lg md:text-xl font-black uppercase tracking-wide text-ink-black flex items-center gap-2">
               <span className="text-xl"></span> Pokémart Hold Counter
             </h1>
           </div>
@@ -243,7 +243,7 @@ export function CheckoutMartClient({
             </div>
 
             {/* Right Column: Pokédex-Style Screen & Items */}
-            <div className="flex min-h-0 flex-col rounded-[24px] border-4 border-ink-black bg-[#242424] p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
+            <div className="flex h-[340px] lg:h-auto min-h-0 flex-col rounded-[24px] border-4 border-ink-black bg-[#242424] p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
               <div
                 data-pokedex-screen-overlay="true"
                 className="gameboy-screen flex min-h-0 flex-1 flex-col rounded-[18px] border-4 border-ink-black bg-[#0a120a] p-2.5 md:p-3 overflow-hidden"

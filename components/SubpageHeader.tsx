@@ -34,7 +34,7 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           <img
             src="/images/logo.png"
             alt="BinderFinders Logo"
-            className="h-7 w-auto object-contain [image-rendering:auto]"
+            className="h-6 sm:h-7 w-auto object-contain [image-rendering:auto]"
           />
           {title && (
             <span className="hidden sm:inline font-body text-sm font-black uppercase tracking-wide text-ink-black/45">
