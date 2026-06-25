@@ -34,7 +34,7 @@ export function HeroNav() {
         aria-label="Primary"
         data-nav-pill="true"
         data-nav-type-scale="umano"
-        className="mx-auto w-full max-w-4xl rounded-3xl bg-cream px-4 py-3 md:px-6 md:py-5 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
+        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-cream px-4 py-3 md:px-6 md:py-5 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
       >
         <div className="flex items-center justify-between gap-4">
           <Link

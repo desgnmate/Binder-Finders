@@ -561,21 +561,21 @@ body {
  * No intermediate keyframe — the card travels in one smooth arc from
  * source to center while spinning. */
   0%   { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
-  100% { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(360deg); }
+  100% { transform: var(--focus-to-translate)   translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(360deg); }
 }
 
 /* Settled "open" state: centered, front face visible. At rotateY(360°)
  * the front face's effective rotation is 0° (front-facing, visible)
  * and the back face's effective rotation is 180° (back-facing, hidden). */
 .binder-focus-card--open {
-  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+  transform: var(--focus-to-translate) translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(360deg);
 }
 
 /* Closing tween: reverse — rotate from 360° back through 0° while
  * translating from center back to source rect. backface-visibility
  * produces the real card-flip visual in reverse. */
 .binder-focus-card--closing {
-  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+  transform: var(--focus-to-translate) translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(360deg);
   animation: binder-focus-flip-close 300ms cubic-bezier(0.55, 0, 0.6, 0.2) forwards;
 }
 
@@ -583,17 +583,17 @@ body {
   /* Single linear tween: translate from centered viewport back to source
  * rect AND rotate 360°→0° run concurrently across the whole 0%→100%
  * range. Mirror of the open keyframe. */
-  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(360deg); }
+  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(360deg); }
   100% { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
 }
 
 .binder-focus-card--closing-flipped {
-  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(540deg);
+  transform: var(--focus-to-translate) translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(540deg);
   animation: binder-focus-flip-close-flipped 300ms cubic-bezier(0.55, 0, 0.6, 0.2) forwards;
 }
 
 @keyframes binder-focus-flip-close-flipped {
-  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(540deg); }
+  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(540deg); }
   100% { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
 }
 /* Details panel: starts off-screen to the right, slides in during the
@@ -667,7 +667,7 @@ body {
   }
   .binder-focus-card--opening,
   .binder-focus-card--open {
-    transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+    transform: var(--focus-to-translate) translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(360deg);
   }
   .binder-focus-card--closing,
   .binder-focus-card--closing-flipped {

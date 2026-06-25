@@ -598,19 +598,52 @@ function cardStyleForStage(
   sourceRect: DOMRect,
   isFlipped: boolean = false,
 ): React.CSSProperties {
-  // Focused card matches the source grid cell size. The centered position
-  // places the card's center at the viewport center.
   const cardWidth = sourceRect.width;
   const cardHeight = sourceRect.height;
-  const centeredX = `calc(50vw - ${cardWidth / 2}px)`;
-  const centeredY = `calc(50vh - ${cardHeight / 2}px)`;
-  const centered = `translate(${centeredX}, ${centeredY})`;
-  // Source-rect transform: the original grid cell position.
   const fromSource = `translate(${sourceRect.left}px, ${sourceRect.top}px)`;
+
+  let centeredX = `calc(50vw - ${cardWidth / 2}px)`;
+  let centeredY = `calc(50vh - ${cardHeight / 2}px)`;
+  let targetScale = 1;
+
+  if (typeof window !== "undefined") {
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Card width should not exceed 65% of viewport width to leave nice breathing room on sides,
+      // and max out at 240px.
+      let desiredWidth = Math.min(viewportWidth * 0.65, 240);
+      // Ensure a reasonable minimum size
+      desiredWidth = Math.max(desiredWidth, 180);
+
+      const desiredHeight = desiredWidth * 1.4;
+
+      // Let's make sure the card height doesn't occupy more than 40% of viewport height
+      // to leave enough space for the details panel at the bottom.
+      if (desiredHeight > viewportHeight * 0.4) {
+        // Adjust width based on max height constraint
+        const maxAllowedHeight = viewportHeight * 0.4;
+        desiredWidth = maxAllowedHeight / 1.4;
+      }
+
+      targetScale = desiredWidth / cardWidth;
+
+      // Center the card horizontally: X center is 50vw.
+      // Position the card vertically in the upper region of the screen (e.g., center of the top 50vh).
+      // Center of top 50vh is at 25vh.
+      centeredX = `calc(50vw - ${cardWidth / 2}px)`;
+      centeredY = `calc(25vh - ${cardHeight / 2}px)`;
+    }
+  }
+
+  const centered = `translate(${centeredX}, ${centeredY})`;
 
   const baseStyle: React.CSSProperties = {
     width: `${cardWidth}px`,
     height: `${cardHeight}px`,
+    ["--focus-target-scale" as string]: String(targetScale),
   };
 
   if (stage === "opening") {
@@ -624,7 +657,7 @@ function cardStyleForStage(
     return {
       ...baseStyle,
       ["--focus-to-translate" as string]: centered,
-      transform: `${centered} translateZ(0) scale(1) rotateY(${isFlipped ? 540 : 360}deg)`,
+      transform: `var(--focus-to-translate) translateZ(0) scale(var(--focus-target-scale, 1)) rotateY(${isFlipped ? 540 : 360}deg)`,
       transition: "transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1)",
     };
   }
