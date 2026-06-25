@@ -74,8 +74,8 @@ export function CheckoutMartClient({
     >
       {/* Redesigned Premium Header Bar */}
       <header className="shrink-0 rounded-[24px] border-4 border-ink-black bg-cream p-4 shadow-[4px_4px_0_rgba(26,26,26,1)]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <Link
               href="/shop"
               className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-ink-black bg-white px-4 py-2 font-body text-xs font-black text-ink-black shadow-[2px_2px_0_rgba(26,26,26,1)] transition-all hover:-translate-y-0.5 hover:bg-brand-yellow hover:shadow-[3px_3px_0_rgba(26,26,26,1)] active:translate-y-0 active:shadow-[1px_1px_0_rgba(26,26,26,1)]"
@@ -83,12 +83,12 @@ export function CheckoutMartClient({
               <ArrowLeft size={16} aria-hidden="true" className="stroke-[2.5]" />
               <span>Back to Shop</span>
             </Link>
-            <div className="h-6 w-[2px] bg-ink-black/15 hidden sm:block" />
-            <h1 className="font-body text-sm sm:text-lg md:text-xl font-black uppercase tracking-wide text-ink-black flex items-center gap-2">
-              <span className="text-xl">🛒</span> <span className="hidden sm:inline">Pokémart Hold Counter</span>
+            <div className="h-6 w-[2px] bg-ink-black/15 hidden md:block" />
+            <h1 className="font-body text-sm sm:text-lg md:text-xl font-black uppercase tracking-wide text-ink-black hidden md:flex items-center gap-2">
+              <span>Pokémart Hold Counter</span>
             </h1>
           </div>
-          <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex items-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-xl border-2 border-ink-black bg-brand-yellow px-4 py-2 font-body text-xs font-black text-ink-black shadow-[2px_2px_0_rgba(26,26,26,1)]">
               <ShoppingBag size={14} aria-hidden="true" className="stroke-[2.5]" />
               <span>{count} {count === 1 ? "Item" : "Items"} on hold</span>
