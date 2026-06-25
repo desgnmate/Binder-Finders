@@ -79,9 +79,9 @@ export function AboutSection() {
             </div>
 
             {/* Journal Text Content */}
-            <div className="pl-8 md:pl-12 pr-6 md:pr-10 flex-1 flex flex-col justify-center">
-              <div className="w-full max-w-xl mx-auto text-left">
-                <h2 className="font-headline text-2xl font-black leading-[1.2] text-ink-black sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[48px] text-left">
+            <div className="pl-8 md:pl-12 pr-6 md:pr-10 flex-1 text-left">
+              <div className="max-w-xl">
+                <h2 className="font-headline text-2xl font-black leading-[1.3] text-ink-black sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[48px] text-left">
                   Scans you can read. Cards you can trust.
                 </h2>
 
