@@ -1,0 +1,2749 @@
+﻿# --- Generation 1 ---
+
+[BULBASAUR]
+#001
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[IVYSAUR]
+#002
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[VENUSAUR]
+#003
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[CHARMANDER]
+#004
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[CHARMELEON]
+#005
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[CHARIZARD]
+#006
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[SQUIRTLE]
+#007
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[WARTORTLE]
+#008
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[BLASTOISE]
+#009
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[CATERPIE]
+#010
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[METAPOD]
+#011
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[BUTTERFREE]
+#012
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[WEEDLE]
+#013
+BackSprite = 0,-7
+FrontSprite = 0,17
+ShadowX = 0
+ShadowSize = 0
+
+[KAKUNA]
+#014
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[BEEDRILL]
+#015
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[PIDGEY]
+#016
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[PIDGEOTTO]
+#017
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[PIDGEOT]
+#018
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[RATTATA]
+#019
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[RATICATE]
+#020
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[SPEAROW]
+#021
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[FEAROW]
+#022
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[EKANS]
+#023
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[ARBOK]
+#024
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[PIKACHU]
+#025
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[RAICHU]
+#026
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SANDSHREW]
+#027
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[SANDSLASH]
+#028
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[NIDORANfE]
+#029
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[NIDORINA]
+#030
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[NIDOQUEEN]
+#031
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[NIDORANmA]
+#032
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[NIDORINO]
+#033
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[NIDOKING]
+#034
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[CLEFAIRY]
+#035
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[CLEFABLE]
+#036
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[VULPIX]
+#037
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[NINETALES]
+#038
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[JIGGLYPUFF]
+#039
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[WIGGLYTUFF]
+#040
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ZUBAT]
+#041
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[GOLBAT]
+#042
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[ODDISH]
+#043
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[GLOOM]
+#044
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[VILEPLUME]
+#045
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[PARAS]
+#046
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[PARASECT]
+#047
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[VENONAT]
+#048
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[VENOMOTH]
+#049
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[DIGLETT]
+#050
+BackSprite = 0,-7
+FrontSprite = 0,17
+ShadowX = 0
+ShadowSize = 0
+
+[DUGTRIO]
+#051
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[MEOWTH]
+#052
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[PERSIAN]
+#053
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[PSYDUCK]
+#054
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[GOLDUCK]
+#055
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[MANKEY]
+#056
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[PRIMEAPE]
+#057
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[GROWLITHE]
+#058
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[ARCANINE]
+#059
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[POLIWAG]
+#060
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[POLIWHIRL]
+#061
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[POLIWRATH]
+#062
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[ABRA]
+#063
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[KADABRA]
+#064
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[ALAKAZAM]
+#065
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[MACHOP]
+#066
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[MACHOKE]
+#067
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[MACHAMP]
+#068
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[BELLSPROUT]
+#069
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[WEEPINBELL]
+#070
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[VICTREEBEL]
+#071
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[TENTACOOL]
+#072
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[TENTACRUEL]
+#073
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[GEODUDE]
+#074
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[GRAVELER]
+#075
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[GOLEM]
+#076
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[PONYTA]
+#077
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[RAPIDASH]
+#078
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SLOWPOKE]
+#079
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[SLOWBRO]
+#080
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[MAGNEMITE]
+#081
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[MAGNETON]
+#082
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[FARFETCHD]
+#083
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[DODUO]
+#084
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[DODRIO]
+#085
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[SEEL]
+#086
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[DEWGONG]
+#087
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[GRIMER]
+#088
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[MUK]
+#089
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[SHELLDER]
+#090
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[CLOYSTER]
+#091
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[GASTLY]
+#092
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[HAUNTER]
+#093
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[GENGAR]
+#094
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[ONIX]
+#095
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[DROWZEE]
+#096
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[HYPNO]
+#097
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[KRABBY]
+#098
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[KINGLER]
+#099
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[VOLTORB]
+#100
+BackSprite = 0,-7
+FrontSprite = 0,19
+ShadowX = 0
+ShadowSize = 0
+
+[ELECTRODE]
+#101
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[EXEGGCUTE]
+#102
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[EXEGGUTOR]
+#103
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[CUBONE]
+#104
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[MAROWAK]
+#105
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[HITMONLEE]
+#106
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[HITMONCHAN]
+#107
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[LICKITUNG]
+#108
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[KOFFING]
+#109
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[WEEZING]
+#110
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[RHYHORN]
+#111
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[RHYDON]
+#112
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[CHANSEY]
+#113
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[TANGELA]
+#114
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[KANGASKHAN]
+#115
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[HORSEA]
+#116
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[SEADRA]
+#117
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[GOLDEEN]
+#118
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[SEAKING]
+#119
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[STARYU]
+#120
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[STARMIE]
+#121
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[MRMIME]
+#122
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[SCYTHER]
+#123
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[JYNX]
+#124
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ELECTABUZZ]
+#125
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[MAGMAR]
+#126
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[PINSIR]
+#127
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[TAUROS]
+#128
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[MAGIKARP]
+#129
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[GYARADOS]
+#130
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[LAPRAS]
+#131
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[DITTO]
+#132
+BackSprite = 0,-7
+FrontSprite = 0,17
+ShadowX = 0
+ShadowSize = 0
+
+[EEVEE]
+#133
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[VAPOREON]
+#134
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[JOLTEON]
+#135
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[FLAREON]
+#136
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[PORYGON]
+#137
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[OMANYTE]
+#138
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[OMASTAR]
+#139
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[KABUTO]
+#140
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[KABUTOPS]
+#141
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[AERODACTYL]
+#142
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[SNORLAX]
+#143
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[ARTICUNO]
+#144
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[ZAPDOS]
+#145
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[MOLTRES]
+#146
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[DRATINI]
+#147
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[DRAGONAIR]
+#148
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[DRAGONITE]
+#149
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[MEWTWO]
+#150
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[MEW]
+#151
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+
+
+# --- Generation 2 ---
+
+[CHIKORITA]
+#152
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[BAYLEEF]
+#153
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[MEGANIUM]
+#154
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[CYNDAQUIL]
+#155
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[QUILAVA]
+#156
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[TYPHLOSION]
+#157
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[TOTODILE]
+#158
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[CROCONAW]
+#159
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[FERALIGATR]
+#160
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SENTRET]
+#161
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[FURRET]
+#162
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[HOOTHOOT]
+#163
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[NOCTOWL]
+#164
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[LEDYBA]
+#165
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[LEDIAN]
+#166
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[SPINARAK]
+#167
+BackSprite = 0,-7
+FrontSprite = 0,19
+ShadowX = 0
+ShadowSize = 0
+
+[ARIADOS]
+#168
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[CROBAT]
+#169
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[CHINCHOU]
+#170
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[LANTURN]
+#171
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[PICHU]
+#172
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[CLEFFA]
+#173
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[IGGLYBUFF]
+#174
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[TOGEPI]
+#175
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[TOGETIC]
+#176
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[NATU]
+#177
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[XATU]
+#178
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[MAREEP]
+#179
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[FLAAFFY]
+#180
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[AMPHAROS]
+#181
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[BELLOSSOM]
+#182
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[MARILL]
+#183
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[AZUMARILL]
+#184
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[SUDOWOODO]
+#185
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[POLITOED]
+#186
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[HOPPIP]
+#187
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[SKIPLOOM]
+#188
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[JUMPLUFF]
+#189
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[AIPOM]
+#190
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[SUNKERN]
+#191
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[SUNFLORA]
+#192
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[YANMA]
+#193
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[WOOPER]
+#194
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[QUAGSIRE]
+#195
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[ESPEON]
+#196
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[UMBREON]
+#197
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[MURKROW]
+#198
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[SLOWKING]
+#199
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[MISDREAVUS]
+#200
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[UNOWN]
+#201
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[WOBBUFFET]
+#202
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[GIRAFARIG]
+#203
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[PINECO]
+#204
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[FORRETRESS]
+#205
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[DUNSPARCE]
+#206
+BackSprite = 0,-7
+FrontSprite = 0,17
+ShadowX = 0
+ShadowSize = 0
+
+[GLIGAR]
+#207
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[STEELIX]
+#208
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SNUBBULL]
+#209
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[GRANBULL]
+#210
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[QWILFISH]
+#211
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[SCIZOR]
+#212
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SHUCKLE]
+#213
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[HERACROSS]
+#214
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[SNEASEL]
+#215
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[TEDDIURSA]
+#216
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[URSARING]
+#217
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[SLUGMA]
+#218
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[MAGCARGO]
+#219
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[SWINUB]
+#220
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[PILOSWINE]
+#221
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[CORSOLA]
+#222
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[REMORAID]
+#223
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[OCTILLERY]
+#224
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[DELIBIRD]
+#225
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[MANTINE]
+#226
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[SKARMORY]
+#227
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[HOUNDOUR]
+#228
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[HOUNDOOM]
+#229
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[KINGDRA]
+#230
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[PHANPY]
+#231
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[DONPHAN]
+#232
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[PORYGON2]
+#233
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[STANTLER]
+#234
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SMEARGLE]
+#235
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[TYROGUE]
+#236
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[HITMONTOP]
+#237
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[SMOOCHUM]
+#238
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[ELEKID]
+#239
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[MAGBY]
+#240
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[MILTANK]
+#241
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[BLISSEY]
+#242
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[RAIKOU]
+#243
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[ENTEI]
+#244
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SUICUNE]
+#245
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[LARVITAR]
+#246
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[PUPITAR]
+#247
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[TYRANITAR]
+#248
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[LUGIA]
+#249
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[HOOH]
+#250
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[CELEBI]
+#251
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+
+
+# --- Generation 3 ---
+
+[TREECKO]
+#252
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[GROVYLE]
+#253
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[SCEPTILE]
+#254
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[TORCHIC]
+#255
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[COMBUSKEN]
+#256
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[BLAZIKEN]
+#257
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[MUDKIP]
+#258
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[MARSHTOMP]
+#259
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[SWAMPERT]
+#260
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[POOCHYENA]
+#261
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[MIGHTYENA]
+#262
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[ZIGZAGOON]
+#263
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[LINOONE]
+#264
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[WURMPLE]
+#265
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[SILCOON]
+#266
+BackSprite = 0,-7
+FrontSprite = 0,17
+ShadowX = 0
+ShadowSize = 0
+
+[BEAUTIFLY]
+#267
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[CASCOON]
+#268
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[DUSTOX]
+#269
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[LOTAD]
+#270
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[LOMBRE]
+#271
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[LUDICOLO]
+#272
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SEEDOT]
+#273
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[NUZLEAF]
+#274
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[SHIFTRY]
+#275
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[TAILLOW]
+#276
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[SWELLOW]
+#277
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[WINGULL]
+#278
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[PELIPPER]
+#279
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[RALTS]
+#280
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[KIRLIA]
+#281
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[GARDEVOIR]
+#282
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[SURSKIT]
+#283
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[MASQUERAIN]
+#284
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[SHROOMISH]
+#285
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[BRELOOM]
+#286
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[SLAKOTH]
+#287
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[VIGOROTH]
+#288
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SLAKING]
+#289
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[NINCADA]
+#290
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[NINJASK]
+#291
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[SHEDINJA]
+#292
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[WHISMUR]
+#293
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[LOUDRED]
+#294
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[EXPLOUD]
+#295
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[MAKUHITA]
+#296
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[HARIYAMA]
+#297
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[AZURILL]
+#298
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[NOSEPASS]
+#299
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[SKITTY]
+#300
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[DELCATTY]
+#301
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[SABLEYE]
+#302
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[MAWILE]
+#303
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ARON]
+#304
+BackSprite = 0,-7
+FrontSprite = 0,20
+ShadowX = 0
+ShadowSize = 0
+
+[LAIRON]
+#305
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[AGGRON]
+#306
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[MEDITITE]
+#307
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[MEDICHAM]
+#308
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[ELECTRIKE]
+#309
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[MANECTRIC]
+#310
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[PLUSLE]
+#311
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[MINUN]
+#312
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[VOLBEAT]
+#313
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ILLUMISE]
+#314
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ROSELIA]
+#315
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[GULPIN]
+#316
+BackSprite = 0,-7
+FrontSprite = 0,18
+ShadowX = 0
+ShadowSize = 0
+
+[SWALOT]
+#317
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[CARVANHA]
+#318
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[SHARPEDO]
+#319
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[WAILMER]
+#320
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[WAILORD]
+#321
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[NUMEL]
+#322
+BackSprite = 0,-7
+FrontSprite = 0,15
+ShadowX = 0
+ShadowSize = 0
+
+[CAMERUPT]
+#323
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[TORKOAL]
+#324
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[SPOINK]
+#325
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[GRUMPIG]
+#326
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[SPINDA]
+#327
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[TRAPINCH]
+#328
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[VIBRAVA]
+#329
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[FLYGON]
+#330
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[CACNEA]
+#331
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[CACTURNE]
+#332
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[SWABLU]
+#333
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[ALTARIA]
+#334
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[ZANGOOSE]
+#335
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[SEVIPER]
+#336
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[LUNATONE]
+#337
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[SOLROCK]
+#338
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[BARBOACH]
+#339
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[WHISCASH]
+#340
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[CORPHISH]
+#341
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[CRAWDAUNT]
+#342
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[BALTOY]
+#343
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[CLAYDOL]
+#344
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[LILEEP]
+#345
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[CRADILY]
+#346
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[ANORITH]
+#347
+BackSprite = 0,-7
+FrontSprite = 0,8
+ShadowX = 0
+ShadowSize = 0
+
+[ARMALDO]
+#348
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[FEEBAS]
+#349
+BackSprite = 0,-7
+FrontSprite = 0,13
+ShadowX = 0
+ShadowSize = 0
+
+[MILOTIC]
+#350
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[CASTFORM]
+#351
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[CASTFORM,1]
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[CASTFORM,2]
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[CASTFORM,3]
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[KECLEON]
+#352
+BackSprite = 0,-7
+FrontSprite = 0,7
+ShadowX = 0
+ShadowSize = 0
+
+[SHUPPET]
+#353
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[BANETTE]
+#354
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[DUSKULL]
+#355
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[DUSCLOPS]
+#356
+BackSprite = 0,-7
+FrontSprite = 0,5
+ShadowX = 0
+ShadowSize = 0
+
+[TROPIUS]
+#357
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[CHIMECHO]
+#358
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[ABSOL]
+#359
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 0
+
+[WYNAUT]
+#360
+BackSprite = 0,-7
+FrontSprite = 0,12
+ShadowX = 0
+ShadowSize = 0
+
+[SNORUNT]
+#361
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[GLALIE]
+#362
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[SPHEAL]
+#363
+BackSprite = 0,-7
+FrontSprite = 0,16
+ShadowX = 0
+ShadowSize = 0
+
+[SEALEO]
+#364
+BackSprite = 0,-7
+FrontSprite = 0,10
+ShadowX = 0
+ShadowSize = 0
+
+[WALREIN]
+#365
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[CLAMPERL]
+#366
+BackSprite = 0,-7
+FrontSprite = 0,14
+ShadowX = 0
+ShadowSize = 0
+
+[HUNTAIL]
+#367
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[GOREBYSS]
+#368
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[RELICANTH]
+#369
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[LUVDISC]
+#370
+BackSprite = 0,-7
+FrontSprite = 0,24
+ShadowX = 0
+ShadowSize = 0
+
+[BAGON]
+#371
+BackSprite = 0,-7
+FrontSprite = 0,11
+ShadowX = 0
+ShadowSize = 0
+
+[SHELGON]
+#372
+BackSprite = 0,-7
+FrontSprite = 0,9
+ShadowX = 0
+ShadowSize = 0
+
+[SALAMENCE]
+#373
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[BELDUM]
+#374
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[METANG]
+#375
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[METAGROSS]
+#376
+BackSprite = 0,-7
+FrontSprite = 0,6
+ShadowX = 0
+ShadowSize = 0
+
+[REGIROCK]
+#377
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[REGICE]
+#378
+BackSprite = 0,-7
+FrontSprite = 0,2
+ShadowX = 0
+ShadowSize = 0
+
+[REGISTEEL]
+#379
+BackSprite = 0,-7
+FrontSprite = 0,3
+ShadowX = 0
+ShadowSize = 0
+
+[LATIAS]
+#380
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[LATIOS]
+#381
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 2
+
+[KYOGRE]
+#382
+BackSprite = 0,-7
+FrontSprite = 0,4
+ShadowX = 0
+ShadowSize = 0
+
+[GROUDON]
+#383
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[RAYQUAZA]
+#384
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 3
+
+[JIRACHI]
+#385
+BackSprite = 0,-7
+FrontSprite = 0,0
+ShadowX = 0
+ShadowSize = 1
+
+[DEOXYS]
+#386
+BackSprite = 0,-7
+FrontSprite = 0,1
+ShadowX = 0
+ShadowSize = 0
+
+[DEOXYS,1]
+BackSprite = 0,-7
+FrontSprite = 1,5
+ShadowX = 0
+ShadowSize = 3
+
+[DEOXYS,2]
+BackSprite = 0,-7
+FrontSprite = -2,6
+ShadowX = 0
+ShadowSize = 3
+
+[DEOXYS,3]
+BackSprite = 0,-7
+FrontSprite = -4,4
+ShadowX = 0
+ShadowSize = 3
+
+

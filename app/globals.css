@@ -1,0 +1,862 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Legacy @theme block kept verbatim so the Umano tokens contract
+ * (tokens.test.ts) still passes. v3 ignores unknown at-rules; the
+ * real color/font extensions live in tailwind.config.js.
+ */
+
+/*
+ * TAN st. Canard — the actual headline font from the brief.
+ * Free for personal use. Download from:
+ *   https://fontdownloader.net/tan-st-canard-font/
+ * To swap to a different font, update --font-headline below.
+ */
+@font-face {
+  font-family: 'TAN st. Canard';
+  src: url('/fonts/tan-st-canard.woff2') format('woff2'),
+       url('/fonts/tan-st-canard.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@theme {
+  --color-brand-yellow: #fedd25;
+  --color-brand-blue: #3194ee;
+  --color-brand-pink: #ffd6e0;
+  --color-ink-black: #1a1a1a;
+  --color-cream: #fff6e0;
+  /* Pastel scroll-gradient stops (Section 3 — Agaro-style transitions). */
+  --color-pastel-yellow: #fff3b8;
+  --color-pastel-pink: #ffd6e7;
+  --color-pastel-blue: #d6eaff;
+
+  --font-headline: 'TAN st. Canard', serif;
+  --font-body: "Fredoka", system-ui, sans-serif;
+  --font-retro: "Press Start 2P", monospace;
+
+  /*
+   * Umano design tokens (https://umanodesign.studio/) — captured live on
+   * 2026-06-18 in a 980px viewport.
+   *
+   * --ease-umano      Umano's signature scroll-scrub easing
+   *                   (easeOutQuart). Drives the hero's scroll-linked
+   *                   card-lift via inline `style` re-application each
+   *                   animation frame; no CSS transition is needed.
+   * --ease-material   Material "standard" easing for non-scroll UI
+   *                   transitions (e.g. the CTA hover).
+   * --radius-hero     Mobile-aware clamp for the hero's bottom-corner
+   *                   radius: 24px on phones, up to 42px on desktop
+   *                   (Umano's exact desktop value).
+   */
+  --ease-umano: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-material: cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-hero: clamp(24px, 4vw, 42px);
+}
+
+:root {
+  --color-brand-yellow: #fedd25;
+  --color-brand-blue: #3194ee;
+  --color-brand-pink: #ffd6e0;
+  --color-ink-black: #1a1a1a;
+  --color-cream: #fff6e0;
+  --color-pastel-yellow: #fff3b8;
+  --color-pastel-pink: #ffd6e7;
+  --color-pastel-blue: #d6eaff;
+
+  --font-headline: 'TAN st. Canard', serif;
+  --font-body: var(--font-body-proxy, "Fredoka"), system-ui, sans-serif;
+  --font-retro: var(--font-retro-proxy, "Press Start 2P"), monospace;
+
+  --ease-umano: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-material: cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-hero: clamp(24px, 4vw, 42px);
+}
+
+html,
+body {
+  background-color: #7b39ed;
+  color: #1a1a1a;
+}
+
+/* ---------------------------------------------------------------------------
+ * Custom animations — BinderFinders shop cards + pokedex sections
+ * --------------------------------------------------------------------------- */
+
+@keyframes holographic {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(3deg);
+  }
+}
+
+@keyframes trainer-frame-one {
+  0%, 49.9% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes trainer-frame-two {
+  0%, 49.9% {
+    opacity: 0;
+  }
+  50%, 100% {
+    opacity: 1;
+  }
+}
+
+/* walking-trainer position is now controlled by JS for wall-bouncing */
+
+.walking-trainer__frame {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.walking-trainer__frame--one {
+  animation: trainer-frame-one 420ms steps(1, end) infinite;
+  transform: scale(0.985);
+  transform-origin: center bottom;
+}
+
+.walking-trainer__frame--two {
+  animation: trainer-frame-two 420ms steps(1, end) infinite;
+  transform: scale(1);
+  transform-origin: center bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walking-trainer,
+  .walking-trainer__frame--one,
+  .walking-trainer__frame--two {
+    animation: none;
+  }
+}
+
+/* Holographic shimmer for Ultra Rare / Secret Rare cards */
+.animate-holographic {
+  animation: holographic 8s ease infinite;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(254, 221, 37, 0.2) 25%,
+    rgba(49, 148, 238, 0.2) 50%,
+    rgba(255, 179, 209, 0.2) 75%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  background-size: 400% 400%;
+}
+
+/* Retro poke shadow (hard offset, no blur) */
+.poke-shadow {
+  box-shadow: 4px 4px 0px 0px #1a1a1a;
+}
+
+.poke-shadow-sm {
+  box-shadow: 2px 2px 0px 0px #1a1a1a;
+}
+
+.poke-shadow-lg {
+  box-shadow: 8px 8px 0px 0px #1a1a1a;
+}
+/* ---------------------------------------------------------------------------
+ * Custom cursors from /custom cursors/ (resized to ~32px max dimension).
+ *
+ * pointer.png (hotspot 0,0) — default arrow on non-interactive areas
+ * hand.png   (hotspot 9,0)  — pointing hand for interactive elements
+ * load.png   (hotspot 10,7) — hourglass for busy states
+ *
+ * Mobile/coarse pointers fall back to the OS default via (pointer: coarse).
+ * ---------------------------------------------------------------------------
+ */
+.pokeball-cursor {
+  cursor: url("/custom cursors/pointer.png") 0 0, auto;
+}
+/* Hand cursor on every interactive element type. */
+.pokeball-cursor a,
+.pokeball-cursor button,
+.pokeball-cursor [role="button"],
+.pokeball-cursor input,
+.pokeball-cursor select,
+.pokeball-cursor textarea,
+.pokeball-cursor label,
+.pokeball-cursor summary,
+.pokeball-cursor [onclick],
+.pokeball-cursor .cursor-hand {
+  cursor: url("/custom cursors/hand.png") 9 0, pointer;
+}
+.pokeball-cursor .cursor-busy {
+  cursor: url("/custom cursors/load.png") 10 7, wait;
+}
+@media (pointer: coarse) {
+  .pokeball-cursor {
+    cursor: auto;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Section 3 — pastel background gradients for scroll zones.
+ *
+ * The .scroll-zone wrapper is a plain block container. The .scroll-zone__inner
+ * div is a sibling-style fill that draws the gradient at full saturation,
+ * always. There is NO opacity fade — seamless transitions are achieved by
+ * matching the gradient stops at the boundaries between zones (see page.tsx).
+ * ---------------------------------------------------------------------------
+ */
+.scroll-zone {
+  /* Block-level container. The gradient inner covers it fully. */
+  position: relative;
+}
+.scroll-zone__inner {
+  /* Fill the wrapper completely — gradient covers padding + content. */
+  min-height: 100%;
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * Hero card showcase — premium infinite horizontal marquee of collectible
+ * cards that slides along the bottom of the hero and partially clips
+ * through the hero's bottom edge ("sliding out of the section").
+ *
+ * Structure (in the DOM):
+ *   .hero-marquee            ← full-width viewport + edge-fade masks + clip
+ *     .hero-marquee__fade    ← left/right soft gradient mask (x2)
+ *     .hero-marquee__track   ← the animated strip (runs the keyframes)
+ *       .hero-marquee__set   ← one full set of cards (rendered x2 for loop)
+ *         .hero-marquee__card ← a single card w/ per-card tilt + lift
+ *
+ * Motion model:
+ *   - The track translates -100% of ONE set width, then snaps back. Because
+ *     the set is rendered twice back-to-back, the snap is visually seamless.
+ *   - Hover the marquee → duration lengthens (slow drift), via a transition
+ *     on animation-duration. It never fully stops on hover.
+ *   - Off-screen → the component sets data-inview="false" and we set
+ *     animation-play-state: paused (IntersectionObserver in the component).
+ *   - prefers-reduced-motion → no animation; static centered row.
+ * ---------------------------------------------------------------------------
+ */
+
+/* How far cards bleed BELOW the hero bottom edge. The row is anchored to
+ * the hero's bottom via mt-auto in Hero.tsx. The container reserves top
+ * padding (--hero-top-pad) so the rotated cards' top corners can never be
+ * clipped — card TOPS stay fully visible. Bottom padding pushes only the
+ * card bottoms past the hero edge; the hero's overflow:hidden cuts clean. */
+.hero-marquee {
+  --hero-card-w: clamp(120px, 11vw, 190px);
+  --hero-card-gap: 1.5rem;
+  --hero-clip: 14px;
+  --hero-top-pad: 18px;
+  position: relative;
+  width: 100%;
+  /* overflow:hidden keeps the moving cards inside the horizontal bounds. */
+  overflow: hidden;
+  padding-top: var(--hero-top-pad);
+  padding-bottom: var(--hero-clip);
+}
+@media (max-width: 640px) {
+  .hero-marquee {
+    --hero-card-w: clamp(104px, 32vw, 140px);
+    --hero-card-gap: 1rem;
+    --hero-clip: 10px;
+    --hero-top-pad: 12px;
+  }
+}
+
+/* The animated track: two sets laid out inline. The horizontal transform is
+ * driven by JS (rAF) via inline style — NOT by a CSS animation — so that
+ * hover speed changes never cause a position jump/snap. */
+.hero-marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.hero-marquee__set {
+  display: flex;
+  /* Vertically center cards in the set so rotated corners never overhang
+   * past the top or bottom of the row box (prevents top clipping). */
+  align-items: center;
+  gap: var(--hero-card-gap);
+  flex: 0 0 auto;
+  padding: 0 var(--hero-card-gap);
+}
+
+.hero-marquee__card {
+  --card-tilt: 0deg;
+  --card-lift: 0px;
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--hero-card-w);
+  aspect-ratio: 5 / 7;
+  /* Per-card tilt + downward-only lift create depth variation while the
+   * row stays organized. lifts are all ≥ 0 so no card top is ever clipped. */
+  transform: translateY(var(--card-lift)) rotate(var(--card-tilt));
+  transition: transform 350ms var(--ease-material);
+  /* Explicitly flat — override any inherited shadow/glow so cards never
+   * look like they're floating. Clean and integrated into the layout. */
+  filter: none;
+  box-shadow: none;
+}
+.hero-marquee__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  filter: none;
+}
+/* On hover of an individual card, give a subtle lift only — no shadow. */
+@media (hover: hover) {
+  .hero-marquee__card:hover {
+    transform: translateY(calc(var(--card-lift) - 10px)) rotate(var(--card-tilt)) scale(1.03);
+    z-index: 5;
+    filter: none;
+    box-shadow: none;
+  }
+}
+
+/* --- Edge fade masks: cards gently appear/disappear at the bounds. ----- */
+.hero-marquee__fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(60px, 12vw, 160px);
+  pointer-events: none;
+  z-index: 4;
+}
+.hero-marquee__fade--left {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    var(--color-brand-yellow) 0%,
+    rgba(254, 221, 37, 0.6) 45%,
+    rgba(254, 221, 37, 0) 100%
+  );
+}
+.hero-marquee__fade--right {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    var(--color-brand-yellow) 0%,
+    rgba(254, 221, 37, 0.6) 45%,
+    rgba(254, 221, 37, 0) 100%
+  );
+}
+
+/* --- Accessibility: no movement under reduced motion. ------------------ */
+/* The component renders a single static centered set when reduced-motion is
+ * requested (no rAF loop runs). Here we just ensure the track holds still. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-marquee__track {
+    transform: none;
+    /* Center a single static set so reduced-motion users still see cards. */
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .hero-marquee__set[aria-hidden="true"] {
+    display: none;
+  }
+  .hero-marquee__card {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Binder cards — inverted magnetic 3D tilt + dynamic shine + click-to-focus.
+ *
+ * Inspired by the Framer magnetic-tilt card pattern, with two twists:
+ *   1. The tilt is INVERTED — the card leans AWAY from the cursor, so the
+ *      side FAR from the cursor is the "high" (forward) part. The shine
+ *      always lands on that high part (opposite corner from the cursor),
+ *      simulating a light source on the far side of the card.
+ *   2. Clicking the card opens a centered focus card that performs a quick
+ *      360° flip and reveals details in a right-side panel.
+ *
+ * No border, no background-color on the card wrapper. The price-sticker
+ * keeps its own border + yellow bg (it's a separate design element).
+ *
+ * Layer stack (inside the magnetic-card-wrapper):
+ *   1. .magnetic-card-inner       ← tilt transform (rotateX/rotateY)
+ *        1a. .magnetic-card-face--front  (TCG image + shine)
+ *   2. price-sticker (sibling, always visible, doesn't tilt)
+ * ---------------------------------------------------------------------------
+ */
+.magnetic-card-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  perspective: 1200px;
+  cursor: pointer;
+  text-decoration: none;
+  /* Button reset so the wrapper renders as a transparent block. */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  /* No border, no background — just the card image floating. */
+  /* perspective applies to CHILDREN, not the element itself. The
+     tilt transform MUST be on .magnetic-card-inner (a child),
+     NOT on this wrapper. If both are on the same element, the
+     tilt looks flat (no perspective distortion). */
+}
+
+/* ---------------------------------------------------------------------------
+ * Binder focus overlay — centered 360° flip + right-side details panel.
+ * ---------------------------------------------------------------------------
+ */
+.magnetic-card-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  transform-style: preserve-3d;
+  transition: transform 200ms ease-out;
+  will-change: transform;
+}
+
+.magnetic-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.magnetic-card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.magnetic-card-face--back {
+  transform: rotateY(180deg);
+}
+.magnetic-card-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms ease-out;
+  mix-blend-mode: screen;
+  /* background is set inline as a radial-gradient at the high-part position. */
+}
+
+
+@media (hover: hover) {
+  .magnetic-card-wrapper:hover .magnetic-card-shine,
+  .magnetic-card-wrapper:focus-visible .magnetic-card-shine {
+    opacity: 1;
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Binder focus overlay — source-rect-anchored 360° flip, dark backdrop,
+ * size-matched to the grid cell, details slide-in from right.
+ *
+ * The focused card matches the source grid cell's exact width and height
+ * (read from getBoundingClientRect at click time). The 3D flip rotates
+ * from the front image to the back image. The details panel slides in
+ * from the right edge during the opening tween.
+ * ---------------------------------------------------------------------------
+ */
+.binder-focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(26, 26, 26, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.binder-focus-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+  border-radius: 14px;
+}
+
+.binder-focus-card__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  /* backface-visibility: hidden creates the real 3D flip visual: the
+ * front face shows when the parent rotation puts it facing the viewer
+ * (effective rotation 0°±90°), the back face shows when the parent
+ * rotation puts it facing the viewer (effective rotation 180°±90°).
+ * The brief edge-on moment at 90°/270° is the inherent cost of a CSS
+ * 3D card flip and is what makes it look like a real card flipping. */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #fff6e0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.binder-focus-card__face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* No face opacity keyframes needed: backface-visibility handles which
+ * face is visible naturally as the parent rotates 0°→360°. The back
+ * face is statically at rotateY(180deg) so when the parent is at 0°
+ * the back's effective rotation is 180° (back-facing, hidden); when
+ * the parent reaches 180° the back's effective rotation is 360°=0°
+ * (front-facing, visible). The 0%→100% transform keyframes below carry
+ * the full 360° rotation in one continuous arc. */
+.binder-focus-card__face--front {
+  z-index: 1;
+}
+
+.binder-focus-card__face--back {
+  transform: rotateY(180deg);
+  z-index: 2;
+}
+
+/* Opening tween: translate from source rect to centered viewport while
+ * rotating 0° → 360° (full 360° flip). backface-visibility produces the
+ * real card-flip visual. */
+.binder-focus-card--opening {
+  transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg);
+  animation: binder-focus-flip-open 600ms cubic-bezier(0.22, 0.9, 0.22, 1) forwards;
+}
+
+@keyframes binder-focus-flip-open {
+  /* Single linear tween: translate from source rect to centered viewport
+ * AND rotate 0°→360° run concurrently across the whole 0%→100% range.
+ * No intermediate keyframe — the card travels in one smooth arc from
+ * source to center while spinning. */
+  0%   { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
+  100% { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(360deg); }
+}
+
+/* Settled "open" state: centered, front face visible. At rotateY(360°)
+ * the front face's effective rotation is 0° (front-facing, visible)
+ * and the back face's effective rotation is 180° (back-facing, hidden). */
+.binder-focus-card--open {
+  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+}
+
+/* Closing tween: reverse — rotate from 360° back through 0° while
+ * translating from center back to source rect. backface-visibility
+ * produces the real card-flip visual in reverse. */
+.binder-focus-card--closing {
+  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+  animation: binder-focus-flip-close 300ms cubic-bezier(0.55, 0, 0.6, 0.2) forwards;
+}
+
+@keyframes binder-focus-flip-close {
+  /* Single linear tween: translate from centered viewport back to source
+ * rect AND rotate 360°→0° run concurrently across the whole 0%→100%
+ * range. Mirror of the open keyframe. */
+  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(360deg); }
+  100% { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
+}
+
+.binder-focus-card--closing-flipped {
+  transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(540deg);
+  animation: binder-focus-flip-close-flipped 300ms cubic-bezier(0.55, 0, 0.6, 0.2) forwards;
+}
+
+@keyframes binder-focus-flip-close-flipped {
+  0%   { transform: var(--focus-to-translate)   translateZ(0) scale(1) rotateY(540deg); }
+  100% { transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg); }
+}
+/* Details panel: starts off-screen to the right, slides in during the
+ * opening tween. Visible from "opening" stage (not just "open") so it
+ * appears in sync with the card animation. */
+.binder-focus-details {
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  width: min(32vw, 380px);
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(120%, -50%);
+}
+.binder-focus-details[data-binder-focus-details="visible"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+  animation: binder-focus-details-slide-in 400ms cubic-bezier(0.22, 0.9, 0.22, 1) 150ms both;
+}
+@keyframes binder-focus-details-slide-in {
+  from { opacity: 0; transform: translate(120%, -50%); }
+  to { opacity: 1; transform: translate(0, -50%); }
+}
+@media (max-width: 1023px) {
+  .binder-focus-card { border-radius: 12px; }
+  .binder-focus-details {
+    right: 1rem;
+    left: 1rem;
+    top: auto;
+    bottom: 5rem;
+    width: auto;
+    max-width: calc(100vw - 2rem);
+    transform: translate(0, 20px);
+  }
+  .binder-focus-details[data-binder-focus-details="visible"] {
+    transform: translate(0, 0);
+    animation-name: binder-focus-details-slide-up;
+  }
+  @keyframes binder-focus-details-slide-up {
+    from { opacity: 0; transform: translate(0, 20px); }
+    to { opacity: 1; transform: translate(0, 0); }
+  }
+}
+
+.binder-focus-cta {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 70;
+  border-radius: 9999px;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 0.625rem 1.25rem;
+  font-family: "Fredoka", system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 4px 4px 0 0 rgba(26, 26, 26, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .binder-focus-card--opening,
+  .binder-focus-card--closing,
+  .binder-focus-card--closing-flipped {
+    animation: none;
+  }
+  .binder-focus-card--opening,
+  .binder-focus-card--open {
+    transform: var(--focus-to-translate) translateZ(0) scale(1) rotateY(360deg);
+  }
+  .binder-focus-card--closing,
+  .binder-focus-card--closing-flipped {
+    transform: var(--focus-from-translate) translateZ(0) scale(1) rotateY(0deg);
+  }
+  .binder-focus-details {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Game Boy LCD screen treatment for Pokédex tile grids.
+ * Applied to the green display panel (not the dark bezel) on both the
+ * homepage Pokédex section and the dedicated /pokedex page. The effect is
+ * a CRT-style scanline + chromatic-aberration overlay (::before) plus
+ * a glass highlight vignette (::after). Both pseudo-elements are
+ * pointer-events: none so tile hover/click/focus behavior is preserved.
+ * Direct children get a z-index: 1 to stay above the overlay. */
+.gameboy-screen {
+  position: relative;
+  overflow: hidden;
+}
+.gameboy-screen > * {
+  position: relative;
+  z-index: 1;
+}
+.gameboy-screen::before,
+.gameboy-screen::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  pointer-events: none;
+}
+.gameboy-screen::before {
+  /* Horizontal scanlines every 3px + subtle dark-green chromatic
+ * aberration every 5px. The dark background comes from the JSX
+ * panel/card colors, not from an overlay. */
+  background:
+    linear-gradient(
+      rgba(10, 18, 10, 0) 50%,
+      rgba(10, 18, 10, 0.5) 50%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(45, 63, 45, 0.08),
+      rgba(10, 18, 10, 0.04),
+      rgba(45, 63, 45, 0.08)
+    );
+  background-size: 100% 3px, 5px 100%;
+  z-index: 2;
+}
+.gameboy-screen::after {
+  /* Green-tinted glass highlight (top-left) + dark edge vignette. */
+  background:
+    radial-gradient(circle at 28% 18%, rgba(124, 255, 124, 0.1), rgba(124, 255, 124, 0) 26%),
+    radial-gradient(circle at 50% 50%, rgba(124, 255, 124, 0) 58%, rgba(0, 0, 0, 0.5) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  z-index: 3;
+}
+/* ---------------------------------------------------------------------------
+ * Pokédex sprite — smooth float on tile hover.
+ *
+ * The sprite is at REST by default. When the parent .group (the tile)
+ * is hovered, the Gen-3 sprite gently bobs up and down with a tiny
+ * rotation (like it's hovering in place). Uses a cubic-bezier ease-in-out
+ * for a natural, "breathing" feel.
+ *
+ * Disabled under prefers-reduced-motion for accessibility.
+ * ---------------------------------------------------------------------------
+ */
+@keyframes pokedex-float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-4px) rotate(1.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+/* The sprite is at rest by default. The float animation only kicks in
+   when the parent .group is hovered. */
+.pokedex-sprite {
+  transform: translateY(0) rotate(0deg);
+}
+.group:hover .pokedex-sprite {
+  animation: pokedex-float 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .pokedex-sprite {
+    animation: none;
+  }
+}
+
+/* Pokédex tile hover lift + yellow accent border. */
+.pokedex-tile {
+  transition: transform 220ms var(--ease-material),
+    box-shadow 220ms var(--ease-material), border-color 220ms var(--ease-material);
+}
+.pokedex-tile:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+
+/* About showcase sprites — foot-anchored side sway. */
+@keyframes about-sprite-foot-sway {
+  0%,
+  100% {
+    transform: translateX(0) rotate(var(--about-sprite-tilt, 0deg));
+  }
+  50% {
+    transform: translateX(5px) rotate(calc(var(--about-sprite-tilt, 0deg) + 1.2deg));
+  }
+}
+.about-sprite-sway {
+  animation: about-sprite-foot-sway 4.8s ease-in-out infinite;
+  animation-delay: var(--about-sprite-delay, 0s);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.group:hover .about-sprite-sway {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-sprite-sway {
+    animation: none;
+  }
+}
+
+/* Selected card overlay: smooth auto 4-sides tilt animation when idle */
+@keyframes binder-focus-card-idle-tilt {
+  0%, 100% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  20% {
+    transform: rotateX(6deg) rotateY(0deg);  /* Tilt Up */
+  }
+  40% {
+    transform: rotateX(0deg) rotateY(6deg);  /* Tilt Right */
+  }
+  60% {
+    transform: rotateX(-6deg) rotateY(0deg); /* Tilt Down */
+  }
+  80% {
+    transform: rotateX(0deg) rotateY(-6deg); /* Tilt Left */
+  }
+}
+.binder-focus-card-tilt-container--idle {
+  animation: binder-focus-card-idle-tilt 8s ease-in-out infinite;
+}
+
+/* Custom Webkit scrollbar for Pokédex CRT Screen */
+.custom-screen-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-screen-scrollbar::-webkit-scrollbar-track {
+  background: #051005;
+}
+.custom-screen-scrollbar::-webkit-scrollbar-thumb {
+  background: #d05a28;
+  border-radius: 3px;
+}
+.custom-screen-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d05a28 #051005;
+}
+
+/* Custom Webkit scrollbar for Checkout Reservation Form */
+.custom-form-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+.custom-form-scrollbar::-webkit-scrollbar-track {
+  background: #f1ebd9;
+  border: 2px solid #1a1a1a;
+  border-radius: 6px;
+}
+.custom-form-scrollbar::-webkit-scrollbar-thumb {
+  background: #fedd25;
+  border: 2px solid #1a1a1a;
+  border-radius: 6px;
+}
+.custom-form-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #fedd25 #f1ebd9;
+}
