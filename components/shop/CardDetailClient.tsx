@@ -401,7 +401,7 @@ export function CardDetailClient({
                 </div>
 
                 {/* Right Column: Clean details panel */}
-                <div className="lg:col-span-7 rounded-[24px] border-4 border-ink-black bg-brand-yellow p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[450px] lg:min-h-[500px]">
+                <div className="lg:col-span-7 rounded-[24px] border-4 border-ink-black bg-brand-yellow p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[400px] sm:min-h-[450px] lg:min-h-[500px]">
                   <div className="relative z-10 flex flex-col h-full justify-between gap-6">
 
                     {/* Header Badges & Price Row */}
@@ -431,7 +431,7 @@ export function CardDetailClient({
                         {/* Reduced name font size and switched to Fredoka font */}
                         <h1
                           data-card-name="true"
-                          className="font-body text-3xl font-black leading-tight text-ink-black md:text-4xl lg:text-5xl"
+                          className="font-body text-2xl font-black leading-tight text-ink-black sm:text-3xl md:text-4xl lg:text-5xl"
                         >
                           {card.name}
                         </h1>
@@ -449,7 +449,7 @@ export function CardDetailClient({
                     </p>
 
                     {/* Technical Specifications list */}
-                    <dl className="grid grid-cols-3 gap-4 border-2 border-ink-black bg-cream p-4 rounded-xl shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
+                    <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 border-2 border-ink-black bg-cream p-4 rounded-xl shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
                       <Spec label="Condition" value={card.condition} />
                       <Spec label="Rarity" value={card.rarity} />
                       <Spec label="Year" value={String(card.year)} />

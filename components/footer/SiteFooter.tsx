@@ -59,7 +59,7 @@ export function SiteFooter() {
             <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <div>
-                  <h2 className="font-headline text-3xl font-bold leading-none text-ink-black md:text-5xl">
+                  <h2 className="font-headline text-2xl font-bold leading-none text-ink-black sm:text-3xl md:text-5xl">
                     Need a closer look?
                   </h2>
                   <p className="mt-2 max-w-md font-body text-xs leading-relaxed text-ink-black/60 md:text-sm">
@@ -68,7 +68,7 @@ export function SiteFooter() {
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap gap-3">
+              <div className="flex shrink-0 flex-col sm:flex-row flex-wrap gap-3">
                 <Link
                   href="/shop"
                   className="inline-flex items-center gap-2 rounded-full border-4 border-ink-black bg-ink-black px-5 py-2.5 font-body text-sm font-bold text-white shadow-[3px_3px_0_0_rgba(254,221,37,1)] transition-all hover:bg-brand-pink hover:text-ink-black hover:shadow-[3px_3px_0_0_rgba(26,26,26,1)] hover:-translate-y-0.5 active:translate-y-0"

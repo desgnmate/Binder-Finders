@@ -70,7 +70,7 @@ export function CheckoutMartClient({
   return (
     <main
       data-checkout-layout="true"
-      className="pokeball-cursor flex h-screen flex-col overflow-hidden bg-[#3194EE] p-3 text-ink-black md:p-5"
+      className="pokeball-cursor flex min-h-screen lg:h-screen flex-col overflow-y-auto lg:overflow-hidden bg-[#3194EE] p-2 sm:p-3 text-ink-black md:p-5"
     >
       {/* Redesigned Premium Header Bar */}
       <header className="shrink-0 rounded-[24px] border-4 border-ink-black bg-cream p-4 shadow-[4px_4px_0_rgba(26,26,26,1)]">
@@ -113,7 +113,7 @@ export function CheckoutMartClient({
           </div>
 
           {/* Remove overflow-hidden from grid to allow shadows to render fully without clipping! */}
-          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[0.45fr_0.55fr]">
+          <div className="grid min-h-0 flex-1 gap-3 sm:gap-4 lg:grid-cols-[0.45fr_0.55fr]">
             {/* Left Column: Order Summary & Form (Pokémart style) */}
             <div className="flex min-h-0 flex-col gap-4">
 

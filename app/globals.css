@@ -623,12 +623,14 @@ body {
 @media (max-width: 1023px) {
   .binder-focus-card { border-radius: 12px; }
   .binder-focus-details {
-    right: 1rem;
-    left: 1rem;
+    right: 0.75rem;
+    left: 0.75rem;
     top: auto;
-    bottom: 5rem;
+    bottom: 1rem;
     width: auto;
-    max-width: calc(100vw - 2rem);
+    max-width: calc(100vw - 1.5rem);
+    max-height: 45vh;
+    overflow-y: auto;
     transform: translate(0, 20px);
   }
   .binder-focus-details[data-binder-focus-details="visible"] {

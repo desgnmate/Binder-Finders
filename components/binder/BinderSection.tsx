@@ -116,7 +116,7 @@ export function BinderSection() {
         {/* Full-width header and controls */}
         <div className="grid w-full gap-8 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.15fr)] lg:items-end">
           <div>
-            <h2 className="font-headline text-4xl font-bold text-white md:text-6xl">
+            <h2 className="font-headline text-3xl font-bold text-white sm:text-4xl md:text-6xl">
               The Binder
             </h2>
             <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-white/55 md:text-lg">

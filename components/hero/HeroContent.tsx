@@ -41,7 +41,7 @@ export function HeroContent({ onCtaClick }: HeroContentProps) {
         <h1
           data-headline="true"
           data-headline-scale="umano"
-          className="font-headline text-5xl font-bold tracking-[-0.02em] leading-[1.083] text-ink-black md:text-7xl"
+          className="font-headline text-4xl font-bold tracking-[-0.02em] leading-[1.083] text-ink-black sm:text-5xl md:text-7xl"
         >
           Home of Vintage
           <br />
@@ -56,7 +56,7 @@ export function HeroContent({ onCtaClick }: HeroContentProps) {
         <p
           data-subtext="true"
           data-subtext-scale="umano"
-          className="mt-6 font-body text-2xl font-medium tracking-[-0.01em] leading-[1.33] text-ink-black md:text-3xl"
+          className="mt-6 font-body text-lg font-medium tracking-[-0.01em] leading-[1.33] text-ink-black sm:text-2xl md:text-3xl"
         >
           Hand-inspected Hoenn-era collectibles. Flatbed scanned, certified centering.
         </p>
