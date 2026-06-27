@@ -147,7 +147,7 @@ function PreviewPanel({ tile }: { tile: PokedexTile }) {
       data-pokedex-preview-panel="true"
       className="rounded-[18px] border-[3px] border-ink-black bg-white shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
     >
-      <div className="grid grid-cols-[0.45fr_0.55fr] gap-3 p-3 pb-4">
+      <div className="grid grid-cols-[90px_1fr] sm:grid-cols-[0.45fr_0.55fr] gap-3 p-2 sm:p-3 pb-4">
         <div className="flex aspect-square items-center justify-center rounded-[16px] border-[3px] border-ink-black bg-cream p-2">
           <img
             src={gen3Sprite(tile.id)}
@@ -158,8 +158,8 @@ function PreviewPanel({ tile }: { tile: PokedexTile }) {
           />
         </div>
 
-        <div className="flex flex-col pt-2">
-          <h3 className="font-headline text-3xl font-bold leading-none text-ink-black md:text-4xl">
+        <div className="flex flex-col pt-2 min-w-0">
+          <h3 className="font-headline text-2xl sm:text-3xl font-bold leading-none text-ink-black md:text-4xl">
             {tile.name}
           </h3>
           <div className="mt-2 flex flex-wrap gap-1">
@@ -248,7 +248,7 @@ function PokedexDeviceTile({
       onMouseEnter={onSelect}
       onFocus={onSelect}
       data-testid="pokedex-tile"
-      className={`group relative rounded-[14px] border-2 bg-[#0a120a] p-1.5 sm:p-2 text-left shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-colors ${
+      className={`group relative min-w-0 rounded-[14px] border-2 bg-[#0a120a] p-1.5 sm:p-2 text-left shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-colors ${
         active
           ? "border-brand-yellow"
           : "border-ink-black hover:border-brand-blue"

@@ -29,7 +29,7 @@ const BINDER_TO_FOOTER_GRADIENT =
 
 export default function Home() {
   return (
-    <main className="pokeball-cursor relative bg-[#7b39ed]">
+    <main className="pokeball-cursor relative bg-[#7b39ed] overflow-x-hidden">
       <RevealFooterLayout footer={<SiteFooter />}>
         {/* Hero + About + Pokédex share one continuous white → blue gradient. */}
         <div style={{ background: HERO_TO_POKEDEX_GRADIENT }}>
