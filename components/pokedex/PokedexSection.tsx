@@ -43,7 +43,7 @@ export function PokedexSection() {
       data-pokedex-preview="true"
       className="pokeball-cursor px-4 pb-10 md:px-8 md:pb-12"
     >
-      <div className="rounded-[28px] border-[3px] border-ink-black bg-[#E94141] p-3 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] md:p-5">
+      <div className="rounded-[28px] border-[3px] border-ink-black bg-[#E94141] p-2 sm:p-3 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] md:p-5">
         {/* Pokédex device header: big blue light + 3 indicators */}
         <div className="mb-3 flex items-center gap-2 md:mb-4 md:gap-3">
           <div className="h-9 w-9 rounded-full border-[3px] border-ink-black bg-[#8DEBFF] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.75)] md:h-11 md:w-11" />
@@ -52,7 +52,7 @@ export function PokedexSection() {
           <div className="h-3.5 w-3.5 rounded-full border-2 border-ink-black bg-brand-pink" />
         </div>
 
-        <div className="grid gap-3 md:gap-4 lg:grid-cols-[0.35fr_0.65fr]">
+        <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-[0.35fr_0.65fr]">
           {/* Left column: title, search, preview panel */}
           <aside className="space-y-3">
             <div className="rounded-[18px] border-[3px] border-ink-black bg-cream shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -92,14 +92,14 @@ export function PokedexSection() {
           {/* Right column: dark screen with green grid of Pokémon tiles */}
           <div
             data-pokedex-grid="true"
-            className="rounded-[22px] border-[3px] border-ink-black bg-[#242424] p-2.5 shadow-[inset_0_0_0_3px_rgba(255,255,255,0.08)] md:p-4"
+            className="rounded-[22px] border-[3px] border-ink-black bg-[#242424] p-1.5 sm:p-2.5 shadow-[inset_0_0_0_3px_rgba(255,255,255,0.08)] md:p-4"
           >
             <div
               data-pokedex-screen-overlay="true"
-              className="gameboy-screen rounded-[16px] border-[3px] border-ink-black bg-[#0a120a] p-2.5 md:p-3"
+              className="gameboy-screen rounded-[16px] border-[3px] border-ink-black bg-[#0a120a] p-1.5 sm:p-2.5 md:p-3"
             >
               {visible.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {visible.map((tile) => (
                     <PokedexDeviceTile
                       key={tile.id}
@@ -248,7 +248,7 @@ function PokedexDeviceTile({
       onMouseEnter={onSelect}
       onFocus={onSelect}
       data-testid="pokedex-tile"
-      className={`group relative rounded-[14px] border-2 bg-[#0a120a] p-2 text-left shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-colors ${
+      className={`group relative rounded-[14px] border-2 bg-[#0a120a] p-1.5 sm:p-2 text-left shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-colors ${
         active
           ? "border-brand-yellow"
           : "border-ink-black hover:border-brand-blue"
@@ -256,11 +256,11 @@ function PokedexDeviceTile({
     >
       <span
         data-pokedex-tile-number
-        className="absolute left-1.5 top-1 font-retro text-[7px] text-white/60"
+        className="absolute left-1 top-1 font-retro text-[6px] text-white/60 sm:left-1.5 sm:text-[7px]"
       >
         # {String(tile.id).padStart(3, "0")}
       </span>
-      <span className="absolute right-1.5 top-1 rounded-full bg-ink-black px-1.5 py-0.5 font-body text-[9px] font-bold text-white">
+      <span className="absolute right-1 top-1 rounded-full bg-ink-black px-1 py-0.5 font-body text-[8px] font-bold text-white sm:right-1.5 sm:px-1.5 sm:text-[9px]">
         {shortCondition(tile.startingCondition)} · {formatPrice(tile.startingPrice)}
       </span>
       <div className="flex aspect-square items-center justify-center pt-3">

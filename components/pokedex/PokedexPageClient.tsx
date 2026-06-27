@@ -42,7 +42,7 @@ export function PokedexPageClient() {
 
 
       <section className="px-4 pt-6 pb-10 md:px-8 md:pt-8 md:pb-16">
-        <div className="rounded-[38px] border-4 border-ink-black bg-[#E94141] p-4 shadow-[10px_10px_0px_0px_rgba(26,26,26,1)] md:p-7">
+        <div className="rounded-[38px] border-4 border-ink-black bg-[#E94141] p-2 sm:p-4 shadow-[10px_10px_0px_0px_rgba(26,26,26,1)] md:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="h-14 w-14 rounded-full border-4 border-ink-black bg-[#8DEBFF] shadow-[inset_0_0_0_6px_rgba(255,255,255,0.75)]" />
             <div className="h-5 w-5 rounded-full border-2 border-ink-black bg-brand-yellow" />
@@ -81,13 +81,13 @@ export function PokedexPageClient() {
               <PreviewPanel tile={selected} />
             </aside>
 
-            <div className="rounded-[30px] border-4 border-ink-black bg-[#242424] p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08)] md:p-6">
+            <div className="rounded-[30px] border-4 border-ink-black bg-[#242424] p-2 sm:p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08)] md:p-6">
               <div
                 data-pokedex-screen-overlay="true"
-                className="gameboy-screen rounded-[22px] border-4 border-ink-black bg-[#0a120a] p-4"
+                className="gameboy-screen rounded-[22px] border-4 border-ink-black bg-[#0a120a] p-2 sm:p-4"
               >
                 {filtered.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {filtered.map((tile) => (
                       <PokedexDeviceTile
                         key={tile.id}
@@ -221,14 +221,14 @@ function PokedexDeviceTile({
       href={`/shop?q=${encodeURIComponent(tile.name)}`}
       onMouseEnter={onSelect}
       onFocus={onSelect}
-      className={`group relative rounded-[18px] border-2 bg-[#0a120a] p-3 shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-colors ${
+      className={`group relative rounded-[18px] border-2 bg-[#0a120a] p-2 sm:p-3 shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-colors ${
         active ? "border-brand-yellow" : "border-ink-black hover:border-brand-blue"
       }`}
     >
-      <span className="absolute left-2 top-2 font-retro text-[8px] text-white/60">
+      <span className="absolute left-1 top-1 font-retro text-[6px] text-white/60 sm:left-2 sm:top-2 sm:text-[8px]">
         # {String(tile.id).padStart(3, "0")}
       </span>
-      <span className="absolute right-2 top-2 rounded-full bg-ink-black px-2 py-1 font-body text-[10px] font-bold text-white">
+      <span className="absolute right-1 top-1 rounded-full bg-ink-black px-1.5 py-0.5 font-body text-[8px] font-bold text-white sm:right-2 sm:top-2 sm:px-2 sm:py-1 sm:text-[10px]">
         {shortCondition(tile.startingCondition)} · {formatPrice(tile.startingPrice)}
       </span>
       <div className="flex aspect-square items-center justify-center pt-5">

@@ -129,9 +129,26 @@ export function Hero() {
     return () => clearInterval(interval);
   }, []);
 
+  const [marginEnd, setMarginEnd] = useState(32);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setMarginEnd(12);
+      } else if (window.innerWidth < 768) {
+        setMarginEnd(16);
+      } else {
+        setMarginEnd(32);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Reduced motion → snap straight to the settled card-lift state.
   const step = reducedMotion ? 1 : progress;
-  const marginPx = step * MARGIN_END_PX;
+  const marginPx = step * marginEnd;
 
   // At progress < 1 we write "0px" so the CSS engine doesn't accumulate
   // calc strings into inline-style. At progress = 1 we write the clamp
