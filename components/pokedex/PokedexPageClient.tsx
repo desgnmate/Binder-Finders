@@ -42,38 +42,38 @@ export function PokedexPageClient() {
 
 
       <section className="px-4 pt-6 pb-10 md:px-8 md:pt-8 md:pb-16">
-        <div className="rounded-[38px] border-4 border-ink-black bg-[#E94141] p-2 sm:p-4 shadow-[10px_10px_0px_0px_rgba(26,26,26,1)] md:p-7">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="h-14 w-14 rounded-full border-4 border-ink-black bg-[#8DEBFF] shadow-[inset_0_0_0_6px_rgba(255,255,255,0.75)]" />
-            <div className="h-5 w-5 rounded-full border-2 border-ink-black bg-brand-yellow" />
-            <div className="h-5 w-5 rounded-full border-2 border-ink-black bg-brand-blue" />
-            <div className="h-5 w-5 rounded-full border-2 border-ink-black bg-brand-pink" />
+        <div className="rounded-[28px] border-[3px] border-ink-black bg-[#E94141] p-2 sm:p-3 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] md:p-5">
+          <div className="mb-3 flex items-center gap-2 md:mb-4 md:gap-3">
+            <div className="h-9 w-9 rounded-full border-[3px] border-ink-black bg-[#8DEBFF] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.75)] md:h-11 md:w-11" />
+            <div className="h-3.5 w-3.5 rounded-full border-2 border-ink-black bg-brand-yellow" />
+            <div className="h-3.5 w-3.5 rounded-full border-2 border-ink-black bg-brand-blue" />
+            <div className="h-3.5 w-3.5 rounded-full border-2 border-ink-black bg-brand-pink" />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[0.35fr_0.65fr]">
-            <aside className="space-y-5 lg:sticky lg:top-4 lg:self-start">
-              <div className="rounded-[28px] border-4 border-ink-black bg-cream p-5 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)]">
-                <h1 className="font-headline text-5xl font-bold leading-none text-ink-black md:text-7xl">
+          <div className="grid gap-2 sm:gap-3 md:gap-4 lg:grid-cols-[0.35fr_0.65fr]">
+            <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
+              <div className="rounded-[18px] border-[3px] border-ink-black bg-cream p-3 md:p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                <h1 className="font-headline text-3xl font-bold leading-none text-ink-black md:text-5xl">
                   Pokédex
                 </h1>
-                <p className="mt-4 font-body text-base text-ink-black/65">
+                <p className="mt-2 font-body text-xs text-ink-black/65 md:text-sm">
                   Hover a Pokémon to update the detail screen. Tap a tile to
                   view cards in stock for that character.
                 </p>
               </div>
 
-              <div className="rounded-[28px] border-4 border-ink-black bg-white p-4 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)]">
+              <div className="rounded-[18px] border-[3px] border-ink-black bg-white p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                 <label htmlFor="pokedex-page-search" className="sr-only">
                   Search
                 </label>
-                <div className="relative mt-3">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-black/45" aria-hidden="true" />
+                <div className="relative mt-2">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-black/45" aria-hidden="true" />
                   <input
                     id="pokedex-page-search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="Name or number"
-                    className="w-full rounded-[18px] border-2 border-ink-black bg-cream py-3 pl-11 pr-4 font-body text-base font-bold outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/20"
+                    className="w-full rounded-[14px] border-2 border-ink-black bg-cream py-2.5 pl-9 pr-3 font-body text-sm font-bold outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/20"
                   />
                 </div>
               </div>
@@ -81,10 +81,10 @@ export function PokedexPageClient() {
               <PreviewPanel tile={selected} />
             </aside>
 
-            <div className="rounded-[30px] border-4 border-ink-black bg-[#242424] p-2 sm:p-4 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.08)] md:p-6">
+            <div className="rounded-[22px] border-[3px] border-ink-black bg-[#242424] p-1.5 sm:p-2.5 shadow-[inset_0_0_0_3px_rgba(255,255,255,0.08)] md:p-4">
               <div
                 data-pokedex-screen-overlay="true"
-                className="gameboy-screen rounded-[22px] border-4 border-ink-black bg-[#0a120a] p-2 sm:p-4"
+                className="gameboy-screen rounded-[16px] border-[3px] border-ink-black bg-[#0a120a] p-1.5 sm:p-2.5 md:p-3"
               >
                 {filtered.length > 0 ? (
                   <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
