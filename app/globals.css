@@ -81,6 +81,11 @@ body {
   color: #1a1a1a;
 }
 
+/* Global line height adjustment for Tan st. Canard and other display headlines */
+.font-headline {
+  line-height: 1.35 !important;
+}
+
 /* ---------------------------------------------------------------------------
  * Custom animations — BinderFinders shop cards + pokedex sections
  * --------------------------------------------------------------------------- */

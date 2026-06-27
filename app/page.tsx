@@ -46,7 +46,7 @@ export default function Home() {
         </div>
 
         {/* Binder sits on a separate blue → theme gradient zone. */}
-        <div style={{ background: BINDER_TO_FOOTER_GRADIENT }}>
+        <div style={{ background: BINDER_TO_FOOTER_GRADIENT }} className="pb-8 md:pb-12">
           <BinderSection />
         </div>
       </RevealFooterLayout>

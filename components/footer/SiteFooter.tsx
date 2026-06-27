@@ -28,11 +28,6 @@ export function SiteFooter() {
       data-site-footer="true"
       className="pokeball-cursor relative bg-[#7b39ed] text-white"
     >
-      {/* Theme bar with walking trainer */}
-      <div className="relative w-full bg-[#7b39ed]">
-        <WalkingTrainer />
-      </div>
-
       <div
         className="relative overflow-hidden bg-ink-black border-t-4 border-ink-black px-4 pt-12 pb-6 md:px-8 md:pt-16 md:pb-8"
         style={{
@@ -133,12 +128,16 @@ export function SiteFooter() {
           </div>
 
           {/* Row 3: Fun fact ticker + copyright bar */}
-          <div className="mt-12 flex flex-col gap-6 border-t-2 border-dashed border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
-
-            {/* Copyright */}
-            <p className="shrink-0 font-retro text-[7px] uppercase tracking-[2px] text-white/20">
-              © {new Date().getFullYear()} — Binder Finders Inc. All rights reserved.
-            </p>
+          <div className="mt-12 relative">
+            <div className="absolute bottom-full left-0 right-0 pointer-events-none z-10">
+              <WalkingTrainer />
+            </div>
+            <div className="flex flex-col gap-6 border-t-2 border-dashed border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              {/* Copyright */}
+              <p className="shrink-0 font-retro text-[7px] uppercase tracking-[2px] text-white/20">
+                © {new Date().getFullYear()} — Binder Finders Inc. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </div>

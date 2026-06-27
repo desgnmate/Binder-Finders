@@ -503,40 +503,52 @@ export function CardDetailClient({
         </section>
 
         {/* Other Cards — full-width dark binder-style section */}
-        <section className="pokeball-cursor">
-          <div
-            className="-mt-16 border-y-2 border-white/20 bg-ink-black px-4 pt-8 pb-12 text-white shadow-[0_34px_120px_rgba(0,0,0,0.58),0_14px_40px_rgba(0,0,0,0.42)] md:-mt-20 md:px-8 md:pt-12 md:pb-16"
-            style={{ borderRadius: "var(--radius-hero)" }}
-          >
-            <div className="mb-8">
-              <h2 className="font-headline text-2xl font-bold text-white md:text-3xl">
-                Other Cards in Stock
-              </h2>
-            </div>
+        <div style={{ background: "linear-gradient(to bottom, #3194EE 0%, rgba(49, 148, 238, 0) 100%)" }} className="pb-8 md:pb-12">
+          <section className="pokeball-cursor relative">
+            {/* Background cream-dot fill behind the top rounded corners */}
+            <div
+              aria-hidden="true"
+              className="absolute top-0 left-0 right-0 h-12 bg-[#fcf9ee] bg-[radial-gradient(#eae4d3_1px,transparent_1px)] [background-size:20px_20px]"
+            />
+            {/* Shadow layer offset from the top to prevent upward shadow smudge */}
+            <div
+              className="absolute inset-x-0 top-12 bottom-0 shadow-[0_34px_120px_rgba(0,0,0,0.58),0_14px_40px_rgba(0,0,0,0.42)] pointer-events-none"
+              style={{ borderRadius: "var(--radius-hero)" }}
+            />
+            <div
+              className="relative z-10 border-b-2 border-white/20 bg-ink-black px-4 pt-8 pb-12 text-white md:px-8 md:pt-12 md:pb-16"
+              style={{ borderRadius: "var(--radius-hero)" }}
+            >
+              <div className="mb-8">
+                <h2 className="font-headline text-2xl font-bold text-white md:text-3xl">
+                  Other Cards in Stock
+                </h2>
+              </div>
 
-            <div className="border-t border-white/10 pt-8">
-              {otherCards.length > 0 ? (
-                <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6">
-                  {otherCards.map((item) => (
-                    <div
-                      key={item.id}
-                      data-binder-source-cell="true"
-                      className="rounded-[28px] border border-white/10 bg-white/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors hover:bg-white/[0.11] md:p-5"
-                    >
-                      <OtherCardGridItem card={item} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="font-body text-white/50 text-base">
-                    No other cards found matching your search.
-                  </p>
-                </div>
-              )}
+              <div className="border-t border-white/10 pt-8">
+                {otherCards.length > 0 ? (
+                  <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6">
+                    {otherCards.map((item) => (
+                      <div
+                        key={item.id}
+                        data-binder-source-cell="true"
+                        className="rounded-[28px] border border-white/10 bg-white/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors hover:bg-white/[0.11] md:p-5"
+                      >
+                        <OtherCardGridItem card={item} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="font-body text-white/50 text-base">
+                      No other cards found matching your search.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </RevealFooterLayout>
     </main>
   );

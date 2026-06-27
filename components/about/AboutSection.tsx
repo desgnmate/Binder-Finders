@@ -79,7 +79,7 @@ export function AboutSection() {
             </div>
 
             {/* Journal Text Content */}
-            <div className="pl-8 md:pl-12 pr-6 md:pr-10 flex-1 text-left">
+            <div className="pl-8 md:pl-12 pr-6 md:pr-10 flex-1 text-left flex flex-col justify-center">
               <div className="max-w-xl">
                 <h2 className="font-headline text-2xl font-black leading-[1.3] text-ink-black sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[48px] text-left">
                   Scans you can read. Cards you can trust.
@@ -143,11 +143,11 @@ export function AboutSection() {
                   </span>
 
                   {/* Message bubble cycles one sprite at a time. */}
-                  <div className={`absolute bottom-full mb-3 w-48 bg-ink-black text-white text-[11px] p-3 rounded-xl border-2 border-ink-black shadow-[4px_4px_0px_0px_rgba(254,221,37,1)] pointer-events-none z-30 font-body leading-tight transition-all duration-300 ${activeBubble === index ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
-                    <h4 className="font-bold text-brand-yellow mb-1 font-headline text-sm">
+                  <div className={`absolute bottom-full mb-3 w-60 bg-ink-black text-white text-[11px] p-3 rounded-xl border-2 border-ink-black shadow-[4px_4px_0px_0px_rgba(254,221,37,1)] pointer-events-none z-30 font-body leading-tight transition-all duration-300 ${activeBubble === index ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
+                    <h4 className="font-bold text-brand-yellow mb-1 font-headline text-sm whitespace-nowrap">
                       {promise.title}
                     </h4>
-                    <p className="text-white/80 font-body text-[10px]">
+                    <p className="text-white/80 font-body text-xs">
                       {promise.body}
                     </p>
                   </div>
