@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: { serverActions: { bodySizeLimit: '9mb' } },
+  // Keep a production verification build separate from an active dev preview.
+  distDir: process.env.BINDERFINDERS_DIST_DIR || ".next",
  
   // ponytail: persistent filesystem cache causes PackFileCacheStrategy corruption
   // on Windows when the dev server is killed abruptly (Ctrl+C, crash, taskkill).

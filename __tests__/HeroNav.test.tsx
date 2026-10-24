@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { HeroNav } from "../components/hero/HeroNav";
 
 describe("HeroNav", () => {
-  it("renders all five nav items in the order shown in the design", () => {
+  it("renders the account action beside the compact bag action", () => {
     render(<HeroNav />);
-    const expectedItems = ["Shop Cards", "Pokedex", "About", "Contact", "My Bag"];
+    const expectedItems = ["Shop Cards", "Pokedex", "About", "Contact"];
     const navItems = screen.getAllByRole("link");
     const renderedText = navItems.map((el) => el.textContent?.trim() ?? "");
     // Walk expected items in order; each must appear at or after the previous match.
@@ -16,6 +16,11 @@ describe("HeroNav", () => {
       expect(idx).toBeGreaterThanOrEqual(0);
       cursor = idx + 1;
     }
+    const links = screen.getAllByRole("link");
+    const myBagIndex = links.indexOf(screen.getByRole("link", { name: /My Bag/i }));
+    const accountIndex = links.indexOf(screen.getByRole("link", { name: /Account/i }));
+    expect(myBagIndex).toBeGreaterThanOrEqual(0);
+    expect(accountIndex).toBeGreaterThan(myBagIndex);
   });
 
   it("shows a shopping bag icon next to the 'My Bag' item", () => {
@@ -111,13 +116,24 @@ describe("HeroNav", () => {
     expect(shopLink.className).toMatch(/\bpy-1\.5\b/);
   });
 
-  it("pads the 'My Bag' CTA to match Umano's 'Start today' (px-5 py-2.5, not px-3 py-1)", () => {
+  it("keeps the 'My Bag' action icon-only, prominent, and touch-sized", () => {
     const { container } = render(<HeroNav />);
     const myBag = screen.getByRole("link", { name: /My Bag/i });
-    // Umano's CTA: 10px 20px padding, 43px border-radius.
-    // Tailwind: px-5 (20px) py-2.5 (10px) — kept rounded-full.
-    expect(myBag.className).toMatch(/\bpx-5\b/);
-    expect(myBag.className).toMatch(/\bpy-2\.5\b/);
-    expect(myBag.className).not.toMatch(/\bpy-1\b/);
+    expect(myBag.className).toMatch(/\bh-12\b/);
+    expect(myBag.className).toMatch(/\bw-12\b/);
+    expect(myBag.textContent).toBe("");
+    expect(myBag.className).not.toMatch(/\bbg-ink-black\b/);
+    expect(myBag.querySelector("svg")).toHaveAttribute("width", "22");
+  });
+
+  it("uses a white background for the navigation bar", () => {
+    render(<HeroNav />);
+    expect(screen.getByRole("navigation").className).toMatch(/\bbg-white\b/);
+  });
+
+  it("uses a filled black Account action beside the bag", () => {
+    render(<HeroNav />);
+    const account = screen.getByRole("link", { name: /Account/i });
+    expect(account.className).toMatch(/\bbg-ink-black\b/);
   });
 });

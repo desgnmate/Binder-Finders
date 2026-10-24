@@ -7,11 +7,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { SHOP_CARDS, type ShopCard } from "../../lib/data";
+import { isCardAvailable, type ShopCard } from "../../lib/data";
+import { useCatalog } from "../CatalogProvider";
 
 const STORAGE_KEY = "binderfinders:bag:v1";
 
 interface BagContextValue {
+  hydrated: boolean;
   items: ShopCard[];
   cardIds: string[];
   count: number;
@@ -39,6 +41,7 @@ export function useBag() {
  * Adding the same card twice does not create a duplicate row.
  */
 export function BagProvider({ children }: { children: ReactNode }) {
+  const {cards:SHOP_CARDS}=useCatalog();
   const [cardIds, setCardIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
@@ -50,9 +53,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           // Filter to valid card ids only.
-          const valid = parsed.filter((id: unknown) =>
-            SHOP_CARDS.some((c) => c.id === id),
-          );
+          const valid = parsed.filter((id: unknown) => typeof id === "string");
           // Deduplicate.
           setCardIds(Array.from(new Set(valid as string[])));
         }
@@ -83,6 +84,8 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const total = items.reduce((sum, card) => sum + card.price, 0);
 
   const addCard = (cardId: string) => {
+    const card = SHOP_CARDS.find((item) => item.id === cardId);
+    if (!card || !isCardAvailable(card)) return;
     setCardIds((prev) => (prev.includes(cardId) ? prev : [...prev, cardId]));
   };
 
@@ -98,7 +101,7 @@ export function BagProvider({ children }: { children: ReactNode }) {
 
   return (
     <BagContext.Provider
-      value={{ items, cardIds, count, total, addCard, removeCard, clearBag, hasCard }}
+      value={{ hydrated, items, cardIds, count, total, addCard, removeCard, clearBag, hasCard }}
     >
       {children}
     </BagContext.Provider>

@@ -23,10 +23,12 @@ jest.mock("next/link", () => {
   const MockLink = ({
     href,
     children,
+    scroll: _scroll,
     ...rest
   }: {
     href: string;
     children: React.ReactNode;
+    scroll?: boolean;
   }) => (
     <a href={href} {...rest}>
       {children}
@@ -84,7 +86,7 @@ describe("CardDetailClient", () => {
     const card = SHOP_CARDS[0];
     const { container } = renderWithBag(<CardDetailClient card={card} />);
     expect(
-      screen.getByRole("heading", { name: card.name, level: 1 }),
+      screen.getByRole("heading", { name: card.name, level: 2 }),
     ).toBeInTheDocument();
     const priceEl = container.querySelector("[data-card-price]");
     expect(priceEl?.textContent).toContain("8,500");

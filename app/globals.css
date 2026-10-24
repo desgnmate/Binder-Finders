@@ -81,9 +81,54 @@ body {
   color: #1a1a1a;
 }
 
+/* Client revision styles are scoped to avoid changing existing surfaces. */
+.gameboy-screen.gameboy-screen--clear::before { opacity: 0.12; }
+.gameboy-screen.gameboy-screen--clear::after { opacity: 0.15; }
+/* Pokédex sprites and labels display without the CRT scan-line texture. */
+[data-pokedex-section] .gameboy-screen::before,
+[data-pokedex-page] .gameboy-screen::before { content: none; }
+/* Keep cart scans and item text above the decorative screen texture. */
+.gameboy-screen.gameboy-screen--cart::before,
+.gameboy-screen.gameboy-screen--cart::after { z-index: 0; }
+.card-inspect-dialog {
+  width: min(1100px, calc(100vw - 24px));
+  max-height: calc(100svh - 24px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 28px;
+  overflow-y: auto;
+  background: transparent;
+  color: #1a1a1a;
+  overscroll-behavior: contain;
+}
+.card-inspect-dialog::backdrop { background: rgba(10, 10, 10, 0.78); backdrop-filter: blur(3px); }
+.catalog-sticker {
+  width: clamp(64px, 7vw, 88px);
+  height: clamp(64px, 7vw, 88px);
+  max-width: 65%;
+  aspect-ratio: 1;
+}
+.catalog-sticker [data-price-sticker-condition] { font-size: clamp(9px, 0.9vw, 12px); }
+.catalog-sticker [data-price-sticker-price] { font-size: clamp(12px, 1.2vw, 17px); }
+@media (min-width: 1024px) {
+  .catalog-grid[data-columns="6"] { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .catalog-grid[data-columns="8"] { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; }
+  .catalog-grid[data-columns="6"] > div,
+  .catalog-grid[data-columns="8"] > div { padding: 8px; border-radius: 16px; }
+  .catalog-grid[data-columns="8"] .catalog-sticker { width: 64px; height: 64px; }
+}
+
 /* Global line height adjustment for Tan st. Canard and other display headlines */
 .font-headline {
   line-height: 1.35 !important;
+}
+
+/* Google Fonts heading family, including headings previously styled as body. */
+:root { --font-headline: var(--font-heading-proxy, "Rammetto One"), sans-serif; }
+.font-headline, h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headline) !important;
+  font-weight: 400 !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -866,4 +911,4 @@ body {
 .custom-form-scrollbar {
   scrollbar-width: auto;
   scrollbar-color: #fedd25 #f1ebd9;
-}
+}

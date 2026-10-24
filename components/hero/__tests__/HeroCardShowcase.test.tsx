@@ -37,9 +37,13 @@ describe("HeroCardShowcase", () => {
     );
   });
 
-  it("does NOT render any links or navigation", () => {
+  it("links cards to listings and keeps the duplicated track out of keyboard navigation", () => {
     const { container } = render(<HeroCardShowcase />);
-    expect(container.querySelectorAll("a").length).toBe(0);
+    const links = container.querySelectorAll("a");
+    expect(links.length).toBe(SHOP_CARDS.length * 2);
+    expect(links[0]).toHaveAttribute("href", `/shop?card=${SHOP_CARDS[0].id}`);
+    expect(links[0]).toHaveAttribute("tabindex", "0");
+    expect(links[SHOP_CARDS.length]).toHaveAttribute("tabindex", "-1");
   });
 
   it("does NOT render any pill label (no 'New Arrivals' text)", () => {

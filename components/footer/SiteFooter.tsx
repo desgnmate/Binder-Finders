@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { ArrowRight, Mail, MapPin, BookOpen } from "lucide-react";
 import { WalkingTrainer } from "../trainer/WalkingTrainer";
+import { useCatalog } from "../CatalogProvider";
+import type { StoreSettings } from "../../lib/cms/types";
 
 // ---------------------------------------------------------------------------
 // Footer data
@@ -15,7 +17,9 @@ const POKEMON_FACTS = [
   "WOTC printed over 50 billion Pokémon cards by 2003.",
 ] as const;
 
-export function SiteFooter() {
+export function SiteFooter({ content: suppliedContent }: { content?: StoreSettings["content"] } = {}) {
+  const {settings:{content: catalogContent}}=useCatalog();
+  const content = suppliedContent ?? catalogContent;
   // Pick a deterministic fun fact (based on day-of-year for variety)
   const factIndex =
     typeof window !== "undefined"
@@ -42,7 +46,7 @@ export function SiteFooter() {
         />
 
         {/* ─── Content ─── */}
-        <div className="relative z-10 mx-auto max-w-7xl">
+        <div data-footer-content className="relative z-10 mx-auto max-w-7xl 2xl:max-w-none">
 
           {/* Row 1: Headline CTA + Mascot card */}
           <div className="relative overflow-hidden rounded-[28px] border-4 border-ink-black bg-brand-yellow p-5 shadow-[6px_6px_0_0_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.005] md:p-8">
@@ -55,11 +59,10 @@ export function SiteFooter() {
               <div className="flex items-center gap-4">
                 <div>
                   <h2 className="font-headline text-2xl font-bold leading-none text-ink-black sm:text-3xl md:text-5xl">
-                    Need a closer look?
+                    {content.footerTitle}
                   </h2>
                   <p className="mt-2 max-w-md font-body text-xs leading-relaxed text-ink-black/60 md:text-sm">
-                    Ask for extra scans, corner photos, condition notes, holds,
-                    or a bundle quote.
+                    {content.footerDescription}
                   </p>
                 </div>
               </div>
@@ -97,22 +100,20 @@ export function SiteFooter() {
                 />
               </Link>
               <p className="font-body text-sm leading-relaxed text-white/60">
-                BinderFinders is a vintage Pokémon TCG shop specializing in
-                Hoenn-era collectibles. Every card is hand-inspected, flatbed
-                scanned, and graded for centering before listing.
+                {content.storeDescription}
               </p>
             </div>
 
             {/* Right Column: Contact Info */}
             <div className="flex flex-col items-center md:items-end gap-3 shrink-0 self-center md:self-auto mt-2 md:mt-0">
               <a
-                href="mailto:hello@binderfinders.com"
+                href={`mailto:${content.contactEmail}`}
                 className="inline-flex items-center gap-2.5 rounded-full border-2 border-ink-black bg-brand-blue px-4 py-2 font-body text-sm font-bold text-white shadow-[3px_3px_0_0_rgba(26,26,26,1)] hover:bg-white hover:text-ink-black hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg border-2 border-white/20 bg-white/10">
                   <Mail size={12} aria-hidden="true" />
                 </div>
-                <span>hello@binderfinders.com</span>
+                <span>{content.contactEmail}</span>
               </a>
 
               <div className="flex items-center gap-1.5 text-white/40 mt-1">
@@ -121,7 +122,7 @@ export function SiteFooter() {
                   aria-hidden="true"
                 />
                 <span className="font-retro text-[8px] uppercase tracking-wider">
-                  Melbourne, Australia
+                  {content.location}
                 </span>
               </div>
             </div>
@@ -132,10 +133,13 @@ export function SiteFooter() {
             <div className="absolute bottom-full left-0 right-0 pointer-events-none z-10">
               <WalkingTrainer />
             </div>
-            <div className="flex flex-col gap-6 border-t-2 border-dashed border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col flex-wrap gap-6 border-t-2 border-dashed border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
               {/* Copyright */}
               <p className="shrink-0 font-retro text-[7px] uppercase tracking-[2px] text-white/20">
                 © {new Date().getFullYear()} — Binder Finders Inc. All rights reserved.
+              </p>
+              <p className="pr-12 text-right font-body text-xs text-white/60 sm:ml-auto sm:pr-16 2xl:pr-20">
+                Designed and developed by Desgnmate
               </p>
             </div>
           </div>
