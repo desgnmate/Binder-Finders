@@ -8,6 +8,7 @@ type WindowWithWebkitAudio = Window & {
 
 function isClickable(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
+  if (target.closest('.cms')) return false;
   const clickable = target.closest(
     "button, a, [role='button'], input[type='button'], input[type='submit']",
   );

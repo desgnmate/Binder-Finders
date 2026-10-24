@@ -8,6 +8,13 @@
 
 # next.js
 /.next/
+/.next-review/
+/.next-cms/
+/.next-cms-dev/
+/.next-accounts/
+/.next-phase2/
+/.next-phase3/
+/.next-build/
 /out/
 
 # production
@@ -31,3 +38,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*

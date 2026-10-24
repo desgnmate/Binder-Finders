@@ -103,7 +103,8 @@ describe("BinderSection", () => {
   it("renders one era tab per BINDER_TABS entry", () => {
     render(<BinderSection />);
     const tabs = screen.getAllByRole("tab");
-    expect(tabs.length).toBe(BINDER_TABS.length);
+    expect(tabs.length).toBe(BINDER_TABS.length + 1);
+    expect(screen.getByRole('tab',{name:/More cards/i})).toBeInTheDocument();
   });
 
   it("marks the first era tab as selected by default", () => {

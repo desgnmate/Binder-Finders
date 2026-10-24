@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingBag, Menu, X } from "lucide-react";
+import { ShoppingBag, UserRound, Menu, X } from "lucide-react";
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { label: "Shop Cards", href: "/shop" },
+  { label: "Shop Cards", href: "/#binder" },
   { label: "Pokedex", href: "/pokedex" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "About", href: "/#about" },
+  { label: "Contact", href: "/#contact" },
 ] as const;
 
 /**
@@ -19,7 +19,7 @@ const NAV_ITEMS = [
  *     it reads as a small floating object (~75% of viewport at 980px),
  *     incorporating the new transparent logo.
  *   - Type scale: items use Fredoka `text-base font-semibold`.
- *   - "My Bag" stays a dark pill with a shopping-bag icon.
+ *   - Account sits beside a prominent bag icon so shopping stays accessible.
  *   - Sticky positioning is preserved.
  */
 export function HeroNav() {
@@ -34,7 +34,7 @@ export function HeroNav() {
         aria-label="Primary"
         data-nav-pill="true"
         data-nav-type-scale="umano"
-        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-cream px-4 py-3 md:px-6 md:py-5 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
+        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-white px-4 py-3 md:px-6 md:py-5 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
       >
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -64,10 +64,19 @@ export function HeroNav() {
 
             <Link
               href="/checkout"
-              className="flex h-9 w-9 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full bg-ink-black p-2 sm:px-5 sm:py-2.5 text-white border-2 border-transparent transition-all duration-200 hover:bg-brand-blue hover:text-white hover:border-ink-black hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,0)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+              aria-label="My Bag"
+              className="flex h-12 w-12 items-center justify-center p-2 text-ink-black transition-all duration-200 hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
             >
-              <ShoppingBag size={14} aria-hidden="true" />
-              <span className="hidden sm:inline text-sm font-semibold">My Bag</span>
+              <ShoppingBag size={22} strokeWidth={2} aria-hidden="true" />
+            </Link>
+
+            <Link
+              href="/account"
+              aria-label="Account"
+              className="flex h-10 w-10 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full border-2 border-ink-black bg-ink-black p-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+            >
+              <UserRound size={16} aria-hidden="true" />
+              <span className="hidden sm:inline text-sm font-semibold">Account</span>
             </Link>
 
             {/* Mobile hamburger toggle */}
@@ -105,4 +114,3 @@ export function HeroNav() {
     </div>
   );
 }
-

@@ -20,12 +20,17 @@ interface RevealFooterLayoutProps {
 export function RevealFooterLayout({ children, footer }: RevealFooterLayoutProps) {
   const footerRef = useRef<HTMLDivElement>(null);
   const [footerHeight, setFooterHeight] = useState(0);
+  const [inlineFooter, setInlineFooter] = useState(true);
 
   useEffect(() => {
     const footerEl = footerRef.current;
     if (!footerEl) return;
 
-    const updateHeight = () => setFooterHeight(footerEl.offsetHeight);
+    const updateHeight = () => {
+      setFooterHeight(footerEl.offsetHeight);
+      // A fixed footer taller than the viewport cannot be fully reached.
+      setInlineFooter(window.innerWidth < 768 || footerEl.offsetHeight > window.innerHeight - 80);
+    };
     updateHeight();
 
     const observer = new ResizeObserver(updateHeight);
@@ -42,12 +47,12 @@ export function RevealFooterLayout({ children, footer }: RevealFooterLayoutProps
     <div className="relative">
       <div
         className="relative z-10"
-        style={{ marginBottom: footerHeight ? `${footerHeight}px` : undefined }}
+        style={{ marginBottom: !inlineFooter && footerHeight ? `${footerHeight}px` : 0 }}
       >
         {children}
       </div>
 
-      <div ref={footerRef} className="fixed inset-x-0 bottom-0 z-0">
+      <div ref={footerRef} data-footer-mode={inlineFooter ? "inline" : "reveal"} className={inlineFooter ? "relative z-0" : "fixed inset-x-0 bottom-0 z-0"}>
         {footer}
       </div>
     </div>

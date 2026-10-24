@@ -1,0 +1,124 @@
+/* The heading's explicit break owns its two lines at every viewport width. */
+[data-headline][data-headline-scale] {
+  font-size: clamp(16px, min(5.8vw, 8.3svh), 72px);
+}
+
+/* Compact layouts only. At 1536px and wider, the original component styles
+   own spacing and sizing; no laptop container cap should reach desktop. */
+@media (max-width: 1535px) {
+[data-hero-style] { min-height: 100svh; }
+[data-hero-style] > .z-20 { padding-top: clamp(12px, 2.5svh, 24px); padding-inline: 12px; }
+[data-nav-sticky] { padding-inline: 0; }
+[data-nav-pill] { max-width: 1000px; padding: 10px 20px; }
+[data-nav-pill] img { height: 24px; }
+[data-nav-pill] ul { gap: clamp(4px, 1.2vw, 20px); font-size: 14px; }
+[data-nav-pill] a[href='/checkout'], [data-nav-pill] button { min-height: 44px; min-width: 44px; }
+[data-hero-content] { padding: clamp(20px, 4svh, 48px) 0 clamp(20px, 3svh, 36px); }
+[data-headline] { font-size: clamp(30px, min(5.2vw, 8.3svh), 72px); line-height: 1.24 !important; text-wrap: balance; }
+[data-subtext] { font-size: clamp(16px, min(2vw, 3svh), 24px); margin-top: clamp(16px, 2.8svh, 28px); max-width: 38ch; text-wrap: balance; }
+[data-cta-pill] { margin-top: clamp(18px, 3svh, 28px); padding: 12px 24px; min-height: 44px; font-size: 14px; }
+.hero-marquee { --hero-card-w: clamp(108px, min(12vw, 24svh), 190px); padding-block: 22px 30px; }
+[data-subpage-header] { padding: 10px clamp(12px, 2vw, 28px); }
+[data-subpage-header] > div { max-width: 1440px; margin-inline: auto; }
+[data-subpage-header] a { min-height: 44px; }
+[data-subpage-header] img { height: 24px; }
+[data-music-loading] { width: 60px; height: 60px; right: 12px; bottom: 12px; }
+#about, [data-pokedex-section] { max-width: 1504px; margin-inline: auto; }
+#about { padding-top: clamp(32px, 4vw, 64px); padding-bottom: clamp(40px, 5vw, 80px); }
+#about h2 { font-size: clamp(24px, 3.2vw, 44px); }
+[data-pokedex-section] h2, [data-pokedex-page] h1, [data-shop-page] h1 { font-size: clamp(26px, 3.4vw, 44px); }
+[data-binder-section] h2 { font-size: clamp(28px, 4vw, 52px); }
+[data-binder-section] > div { padding-inline: clamp(12px, 2.5vw, 40px); }
+[data-binder-section] [role=tablist] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+[data-binder-section] [role=tab] { padding: 12px 10px; }
+[data-binder-section] input { min-width: 160px; }
+.catalog-grid { gap: clamp(10px, 1.5vw, 24px); }
+.catalog-grid > div { min-width: 0; padding: clamp(8px, 1.2vw, 18px); border-radius: clamp(16px, 2vw, 28px); }
+.catalog-sticker { width: min(65%, clamp(56px, 7vw, 88px)); height: auto; }
+.catalog-grid[data-columns='8'] .catalog-sticker { height: auto; }
+[data-pokedex-preview-panel] { min-width: 0; }
+[data-pokedex-preview-panel] h3 { font-size: clamp(20px, 2.2vw, 30px); overflow-wrap: anywhere; }
+[data-pokedex-page] > section { max-width: 1504px; margin-inline: auto; }
+[data-pokedex-page] aside { position: static; min-width: 0; }
+[data-pokedex-page] [data-pokedex-preview-panel] > div:first-child { grid-template-columns: minmax(64px, .38fr) minmax(0, .62fr); }
+[data-pokedex-page] dd { overflow-wrap: anywhere; min-width: 0; }
+[data-pokedex-page] .gameboy-screen h3 { font-size: clamp(12px, 1.25vw, 16px); overflow-wrap: anywhere; }
+[data-pokedex-page] .gameboy-screen a > span:first-child { position: static; display: block; }
+[data-pokedex-page] .gameboy-screen a > span:nth-child(2) { position: static; display: inline-block; margin-top: 4px; }
+[data-pokedex-page] .gameboy-screen a > div:first-of-type { padding-top: 4px; }
+[data-shop-page] form { flex-wrap: wrap; }
+[data-shop-page] form > div:first-child { min-width: min(100%, 240px); }
+.card-inspect-dialog { width: min(1100px, calc(100vw - 24px)); }
+.card-inspect-dialog > div { padding: clamp(12px, 2vw, 28px); }
+.card-inspect-dialog .magnetic-card-wrapper { max-width: min(100%, 340px, 37svh); }
+.card-inspect-dialog .grid > .relative { min-height: 0; }
+.card-inspect-dialog h2 { font-size: clamp(26px, 3vw, 42px); }
+[data-checkout-layout] { height: auto; min-height: 100svh; overflow: visible; max-width: 1504px; margin-inline: auto; }
+[data-checkout-layout] form { overflow: visible; }
+[data-checkout-layout] .gameboy-screen--cart { min-height: 260px; }
+[data-checkout-layout] [data-checkout-item] { gap: 8px; padding: 10px 4px; }
+[data-checkout-layout] [data-checkout-item] > div { min-width: 0; }
+[data-checkout-layout] [data-checkout-item] > div:first-child > span { display: none; }
+#contact h2 { font-size: clamp(24px, 3vw, 40px); }
+#contact img[alt='BinderFinders Logo'] { max-width: 100%; height: auto; width: 230px; }
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  [data-nav-pill] .md\:flex { display: none; }
+  [data-nav-pill] .md\:hidden { display: flex; }
+  [data-nav-pill] > .md\:hidden { display: block; }
+  [data-pokedex-section] > div > .grid,
+  [data-pokedex-page] > section > div > .grid { grid-template-columns: minmax(240px, .4fr) minmax(0, .6fr); }
+  [data-pokedex-section] .gameboy-screen > .grid,
+  [data-pokedex-page] .gameboy-screen > .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+}
+@media (min-width: 768px) {
+  .card-inspect-dialog > div > .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(16px, 2vw, 32px); }
+  .card-inspect-dialog > div > .grid > div { grid-column: auto; min-width: 0; min-height: 0; }
+  .card-inspect-dialog > div > .grid > div:last-child { padding: clamp(16px, 2vw, 32px); }
+}
+@media (max-width: 767px) {
+  [data-nav-pill] { padding: 8px 12px; border-radius: 24px; }
+  [data-nav-pill] img { width: clamp(120px, 32vw, 190px); height: auto; }
+  [data-nav-pill] > div, [data-nav-pill] > div > div { gap: 8px; }
+  [data-hero-content] { padding-block: 28px; }
+  [data-headline] { font-size: clamp(28px, 6.8vw, 48px); }
+  [data-subtext] { max-width: 32ch; font-size: clamp(16px, 2.8vw, 20px); }
+  .hero-marquee { --hero-card-w: clamp(108px, min(30vw, 24svh), 160px); --hero-card-gap: 16px; }
+  [data-subpage-header] > div, [data-subpage-header] nav { gap: 10px; }
+  [data-subpage-header] img { width: clamp(105px, 30vw, 180px); height: auto; }
+  [data-subpage-header] a[href='/checkout'] { padding: 8px; }
+  #about > div { padding: 14px; }
+  #about .min-h-\[380px\] { min-height: 0; padding: 24px 12px; }
+  #about .pl-8 { padding-left: 24px; padding-right: 0; }
+  #about [data-testid=about-promise-card] img { width: min(27vw, 140px); }
+  #about [data-testid=about-promise-card] > div { width: min(220px, calc(100vw - 80px)); }
+  #about [data-testid=about-promise-card]:first-child > div { left: 0; }
+  #about [data-testid=about-promise-card]:last-child > div { right: 0; }
+  #about [data-testid=about-promise-card] h4 { white-space: normal; font-size: 12px; }
+  [data-pokedex-preview=true] [data-pokedex-preview-panel] { display: grid; grid-template-columns: minmax(100px, .4fr) minmax(0, .6fr); gap: 12px; padding: 10px; align-items: center; }
+  [data-pokedex-preview=true] [data-pokedex-preview-panel] > div:first-child { aspect-ratio: 1; }
+  [data-pokedex-preview=true] [data-pokedex-preview-panel] img { padding: 8px; }
+  [data-pokedex-preview=true] [data-pokedex-preview-panel] > div:last-child { padding: 0; }
+  [data-binder-section] [role=tab] { font-size: 12px; padding: 10px 6px; }
+  [data-binder-section] p { font-size: 14px; }
+  [data-binder-section] .mt-10 { margin-top: 24px; padding-top: 24px; }
+  [data-shop-page] nav[aria-label=Breadcrumb] { margin-bottom: 16px; }
+  .card-inspect-dialog .grid > div { min-width: 0; }
+  [data-checkout-layout] > header { padding: 10px; }
+  [data-checkout-layout] > header > div { gap: 8px; flex-wrap: wrap; }
+  [data-checkout-layout] > header a, [data-checkout-layout] > header .bg-brand-yellow { padding: 10px; }
+  [data-checkout-item] { flex-wrap: wrap; }
+  [data-checkout-item] > div:last-child { margin-left: auto; }
+  #contact .sm\:flex-row { flex-wrap: wrap; }
+  [data-music-loading] { width: 48px; height: 48px; right: 8px; bottom: 8px; }
+  input, select, textarea { font-size: 16px !important; }
+}
+@media (max-height: 600px) and (min-width: 768px) {
+  [data-hero-content] { padding-block: 16px; }
+  [data-headline] { font-size: clamp(32px, 7svh, 48px); }
+  [data-subtext] { font-size: 16px; margin-top: 12px; }
+  [data-cta-pill] { margin-top: 14px; }
+  .hero-marquee { --hero-card-w: 100px; padding-block: 18px 24px; }
+}
+
+}

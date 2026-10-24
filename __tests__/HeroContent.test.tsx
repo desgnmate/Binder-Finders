@@ -72,7 +72,7 @@ describe("HeroContent", () => {
     // carrying the max-w-[700px] mx-auto constraint.
     const wrapper = headline.parentElement as HTMLElement | null;
     expect(wrapper).not.toBeNull();
-    expect(wrapper!.className).toMatch(/max-w-\[700px\]/);
+    expect(wrapper!.className).toMatch(/max-w-\[1000px\]/);
     expect(wrapper!.className).toMatch(/\bmx-auto\b/);
   });
 

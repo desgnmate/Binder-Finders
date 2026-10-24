@@ -103,6 +103,20 @@ export interface ShopCard {
   imageUrl: string;
   description: string;
   views: number;
+  /** Optional inventory override. Legacy listings represent one catalog card. */
+  availability?: "available" | "reserved" | "sold" | "unavailable";
+  /** An actual scan of this listing's reverse, when supplied. */
+  backImageUrl?: string;
+  additionalImages?: string[];
+}
+
+export function isCardAvailable(card: ShopCard): boolean {
+  return !card.availability || card.availability === "available";
+}
+
+/** Counts available listings, not independently verified physical stock. */
+export function availableCardCount(pokemonId: number, cards: ShopCard[] = SHOP_CARDS): number {
+  return cards.filter((card) => card.pokemonId === pokemonId && isCardAvailable(card)).length;
 }
 
 /**

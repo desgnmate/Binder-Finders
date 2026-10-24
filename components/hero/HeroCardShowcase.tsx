@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SHOP_CARDS, shortCondition, formatPrice, type ShopCard } from "../../lib/data";
+import Link from "next/link";
+import { shortCondition, type ShopCard } from "../../lib/data";
+import { useCatalog,usePriceFormatter } from "../CatalogProvider";
 
 /**
  * HeroCardShowcase — a premium, infinite horizontal marquee of real TCG
@@ -97,10 +99,14 @@ export function HeroCardShowcase() {
       targetSpeed = BASE_SPEED * HOVER_SPEED_FACTOR;
     };
     const onLeave = () => {
-      targetSpeed = BASE_SPEED;
+      targetSpeed = root.contains(document.activeElement) ? 0 : BASE_SPEED;
     };
     root.addEventListener("mouseenter", onEnter);
     root.addEventListener("mouseleave", onLeave);
+    const onFocus = () => { targetSpeed = 0; speed = 0; };
+    const onBlur = (event: FocusEvent) => { targetSpeed = root.contains(event.relatedTarget as Node | null) ? 0 : BASE_SPEED; };
+    root.addEventListener("focusin", onFocus);
+    root.addEventListener("focusout", onBlur);
 
     // Pause the loop entirely when the hero leaves the viewport.
     const io =
@@ -137,13 +143,16 @@ export function HeroCardShowcase() {
       if (raf !== 0) cancelAnimationFrame(raf);
       root.removeEventListener("mouseenter", onEnter);
       root.removeEventListener("mouseleave", onLeave);
+      root.removeEventListener("focusin", onFocus);
+      root.removeEventListener("focusout", onBlur);
       io?.disconnect();
       ro?.disconnect();
     };
   }, []);
 
   // The set of cards shown in the marquee. Rendered twice for a seamless loop.
-  const cards = SHOP_CARDS;
+  const {cards:catalogCards,source}=useCatalog();
+  const cards = source==='seed' ? catalogCards : catalogCards.filter(c=>c.featuredOrder!=null && (!c.availability||c.availability==='available')).sort((a,b)=>(a.featuredOrder??0)-(b.featuredOrder??0));
 
   return (
     <div
@@ -169,7 +178,7 @@ export function HeroCardShowcase() {
             aria-hidden={dup === 1}
           >
             {cards.map((card, i) => (
-              <ShowcaseCard key={`${dup}-${card.id}`} card={card} index={i} />
+              <ShowcaseCard key={`${dup}-${card.id}`} card={card} index={i} duplicate={dup === 1} />
             ))}
           </div>
         ))}
@@ -178,11 +187,15 @@ export function HeroCardShowcase() {
   );
 }
 
-function ShowcaseCard({ card, index }: { card: ShopCard; index: number }) {
+function ShowcaseCard({ card, index, duplicate }: { card: ShopCard; index: number; duplicate: boolean }) {
+  const formatPrice=usePriceFormatter();
   const { tilt, lift } = cardPose(index);
   return (
-    <div
-      className="hero-marquee__card"
+    <Link
+      href={`/shop?card=${encodeURIComponent(card.id)}`}
+      tabIndex={duplicate ? -1 : 0}
+      aria-label={`Inspect ${card.name} — ${shortCondition(card.condition)} · ${formatPrice(card.price)}`}
+      className="hero-marquee__card focus-visible:outline focus-visible:outline-4 focus-visible:outline-brand-blue"
       style={
         {
           "--card-tilt": `${tilt}deg`,
@@ -197,6 +210,6 @@ function ShowcaseCard({ card, index }: { card: ShopCard; index: number }) {
         loading="lazy"
         draggable={false}
       />
-    </div>
+    </Link>
   );
 }

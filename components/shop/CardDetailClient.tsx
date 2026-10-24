@@ -1,11 +1,11 @@
 "use client";
+import { CardImageViewer } from "./CardImageViewer";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ArrowLeft, Check, ShoppingBag, Trash2, Search, X } from "lucide-react";
 import {
-  formatPrice,
   shortCondition,
   getTypeBadgeColor,
   type ShopCard,
@@ -15,6 +15,11 @@ import { useBag } from "../bag/BagContext";
 import { RevealFooterLayout } from "../RevealFooterLayout";
 import { SiteFooter } from "../footer/SiteFooter";
 import { SubpageHeader } from "../SubpageHeader";
+import { DialogShell } from "./DialogShell";
+import { GridDensity, type GridColumns } from "./GridDensity";
+import { QuickAdd } from "./QuickAdd";
+import { isCardAvailable } from "../../lib/data";
+import { useCatalog,usePriceFormatter } from "../CatalogProvider";
 
 
 const MAX_TILT_DEG = 12;
@@ -35,9 +40,14 @@ export function CardDetailClient({
   filteredCards?: ShopCard[];
   emptyState?: "card-not-found" | "no-matches";
 }) {
+  const {cards:catalogCards}=useCatalog();
+  const formatPrice=usePriceFormatter();
   const { addCard, removeCard, hasCard } = useBag();
   const alreadyInBag = card ? hasCard(card.id) : false;
   const [added, setAdded] = useState(false);
+  const [columns, setColumns] = useState<GridColumns>(4);
+  const [scanMode, setScanMode] = useState(false);
+  const openedHere = useRef(false);
 
   // 3D tilt state — auto-animated gentle figure-8, overridden by mouse hover
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -58,6 +68,24 @@ export function CardDetailClient({
   const setParam = searchParams.get("set") || "all";
 
   const [searchQuery, setSearchQuery] = useState(qParam);
+
+  useEffect(() => {
+    setAdded(false);
+    setIsFlipped(false);
+    setScanMode(false);
+  }, [card?.id]);
+
+  const closeInspection = () => {
+    if (openedHere.current) {
+      openedHere.current = false;
+      router.back();
+    } else {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("card");
+      const query = params.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
+    }
+  };
 
   useEffect(() => {
     setSearchQuery(qParam);
@@ -125,13 +153,13 @@ export function CardDetailClient({
   };
 
   // Get dynamic unique filters from the global dataset.
-  const allTypes = Array.from(new Set(SHOP_CARDS.map((c) => c.type))).sort();
-  const allSets = Array.from(new Set(SHOP_CARDS.map((c) => c.set))).sort();
+  const allTypes = Array.from(new Set(catalogCards.map((c) => c.type))).sort();
+  const allSets = Array.from(new Set(catalogCards.map((c) => c.set))).sort();
 
   // Gentle auto-tilt on both axes (Lissajous figure-8). Resumes when mouse leaves.
   // CSS transition smooths the switch between auto and mouse-controlled tilt.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !card || scanMode) return;
     try { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch { }
 
     const tick = (now?: number) => {
@@ -159,9 +187,10 @@ export function CardDetailClient({
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [isHovered]);
+  }, [isHovered, card, scanMode]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (scanMode) return;
     const rect = e.currentTarget.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const cursorX = e.clientX - rect.left;
@@ -186,7 +215,7 @@ export function CardDetailClient({
   };
 
   const handleAdd = () => {
-    if (!card || alreadyInBag || added) return;
+    if (!card || !isCardAvailable(card) || alreadyInBag || added) return;
     addCard(card.id);
     setAdded(true);
   };
@@ -211,10 +240,10 @@ export function CardDetailClient({
   const shineBg = `radial-gradient(circle at ${shinePos.x.toFixed(1)}% ${shinePos.y.toFixed(1)}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.2) 35%, rgba(255, 255, 255, 0.08) 65%, transparent 90%)`;
 
   // Carousel other cards list
-  const otherCards = filteredCards.filter((c) => c.id !== card?.id);
+  const otherCards = filteredCards;
 
   return (
-    <main className="pokeball-cursor relative min-h-screen bg-[#7b39ed] overflow-x-hidden">
+    <main data-shop-page className="pokeball-cursor relative min-h-screen bg-[#7b39ed] overflow-x-hidden">
       <RevealFooterLayout footer={<SiteFooter />}>
 
         <SubpageHeader title="Shop" />
@@ -233,11 +262,8 @@ export function CardDetailClient({
               <Link href="/shop" className="hover:text-ink-black transition-colors">
                 Shop
               </Link>
-              <span>/</span>
-              <span className="font-semibold text-ink-black">
-                {card ? card.name : "Search Results"}
-              </span>
             </nav>
+            <h1 className="mb-5 font-headline text-3xl text-ink-black md:text-5xl">Shop the Binder</h1>
 
             {/* Search & Filter Controls */}
             <div className="w-full border-4 border-ink-black bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] sm:shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] mb-6 sm:mb-8 z-20 relative">
@@ -249,6 +275,7 @@ export function CardDetailClient({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search cards by name, set, type..."
+                    aria-label="Search cards"
                     className="w-full rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black placeholder-ink-black/40 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   />
                   {searchQuery && (
@@ -279,6 +306,7 @@ export function CardDetailClient({
                   <div className="flex-1 sm:flex-none">
                     <select
                       value={typeParam}
+                      aria-label="Filter by type"
                       onChange={handleTypeChange}
                       className="w-full sm:w-40 rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_12px_center] bg-no-repeat pr-8"
                     >
@@ -293,6 +321,7 @@ export function CardDetailClient({
                   <div className="flex-1 sm:flex-none">
                     <select
                       value={setParam}
+                      aria-label="Filter by set"
                       onChange={handleSetChange}
                       className="w-full sm:w-44 rounded-xl sm:rounded-2xl border-2 border-ink-black bg-cream px-3 py-2.5 sm:px-4 sm:py-3 font-body text-sm text-ink-black shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] focus:outline-none focus:ring-2 focus:ring-brand-yellow cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1a1a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[right_12px_center] bg-no-repeat pr-8"
                     >
@@ -317,7 +346,7 @@ export function CardDetailClient({
               </form>
             </div>
 
-            {card === null ? (
+            {card === null && (filteredCards.length === 0 || emptyState === "card-not-found") ? (
               <div className="mx-auto max-w-xl text-center py-12 px-6 rounded-[24px] border-4 border-ink-black bg-white shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] my-12 relative z-10">
                 <span className="text-6xl mb-4 block" role="img" aria-label="No results">
                   {emptyState === "card-not-found" ? "😢" : "🔍"}
@@ -338,13 +367,20 @@ export function CardDetailClient({
                   Browse all cards
                 </Link>
               </div>
-            ) : (
-              /* Clean, Non-Binder Grid Layout */
+            ) : card ? (
+              <DialogShell key={card.id} label={`Inspect ${card.name}`} onClose={closeInspection}>
+              {/* Existing card detail styling, now shown only during inspection. */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                 {/* Left Column: Clean borderless, backgroundless layout */}
                 <div className="lg:col-span-5 flex flex-col items-center justify-center relative min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
-                  {/* 3D Tilting Card Wrapper */}
+                  <div className="mb-3 flex flex-wrap justify-center gap-2">
+                    <button type="button" aria-pressed={scanMode} onClick={() => setScanMode(!scanMode)} className="rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">{scanMode ? "Animated view" : "Enlarge image"}</button>
+                    <button type="button" onClick={handleCardClick} className="rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">{isFlipped ? "Show front" : card.backImageUrl ? "Show back" : "Show reference back"}</button>
+                  </div>
+                  {scanMode ? (
+                    <CardImageViewer src={isFlipped ? card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg" : card.imageUrl} alt={`${card.name} ${isFlipped ? "back" : "front"} enlarged`} />
+                  ) : (
                   <div
                     className="magnetic-card-wrapper mx-auto w-full max-w-[260px] xs:max-w-[320px] sm:max-w-[360px] md:max-w-[420px] focus:outline-none z-10 cursor-pointer"
                     onMouseMove={handleMouseMove}
@@ -380,7 +416,7 @@ export function CardDetailClient({
                       {/* Back Face */}
                       <div className="magnetic-card-face magnetic-card-face--back">
                         <img
-                          src="/80680fbc635c78df8b860e0426ffe686.jpg"
+                          src={card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg"}
                           alt="Pokémon TCG card back"
                           className="w-full h-auto rounded-[20px] block"
                           referrerPolicy="no-referrer"
@@ -398,6 +434,9 @@ export function CardDetailClient({
                       </div>
                     </div>
                   </div>
+                  )}
+                  {isFlipped && !card.backImageUrl && <p className="mt-3 text-center text-xs text-ink-black/60">Reference back image — not a scan of this individual card.</p>}
+                  {!!card.additionalImages?.length&&<details className="mt-4"><summary className="cursor-pointer text-sm font-semibold">Additional photos ({card.additionalImages.length})</summary><div className="mt-3 space-y-4">{card.additionalImages.map((src,index)=><CardImageViewer key={src} src={src} alt={`${card.name} additional photo ${index+1}`}/>)}</div></details>}
                 </div>
 
                 {/* Right Column: Clean details panel */}
@@ -429,24 +468,19 @@ export function CardDetailClient({
 
                       <div>
                         {/* Reduced name font size and switched to Fredoka font */}
-                        <h1
+                        <h2
                           data-card-name="true"
                           className="font-body text-2xl font-black leading-tight text-ink-black sm:text-3xl md:text-4xl lg:text-5xl"
                         >
                           {card.name}
-                        </h1>
+                        </h2>
                         <p className="mt-1 font-retro text-[9px] uppercase tracking-widest text-ink-black/45 leading-none">
-                          Card #{card.number}
+                          {card.number}
                         </p>
                       </div>
                     </div>
 
                     <div className="w-full h-[2px] bg-ink-black/10 my-1" />
-
-                    {/* Description */}
-                    <p className="font-body text-base leading-relaxed text-ink-black/85 md:text-lg max-w-2xl">
-                      {card.description}
-                    </p>
 
                     {/* Technical Specifications list */}
                     <dl className="grid grid-cols-3 gap-2 sm:gap-4 border-2 border-ink-black bg-cream p-2 sm:p-4 rounded-xl shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
@@ -487,18 +521,20 @@ export function CardDetailClient({
                         <button
                           type="button"
                           onClick={handleAdd}
+                          disabled={!isCardAvailable(card)}
                           data-card-cta="true"
                           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-ink-black bg-cream px-6 py-3 font-body text-base font-black text-ink-black shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)] transition-all duration-150 sm:w-auto"
                         >
                           <ShoppingBag size={16} aria-hidden="true" />
-                          Add to Bag
+                          {isCardAvailable(card) ? "Add to Bag" : "Unavailable"}
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+              </DialogShell>
+            ) : null}
           </div>
         </section>
 
@@ -519,22 +555,24 @@ export function CardDetailClient({
               className="relative z-10 border-b-2 border-white/20 bg-ink-black px-4 pt-8 pb-12 text-white md:px-8 md:pt-12 md:pb-16"
               style={{ borderRadius: "var(--radius-hero)" }}
             >
-              <div className="mb-8">
+              <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                 <h2 className="font-headline text-2xl font-bold text-white md:text-3xl">
-                  Other Cards in Stock
+                  Cards in Stock
                 </h2>
+                <GridDensity value={columns} onChange={setColumns} />
               </div>
 
               <div className="border-t border-white/10 pt-8">
                 {otherCards.length > 0 ? (
-                  <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6">
+                  <div data-columns={columns} className="catalog-grid grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6">
                     {otherCards.map((item) => (
                       <div
                         key={item.id}
                         data-binder-source-cell="true"
                         className="rounded-[28px] border border-white/10 bg-white/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors hover:bg-white/[0.11] md:p-5"
                       >
-                        <OtherCardGridItem card={item} />
+                        <OtherCardGridItem card={item} href={(() => { const params = new URLSearchParams(searchParams.toString()); params.set("card", item.id); return `${pathname}?${params}`; })()} onInspect={() => { openedHere.current = true; }} />
+                        <QuickAdd card={item} />
                       </div>
                     ))}
                   </div>
@@ -558,7 +596,8 @@ export function CardDetailClient({
  * OtherCardGridItem — grid card matching the BinderSection card style.
  * Magnetic tilt + shine on hover, links to the card detail page.
  */
-function OtherCardGridItem({ card }: { card: ShopCard }) {
+function OtherCardGridItem({ card, href, onInspect }: { card: ShopCard; href: string; onInspect: () => void }) {
+  const formatPrice=usePriceFormatter();
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [shinePos, setShinePos] = useState({ x: 50, y: 50 });
 
@@ -585,9 +624,11 @@ function OtherCardGridItem({ card }: { card: ShopCard }) {
 
   return (
     <Link
-      href={`/shop?card=${card.id}`}
+      href={href}
+      scroll={false}
+      onClick={onInspect}
       className="magnetic-card-wrapper relative block focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-yellow/50"
-      aria-label={`${card.name} — ${shortCondition(card.condition)} · ${formatPrice(card.price)}`}
+      aria-label={`Inspect ${card.name} — ${shortCondition(card.condition)} · ${formatPrice(card.price)}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -609,14 +650,15 @@ function OtherCardGridItem({ card }: { card: ShopCard }) {
           />
         </div>
       </div>
-      <span className="pointer-events-none absolute bottom-2 left-2 z-30 flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-ink-black bg-brand-yellow text-center leading-none shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
-        <span className="font-body text-[8px] font-bold uppercase text-ink-black">
+      <span className="catalog-sticker pointer-events-none absolute bottom-2 left-2 z-30 flex flex-col items-center justify-center rounded-full border-2 border-ink-black bg-brand-yellow text-center leading-none shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+        <span data-price-sticker-condition className="font-body font-bold uppercase text-ink-black">
           {shortCondition(card.condition)}
         </span>
-        <span className="font-body text-[10px] font-bold text-ink-black">
+        <span data-price-sticker-price className="mt-1 font-body font-bold text-ink-black">
           {formatPrice(card.price)}
         </span>
       </span>
+      <span className="absolute right-1 top-1 rounded-lg border border-ink-black bg-cream px-2 py-1 text-[10px] font-bold text-ink-black">Inspect</span>
     </Link>
   );
 }

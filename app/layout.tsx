@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, Fredoka } from "next/font/google";
+import { Press_Start_2P, Fredoka, Rammetto_One } from "next/font/google";
 import "./globals.css";
-import { RetroButtonSfx } from "../components/RetroButtonSfx";
-import { MusicProvider } from "../components/MusicContext";
-import { BagProvider } from "../components/bag/BagContext";
-import { MusicToggle } from "../components/MusicToggle";
+import "./responsive.css";
+
+// Stock and prices must reflect the database, never a build-time snapshot.
+export const dynamic = "force-dynamic";
 
 const pressStart = Press_Start_2P({
   subsets: ["latin"],
@@ -20,8 +20,12 @@ const fredoka = Fredoka({
   variable: "--font-body-proxy",
 });
 
-// TAN st. Canard is self-hosted via @font-face in globals.css.
-// The CSS variable --font-headline points to 'TAN st. Canard' directly.
+const rammetto = Rammetto_One({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  variable: "--font-heading-proxy",
+});
 
 export const metadata: Metadata = {
   title: "BinderFinders — Home of Vintage Pokemon Cards",
@@ -37,16 +41,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${pressStart.variable} ${fredoka.variable}`}
+      className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable}`}
     >
       <body className="font-body antialiased">
-        <MusicProvider>
-          <BagProvider>
-            {children}
-            <MusicToggle />
-            <RetroButtonSfx />
-          </BagProvider>
-        </MusicProvider>
+        {children}
       </body>
     </html>
   );

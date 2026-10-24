@@ -1,15 +1,18 @@
 "use client";
+import { CardImageViewer } from "../shop/CardImageViewer";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { X, Calendar, Hash, Shield, Flame, Sparkles, Eye } from "lucide-react";
+import { GridDensity, type GridColumns } from "../shop/GridDensity";
+import { QuickAdd } from "../shop/QuickAdd";
+import { DialogShell } from "../shop/DialogShell";
 import {
-  BINDER_TABS,
-  formatPrice,
   shortCondition,
   getTypeBadgeColor,
   type ShopCard,
 } from "../../lib/data";
+import { useCatalog,usePriceFormatter } from "../CatalogProvider";
 
 const MAX_TILT_DEG = 14;
 const FOCUS_OPEN_MS = 600;
@@ -38,6 +41,16 @@ function prefersReducedMotion(): boolean {
  * "View shop listing" CTA. Click-outside, Esc, or the CTA navigates.
  */
 export function BinderSection() {
+  const {cards,collections}=useCatalog();
+  const BINDER_TABS=useMemo(()=>{
+    const tabs=collections.map(c=>({id:c.id,label:c.name,cards:c.cardIds.flatMap(id=>cards.find(c=>c.id===id)??[])}));
+    const ungrouped=cards.filter(card=>!collections.some(c=>c.cardIds.includes(card.id)));
+    if(ungrouped.length)tabs.push({id:'all-other-cards',label:'More cards',cards:ungrouped});
+    return tabs.length?tabs:[{id:'empty',label:'Collection',cards:[]}];
+  },[cards,collections]);
+  const [columns, setColumns] = useState<GridColumns>(4);
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [activeTabId, setActiveTabId] = useState<string>(BINDER_TABS[0].id);
   const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
   const [focusStage, setFocusStage] = useState<FocusStage | null>(null);
@@ -45,13 +58,17 @@ export function BinderSection() {
   const closeTimerRef = useRef<number | null>(null);
   const activeTab =
     BINDER_TABS.find((t) => t.id === activeTabId) ?? BINDER_TABS[0];
-  const cardCount = Math.min(activeTab.cards.length, 12);
+  const filteredCards = activeTab.cards.filter((card) =>
+    (typeFilter === "all" || card.type === typeFilter) &&
+    `${card.name} ${card.set} ${card.type} ${card.description}`.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+  const cardCount = filteredCards.length;
 
   const focusedCard = useMemo(
     () => (focusedCardId
       ? BINDER_TABS.flatMap((t) => t.cards).find((c) => c.id === focusedCardId) ?? null
       : null),
-    [focusedCardId],
+    [focusedCardId,BINDER_TABS],
   );
 
   const closeFocusedCard = useCallback(() => {
@@ -162,14 +179,23 @@ export function BinderSection() {
         </div>
 
         {/* Full-width card wall */}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <input aria-label="Search binder cards" placeholder="Search this era..." value={query} onChange={(event) => setQuery(event.target.value)} className="min-w-0 flex-1 rounded-xl border-2 border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/50" />
+          <select aria-label="Filter binder by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="rounded-xl border-2 border-white/20 bg-ink-black px-3 py-3 text-sm text-white">
+            <option value="all">All Types</option>
+            {Array.from(new Set(BINDER_TABS.flatMap((tab) => tab.cards.map((card) => card.type)))).sort().map((type) => <option key={type} value={type}>{type}</option>)}
+          </select>
+          <GridDensity value={columns} onChange={setColumns} />
+        </div>
         <div className="mt-10 border-t border-white/10 pt-8 pb-0">
           <div
             role="tabpanel"
             aria-label={`${activeTab.label} binder page`}
             data-binder-grid="true"
-            className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6"
+            data-columns={columns}
+            className="catalog-grid grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:gap-6"
           >
-            {activeTab.cards.slice(0, 12).map((card) => {
+            {filteredCards.map((card) => {
               const isFocused = focusedCardId === card.id;
               return (
                 <div
@@ -189,10 +215,12 @@ export function BinderSection() {
                       sourceCell={null}
                     />
                   )}
+                  <QuickAdd card={card} />
                 </div>
               );
             })}
           </div>
+          {filteredCards.length === 0 && <div className="py-8 text-center"><p>No cards match in this era.</p><button type="button" className="mt-3 underline" onClick={() => { setQuery(""); setTypeFilter("all"); }}>Clear filters</button></div>}
         </div>
 
         {focusedCard && focusStage && sourceRectRef.current ? (
@@ -220,6 +248,7 @@ function BinderCard({
   onFocus: (card: ShopCard, sourceCell: HTMLElement) => void;
   sourceCell: HTMLElement | null;
 }) {
+  const formatPrice=usePriceFormatter();
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [shinePos, setShinePos] = useState<{ x: number; y: number }>({
     x: 50,
@@ -298,7 +327,7 @@ function BinderCard({
       <span
         data-price-sticker="true"
         data-testid="price-sticker"
-        className="pointer-events-none absolute bottom-2 left-2 z-30 flex h-12 w-12 flex-col items-center justify-center rounded-full border-2 border-ink-black bg-brand-yellow text-center leading-none shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+        className="catalog-sticker pointer-events-none absolute bottom-2 left-2 z-30 flex flex-col items-center justify-center rounded-full border-2 border-ink-black bg-brand-yellow text-center leading-none shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
       >
         <span
           data-price-sticker-condition="true"
@@ -338,10 +367,24 @@ function BinderFocusOverlay({
   sourceRect: DOMRect;
   onClose: () => void;
 }) {
+  const formatPrice=usePriceFormatter();
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [shinePos, setShinePos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   const [isFlipped, setIsFlipped] = useState(false);
+  const [scanMode, setScanMode] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const trigger = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    overlayRef.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+    return () => {
+      document.body.style.overflow = overflow;
+      const source = document.querySelector<HTMLButtonElement>(`[data-binder-card-id="${card.id}"]`);
+      (source || trigger)?.focus({ preventScroll: true });
+    };
+  }, [card.id]);
   const animRef = useRef(0);
   const startRef = useRef<number | null>(null);
 
@@ -404,11 +447,21 @@ function BinderFocusOverlay({
 
   const handleOverlayKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (scanMode) return;
       if (e.key === "Escape") {
+        e.stopPropagation();
         onClose();
       }
+      if (e.key === "Tab") {
+        const items = overlayRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], [tabindex="0"]');
+        if (!items?.length) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     },
-    [onClose],
+    [onClose, scanMode],
   );
 
   const innerStyle: React.CSSProperties = {
@@ -420,6 +473,10 @@ function BinderFocusOverlay({
 
   return (
     <div
+      ref={overlayRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Inspect ${card.name}`}
       data-binder-focus-overlay="true"
       data-binder-focus-stage={stage}
       className="binder-focus-overlay"
@@ -470,7 +527,7 @@ function BinderFocusOverlay({
             className="binder-focus-card__face binder-focus-card__face--back"
           >
             <img
-              src={CARD_BACK_IMAGE_SRC}
+              src={card.backImageUrl || CARD_BACK_IMAGE_SRC}
               alt="Pokémon TCG card back"
               referrerPolicy="no-referrer"
               draggable={false}
@@ -512,9 +569,9 @@ function BinderFocusOverlay({
               {card.name}
             </h3>
           </div>
-          <p className="mt-2 sm:mt-2.5 font-body text-[11px] sm:text-xs leading-relaxed text-ink-black/70">
-            {card.description}
-          </p>
+          <p className="mt-2 font-retro text-[10px] text-ink-black/60">{card.number}</p>
+          <button type="button" onClick={() => setScanMode(true)} className="mt-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">Enlarge image</button>
+          {isFlipped && !card.backImageUrl && <p className="mt-2 text-xs text-ink-black/60">Reference back image — not a scan of this individual card.</p>}
         </div>
 
         {/* Specifications Grid */}
@@ -589,6 +646,12 @@ function BinderFocusOverlay({
           </Link>
         </div>
       </aside>
+      {scanMode && <DialogShell label={`Enlarged ${card.name}`} onClose={() => setScanMode(false)}>
+        <h2 className="mb-3 font-headline text-2xl">{card.name}</h2>
+        <button type="button" className="mb-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-sm" onClick={() => setIsFlipped(!isFlipped)}>{isFlipped ? "Show front" : card.backImageUrl ? "Show back" : "Show reference back"}</button>
+        <CardImageViewer src={isFlipped ? card.backImageUrl || CARD_BACK_IMAGE_SRC : card.imageUrl} alt={`${card.name} ${isFlipped ? "back" : "front"} enlarged`} />
+        {isFlipped && !card.backImageUrl && <p className="mt-3 text-xs">Reference back image — not a scan of this individual card.</p>}
+      </DialogShell>}
     </div>
   );
 }

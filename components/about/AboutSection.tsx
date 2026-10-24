@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCatalog } from "../CatalogProvider";
 
 const BRAND_PROMISES = [
   {
@@ -24,6 +25,7 @@ const BRAND_PROMISES = [
 ] as const;
 
 export function AboutSection() {
+  const {settings:{content}}=useCatalog();
   const [activeBubble, setActiveBubble] = useState(0);
 
   useEffect(() => {
@@ -82,11 +84,11 @@ export function AboutSection() {
             <div className="pl-8 md:pl-12 pr-6 md:pr-10 flex-1 text-left flex flex-col justify-center">
               <div className="max-w-xl">
                 <h2 className="font-headline text-2xl font-black leading-[1.3] text-ink-black sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[48px] text-left">
-                  Scans you can read. Cards you can trust.
+                  {content.aboutTitle}
                 </h2>
 
                 <p className="mt-6 font-body text-sm leading-relaxed text-ink-black/85 md:text-base text-left">
-                  A small collector desk for vintage Pokémon. Every card comes with a real flatbed scan — no stock photos, no mystery conditions, no surprises.
+                  {content.aboutBody}
                 </p>
               </div>
             </div>
