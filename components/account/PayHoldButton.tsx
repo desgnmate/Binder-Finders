@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Lock } from "lucide-react";
 
 export function PayHoldButton({ id, enabled = true }: { id: string; enabled?: boolean }) {
   const key = useRef<string | null>(null);
@@ -35,7 +36,8 @@ export function PayHoldButton({ id, enabled = true }: { id: string; enabled?: bo
   }
 
   return <div className="customer-payment-action">
-    <button type="button" onClick={() => void startPayment()} disabled={busy || !enabled}>
+    <button type="button" className="ac-btn ac-btn--yellow ac-btn--lg ac-btn--block" onClick={() => void startPayment()} disabled={busy || !enabled}>
+      {enabled && <Lock size={18} aria-hidden="true" />}
       {!enabled ? "Online payments coming soon" : busy ? "Opening secure checkout…" : "Pay securely with Stripe"}
     </button>
     <small>{enabled ? "Card payments are processed securely by Stripe." : "The store is preparing secure online payments. Your accepted hold remains available."}</small>

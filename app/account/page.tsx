@@ -8,7 +8,7 @@ export default async function AccountPage() {
   if (!user.email_confirmed_at) redirect("/account/verify");
   const [profile, recent, total, active, completed] = await Promise.all([
     db.from("customer_profiles").select("name").eq("user_id", user.id).maybeSingle(),
-    db.from("hold_requests").select("id,status,currency,created_at,hold_request_items(card_id,name,price_cents)").eq("customer_user_id", user.id).order("created_at", { ascending: false }).limit(4),
+    db.from("hold_requests").select("id,status,currency,payment_status,expires_at,created_at,hold_request_items(card_id,name,price_cents)").eq("customer_user_id", user.id).order("created_at", { ascending: false }).limit(4),
     db.from("hold_requests").select("id", { count: "exact", head: true }).eq("customer_user_id", user.id),
     db.from("hold_requests").select("id", { count: "exact", head: true }).eq("customer_user_id", user.id).in("status", ["pending", "accepted"]),
     db.from("hold_requests").select("id", { count: "exact", head: true }).eq("customer_user_id", user.id).eq("status", "completed"),
@@ -16,6 +16,7 @@ export default async function AccountPage() {
   return <AccountOverview
     name={profile.data?.name || String(user.user_metadata.name || "Collector")}
     email={user.email || ""}
+    memberSince={user.created_at}
     profileUnavailable={!!profile.error}
     holds={(recent.data || []) as RecentHold[]}
     ordersUnavailable={!!recent.error}

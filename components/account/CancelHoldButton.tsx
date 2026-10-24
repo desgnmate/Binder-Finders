@@ -6,7 +6,7 @@ import { cancelCustomerHold } from "../../app/account/actions";
 
 function Submit() {
   const { pending } = useFormStatus();
-  return <button type="submit" disabled={pending}>{pending ? "Cancelling…" : "Cancel unpaid request"}</button>;
+  return <button type="submit" className="ac-btn ac-btn--danger" disabled={pending}>{pending ? "Cancelling…" : "Cancel unpaid request"}</button>;
 }
 
 export function CancelHoldButton({ id }: { id: string }) {
@@ -17,6 +17,7 @@ export function CancelHoldButton({ id }: { id: string }) {
   return <form action={action} className="customer-cancel-form">
     <input type="hidden" name="id" value={id} />
     <Submit />
+    <small>Releases these cards back into the binder.</small>
     {state.error && <p className="customer-message" role="alert">{state.error}</p>}
   </form>;
 }

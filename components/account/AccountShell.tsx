@@ -13,21 +13,18 @@ import { customerSignOut } from "../../app/account/actions";
 function SignOutButton() {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-xs font-bold text-ink-black/70 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
-    >
+    <button type="submit" disabled={pending} className="ac-btn ac-btn--sm">
       <LogOut size={16} aria-hidden="true" />
       <span>{pending ? "Signing out…" : "Sign out"}</span>
     </button>
   );
 }
 
+// Each section is a binder divider tab in one of the storefront's colours.
 const navLinks = [
-  { href: "/account", label: "Overview", icon: LayoutDashboard },
-  { href: "/account/orders", label: "Orders & Holds", icon: Package },
-  { href: "/account/profile", label: "Profile & Security", icon: UserRound },
+  { href: "/account", label: "Overview", short: "Overview", tone: "yellow", icon: LayoutDashboard },
+  { href: "/account/orders", label: "Orders & holds", short: "Orders", tone: "blue", icon: Package },
+  { href: "/account/profile", label: "Profile & security", short: "Profile", tone: "pink", icon: UserRound },
 ];
 
 export function AccountShell({
@@ -48,33 +45,36 @@ export function AccountShell({
   if (!isDashboard) {
     return (
       <RevealFooterLayout footer={footer}>
-        <div className="min-h-screen bg-cream text-ink-black flex flex-col justify-between">
+        <div className="ac">
           <HeroNav />
-          <main className="customer-account flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
-            <section className="customer-box w-full max-w-[480px]">
-              <div className="mb-6 flex justify-center">
-                <Link href="/" aria-label="BinderFinders home">
-                  <Image
-                    className="customer-logo"
-                    src="/images/logo.png"
-                    alt="BinderFinders"
-                    width={220}
-                    height={43}
-                    priority
-                  />
-                </Link>
+          <div className="ac-wrap">
+            <div className="ac-auth">
+              <div className="ac-auth__intro">
+                <span className="ac-px">Collector accounts</span>
+                <p className="ac-auth__title">Your holds, one binder.</p>
+                <p>Sign in to follow your card holds, pay for reserved cards with Stripe and see when they ship.</p>
+                <div className="ac-auth__sprites" aria-hidden="true">
+                  <Image src="/sprites/gen3/54.png" unoptimized alt="" width={180} height={180} />
+                  <Image src="/sprites/gen3/202.png" unoptimized alt="" width={200} height={200} />
+                  <Image src="/sprites/gen3/194.png" unoptimized alt="" width={168} height={168} />
+                </div>
               </div>
-              {children}
-              <p className="customer-back-link mt-4 text-center">
-                <Link
-                  href="/shop"
-                  className="text-sm font-semibold hover:underline"
-                >
-                  ← Back to the shop
-                </Link>
-              </p>
-            </section>
-          </main>
+              <main className="ac-auth__card">
+                <Image className="ac-auth__peek" src="/sprites/gen3/25.png" unoptimized alt="" width={104} height={104} aria-hidden="true" />
+                <section className="ac-notebook ac-auth__paper customer-account">
+                  <div className="ac-rings" aria-hidden="true">
+                    <span /><span /><span /><span /><span /><span />
+                  </div>
+                  <div className="ac-notebook__body">
+                    {children}
+                    <p className="ac-back">
+                      <Link href="/shop" className="ac-link">← Back to the shop</Link>
+                    </p>
+                  </div>
+                </section>
+              </main>
+            </div>
+          </div>
         </div>
       </RevealFooterLayout>
     );
@@ -82,50 +82,41 @@ export function AccountShell({
 
   return (
     <RevealFooterLayout footer={footer}>
-      <div className="account-workspace min-h-screen bg-cream text-ink-black flex flex-col">
-        <a className="account-skip" href="#account-content">
+      <div className="ac">
+        <a className="ac-skip" href="#account-content">
           Skip to account content
         </a>
-        {/* ── Homepage Floating Sticky Navigation Bar ── */}
         <HeroNav />
-
-        {/* ── Main Layout Container (Editorial Wide Layout) ── */}
-        <div className="account-dashboard-layout">
-          <div className="account-dashboard-grid account-hub">
-            <div className="account-topbar">
-              <span className="account-topbar-title">My account</span>
-              <nav aria-label="Account navigation" className="account-tabs">
-                {navLinks.map(({ href, label, icon: Icon }) => {
-                  const isActive =
-                    href === "/account"
-                      ? pathname === href
-                      : pathname.startsWith(href);
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <Icon size={17} aria-hidden="true" />
-                      <span>{label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-              <form action={customerSignOut} className="account-signout">
-                <SignOutButton />
-              </form>
-            </div>
-
-            {/* ── Main Content Area ── */}
-            <main
-              id="account-content"
-              tabIndex={-1}
-              className="customer-box account-content flex-1 min-w-0 w-full focus:outline-none"
-            >
-              {children}
-            </main>
+        <div className="ac-wrap">
+          <div className="ac-tabsbar">
+            <nav aria-label="Account navigation" className="ac-tabs">
+              {navLinks.map(({ href, label, short, tone, icon: Icon }) => {
+                const isActive = href === "/account" ? pathname === href : pathname.startsWith(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="ac-tab"
+                    data-tone={tone}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    <Icon size={18} strokeWidth={2.4} aria-hidden="true" />
+                    <span className="ac-tab__long">{label}</span>
+                    <span className="ac-tab__short">{short}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <form action={customerSignOut} className="ac-signout">
+              <SignOutButton />
+            </form>
           </div>
+          <main id="account-content" tabIndex={-1} className="account-content focus:outline-none">
+            {children}
+          </main>
+          <form action={customerSignOut} className="ac-mobile-signout">
+            <SignOutButton />
+          </form>
         </div>
       </div>
     </RevealFooterLayout>
