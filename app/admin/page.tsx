@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "../../lib/supabase/server";
 import {
@@ -25,6 +26,26 @@ const views = [
   "activity",
 ] as const;
 type AdminView = (typeof views)[number];
+const viewTitles: Record<AdminView, string> = {
+  dashboard: "Overview",
+  cards: "Cards",
+  collections: "Collections",
+  holds: "Hold requests",
+  content: "Website content",
+  settings: "Settings",
+  activity: "Activity",
+};
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}): Promise<Metadata> {
+  const { view } = await searchParams;
+  return {
+    title: `${viewTitles[view as AdminView] || "Overview"} · Admin · BinderFinders`,
+  };
+}
 
 function DatabaseSetup() {
   return (
@@ -44,7 +65,7 @@ function DatabaseSetup() {
 export default async function AdminPage({
   searchParams: query,
 }: {
-  searchParams: Promise<{ view?: string; hold?: string; action?: string }>;
+  searchParams: Promise<{ view?: string; hold?: string }>;
 }) {
   const searchParams = await query;
   const view: AdminView = views.includes(searchParams.view as AdminView)
@@ -252,7 +273,6 @@ export default async function AdminPage({
     <AdminConsole
       view={view}
       initialHoldId={searchParams.hold}
-      initialAction={searchParams.action}
       user={{ id: user.id, email: user.email || "", role }}
       cards={cards}
       collectionCards={collectionCards}

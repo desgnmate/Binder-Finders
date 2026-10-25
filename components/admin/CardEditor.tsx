@@ -1,9 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Save, ArrowLeft, Copy, Upload } from "lucide-react";
 import { saveCard, uploadImage } from "../../app/admin/actions";
 import { type CMSCard, cardSchema } from "../../lib/cms/types";
 import { useRouter } from "next/navigation";
+import { SaveBar } from "./SaveBar";
+import { slugify } from "./presentation";
 const empty: CMSCard = {
   id: "",
   name: "",
@@ -29,12 +31,14 @@ export function CardEditor({
   onClose,
 }: {
   card: CMSCard | null;
-  onClose: () => void;
+  onClose: (saved?: boolean) => void;
 }) {
   const [value, setValue] = useState<CMSCard>(card || empty);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [idTouched, setIdTouched] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   useEffect(() => {
     const guard = (e: BeforeUnloadEvent) => {
@@ -46,9 +50,19 @@ export function CardEditor({
     window.addEventListener("beforeunload", guard);
     return () => window.removeEventListener("beforeunload", guard);
   }, [dirty]);
+  useEffect(() => {
+    // The save bar sits at the bottom; bring validation errors into view.
+    if (error) errorRef.current?.scrollIntoView?.({ block: "center" });
+  }, [error]);
   function change<K extends keyof CMSCard>(key: K, v: CMSCard[K]) {
     setDirty(true);
-    setValue((old) => ({ ...old, [key]: v }));
+    setValue((old) => {
+      const next = { ...old, [key]: v };
+      // New listings get an ID from name, set and number until it is typed.
+      if (!card && !idTouched && ["name", "set", "number"].includes(key))
+        next.id = slugify(`${next.name} ${next.set} ${next.number}`, 100);
+      return next;
+    });
   }
   function close() {
     if (!dirty || window.confirm("Discard your unsaved changes?")) onClose();
@@ -74,7 +88,7 @@ export function CardEditor({
       }
       setDirty(false);
       router.refresh();
-      onClose();
+      onClose(true);
     } catch {
       setError(
         "Connection interrupted. Reload to check whether the save completed.",
@@ -109,14 +123,12 @@ export function CardEditor({
   }
   return (
     <>
-      <div className="cms-title">
+      <div className="cms-title cms-editor-heading">
         <div>
-          <button className="cms-btn" onClick={close}>
-            <ArrowLeft size={16} /> Back to cards
+          <button type="button" className="cms-back" onClick={close}>
+            <ArrowLeft size={16} /> Cards
           </button>
-          <h1 style={{ marginTop: 18 }}>
-            {value.updatedAt ? "Edit listing" : "New listing"}
-          </h1>
+          <h1>{value.updatedAt ? value.name || "Edit listing" : "New listing"}</h1>
           <p>One physical card, its scans, and its condition.</p>
         </div>
         {value.updatedAt && (
@@ -124,9 +136,10 @@ export function CardEditor({
             className="cms-btn"
             disabled={busy}
             onClick={() => {
+              setIdTouched(true);
               setValue({
                 ...value,
-                id: "",
+                id: `${value.id}-copy`.slice(0, 100),
                 publication: "draft",
                 availability: "available",
                 updatedAt: null,
@@ -140,7 +153,7 @@ export function CardEditor({
         )}
       </div>
       {error && (
-        <div role="alert" className="cms-notice cms-error">
+        <div ref={errorRef} role="alert" className="cms-notice cms-error">
           {error}
         </div>
       )}
@@ -165,11 +178,15 @@ export function CardEditor({
                   required
                   pattern="[a-z0-9][a-z0-9-]*"
                   disabled={Boolean(value.updatedAt)}
-                  onChange={(e) => change("id", e.target.value)}
+                  onChange={(e) => {
+                    setIdTouched(true);
+                    change("id", e.target.value);
+                  }}
                 />
                 <small>
-                  Unique lowercase ID, e.g. charizard-base1-copy2. Existing
-                  links keep this ID.
+                  {value.updatedAt
+                    ? "Fixed once saved so existing links keep working."
+                    : "Filled in from the name, set and number. Edit it if this is a second copy."}
                 </small>
               </label>
               <label className="cms-field">
@@ -378,9 +395,11 @@ export function CardEditor({
               </div>
             ))}
           </fieldset>
+        </div>
+        <aside className="cms-editor-side">
           <fieldset disabled={busy} className="cms-panel">
-            <h2>Publishing & availability</h2>
-            <div className="cms-grid">
+            <h2>Status</h2>
+            <div className="cms-stack">
               <label className="cms-field">
                 Publication
                 <select
@@ -444,54 +463,63 @@ export function CardEditor({
               </label>
             </div>
           </fieldset>
-          <div className="cms-actions">
-            <button className="cms-btn cms-btn-primary" disabled={busy}>
-              <Save size={17} />
-              {busy ? "Saving…" : "Save listing"}
-            </button>
-            <button
-              type="button"
-              className="cms-btn"
-              disabled={busy}
-              onClick={close}
-            >
-              Cancel
-            </button>
+          <div className="cms-preview">
+            <span className="cms-badge">Storefront preview</span>
+            {value.imageUrl && (
+              <img src={value.imageUrl} alt={value.name || "Card preview"} />
+            )}
+            <h2>{value.name || "Your card name"}</h2>
+            <p>
+              {value.set || "Set"} · {value.number || "Number"}
+            </p>
+            <p>
+              {value.condition} · {value.rarity}
+            </p>
+            <strong style={{ fontSize: 28 }}>
+              {value.price.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </strong>
+            <p>
+              <span className="cms-badge" data-status={value.publication}>
+                {value.publication}
+              </span>{" "}
+              <span className="cms-badge" data-status={value.availability}>
+                {value.availability}
+              </span>
+            </p>
+            {value.backImageUrl && (
+              <>
+                <p>Back scan</p>
+                <img src={value.backImageUrl} alt="Back scan" />
+              </>
+            )}
+            <p className="cms-muted">{value.description}</p>
           </div>
-        </div>
-        <aside className="cms-preview">
-          <span className="cms-badge">Listing preview · unsaved</span>
-          {value.imageUrl && (
-            <img src={value.imageUrl} alt={value.name || "Card preview"} />
-          )}
-          <h2>{value.name || "Your card name"}</h2>
-          <p>
-            {value.set || "Set"} · {value.number || "Number"}
-          </p>
-          <p>
-            {value.condition} · {value.rarity}
-          </p>
-          <strong style={{ fontSize: 28 }}>
-            {value.price.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </strong>
-          <p>
-            <span className="cms-badge" data-status={value.publication}>
-              {value.publication}
-            </span>{" "}
-            <span className="cms-badge" data-status={value.availability}>
-              {value.availability}
-            </span>
-          </p>
-          {value.backImageUrl && (
-            <>
-              <p>Back scan</p>
-              <img src={value.backImageUrl} alt="Back scan" />
-            </>
-          )}
-          <p className="cms-muted">{value.description}</p>
         </aside>
+        <SaveBar
+          dirty={dirty}
+          message={
+            dirty
+              ? "Unsaved changes"
+              : value.updatedAt
+                ? "No changes yet"
+                : "Fill in the details, then save"
+          }
+        >
+          <button
+            type="button"
+            className="cms-btn"
+            disabled={busy}
+            onClick={close}
+          >
+            Cancel
+          </button>
+          <button className="cms-btn cms-btn-primary" disabled={busy}>
+            <Save size={17} />
+            {busy ? "Saving…" : "Save listing"}
+          </button>
+        </SaveBar>
       </form>
     </>
   );

@@ -1,10 +1,13 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   Clock3,
-  Plus,
   CircleAlert,
   CheckCircle2,
+  FilePen,
+  Inbox,
+  Type,
 } from "lucide-react";
 import type {
   AdminDashboardStats,
@@ -29,9 +32,20 @@ export function AdminOverview({
   );
   const first = attention[0];
   const metrics = [
-    ["Available", stats.available, "Published and ready to request"],
-    ["On hold", stats.reserved ?? 0, "Cards reserved for collectors"],
     [
+      "available",
+      "Available",
+      stats.available,
+      "Published and ready to request",
+    ],
+    [
+      "reserved",
+      "On hold",
+      stats.reserved ?? 0,
+      "Cards reserved for collectors",
+    ],
+    [
+      "draft",
       "Drafts",
       stats.drafts,
       stats.drafts
@@ -39,6 +53,7 @@ export function AdminOverview({
         : "Nothing waiting to publish",
     ],
     [
+      "sold",
       "Sold",
       stats.sold,
       stats.sold ? "Cards with a new collector" : "No completed sales yet",
@@ -98,12 +113,19 @@ export function AdminOverview({
         </div>
       </section>
       <div className="cms-stats">
-        {metrics.map(([label, count, description]) => (
-          <div className="cms-stat" key={label}>
-            <span>{label}</span>
+        {metrics.map(([filter, label, count, description]) => (
+          <Link
+            className="cms-stat"
+            key={filter}
+            href={`/admin?view=cards&filter=${filter}`}
+            aria-label={`${count} ${label.toLowerCase()} · view cards`}
+          >
+            <span>
+              {label} <ArrowRight size={14} />
+            </span>
             <strong>{count}</strong>
             <small>{description}</small>
-          </div>
+          </Link>
         ))}
       </div>
       <div className="cms-overview-columns">
@@ -156,20 +178,53 @@ export function AdminOverview({
             <p className="cms-empty">New customer requests will appear here.</p>
           )}
         </section>
-        <section className="cms-panel cms-listing-guide">
-          <h2>List a new find</h2>
-          <ol>
-            <li>Upload front and back scans</li>
-            <li>Set condition and price</li>
-            <li>Save as draft or publish</li>
-          </ol>
-          <Link
-            className="cms-btn cms-btn-primary"
-            href="/admin?view=cards&action=new"
-          >
-            <Plus size={17} />
-            Add card
-          </Link>
+        <section className="cms-panel cms-quick-actions">
+          <h2>Quick actions</h2>
+          <ul>
+            {(
+              [
+                [
+                  "/admin?view=holds",
+                  Inbox,
+                  "Respond to requests",
+                  stats.newRequests
+                    ? `${stats.newRequests} new waiting`
+                    : "Nothing new right now",
+                ],
+                [
+                  "/admin?view=cards&filter=draft",
+                  FilePen,
+                  "Finish drafts",
+                  stats.drafts
+                    ? `${stats.drafts} ready to publish`
+                    : "No drafts waiting",
+                ],
+                [
+                  "/admin?view=collections",
+                  BookOpen,
+                  "Organise collections",
+                  "Group cards for collectors",
+                ],
+                [
+                  "/admin?view=content",
+                  Type,
+                  "Edit website content",
+                  "Homepage, about and footer",
+                ],
+              ] as const
+            ).map(([href, Icon, label, hint]) => (
+              <li key={href}>
+                <Link href={href}>
+                  <Icon size={18} />
+                  <span>
+                    {label}
+                    <small>{hint}</small>
+                  </span>
+                  <ArrowRight size={15} />
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
       <section className="cms-panel cms-store-summary">
