@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Lock } from "lucide-react";
+import { useConfirm } from "./ConfirmDialog";
 import type { StoreSettings } from "../../lib/cms/types";
 import { inviteAdmin, setAdmin } from "../../app/admin/actions";
 import { SaveBar } from "./SaveBar";
@@ -124,6 +125,7 @@ export function AdminContentForm({
 }) {
   return (
     <form
+      className="cms-settings"
       onSubmit={(e) => {
         e.preventDefault();
         onSave();
@@ -212,16 +214,19 @@ export function AdminSettingsForm({
 }) {
   return (
     <form
+      className="cms-settings"
       onSubmit={(e) => {
         e.preventDefault();
         onSave();
       }}
     >
       {!canEdit && (
-        <div className="cms-notice cms-warning cms-notice-icon">
-          <Lock size={16} />
-          Only store owners can change these settings. Ask an owner if
-          something needs updating.
+        <div className="cms-banner" role="note">
+          <Lock size={18} />
+          <span>
+            Only store owners can change these settings. Ask an owner if
+            something needs updating.
+          </span>
         </div>
       )}
       <fieldset disabled={busy || !canEdit}>
@@ -257,18 +262,19 @@ export function AdminSettingsForm({
           title="Hold requests"
           description="Customers submit a request; an administrator confirms it and reserves the cards."
         >
-          <label className="cms-checkbox cms-setting-toggle cms-wide">
+          <label className="cms-switch cms-wide">
+            <span>
+              Accept hold requests
+              <small>Turn off to pause new requests from the storefront.</small>
+            </span>
             <input
               type="checkbox"
+              role="switch"
               checked={draft.holdsEnabled}
               onChange={(e) =>
                 onChange({ ...draft, holdsEnabled: e.target.checked })
               }
             />
-            <span>
-              Accept hold requests
-              <small>Turn off to pause new requests from the storefront.</small>
-            </span>
           </label>
           <label className="cms-field">
             Unpaid hold duration (hours)
@@ -335,6 +341,7 @@ export function AdminAccess({
   const [invite, setInvite] = useState("");
   const [existingId, setExistingId] = useState("");
   const [existingEmail, setExistingEmail] = useState("");
+  const confirm = useConfirm();
   return (
     <SettingsSection
       title="Administrators"
@@ -343,7 +350,11 @@ export function AdminAccess({
       <ul className="cms-admin-list cms-wide">
         {admins.map((a) => (
           <li key={a.user_id}>
-            <span className="cms-avatar" aria-hidden="true">
+            <span
+              className="cms-avatar"
+              data-tone={a.user_id === userId ? undefined : "soft"}
+              aria-hidden="true"
+            >
               {a.email.slice(0, 1).toUpperCase()}
             </span>
             <div>
@@ -368,11 +379,18 @@ export function AdminAccess({
                 <button
                   disabled={busy}
                   className="cms-btn"
-                  onClick={() => {
+                  onClick={async () => {
                     if (
-                      window.confirm(
-                        `Change ${a.email} to ${a.role === "owner" ? "editor" : "owner"}?`,
-                      )
+                      await confirm({
+                        title: `Make ${a.email} ${a.role === "owner" ? "an editor" : "an owner"}?`,
+                        body:
+                          a.role === "owner"
+                            ? "They'll keep managing cards, content and requests, but lose access to store settings and administrators."
+                            : "Owners can change store settings and manage every administrator, including you.",
+                        confirmLabel: `Make ${a.role === "owner" ? "editor" : "owner"}`,
+                        tone: "dark",
+                        icon: "lock",
+                      })
                     )
                       void run(
                         () =>
@@ -391,10 +409,22 @@ export function AdminAccess({
                 <button
                   disabled={busy}
                   className="cms-btn cms-btn-danger"
-                  onClick={() => {
+                  onClick={async () => {
                     if (
-                      window.confirm(
-                        `${a.active ? "Disable" : "Enable"} access for ${a.email}?`,
+                      await confirm(
+                        a.active
+                          ? {
+                              title: `Disable access for ${a.email}?`,
+                              body: "They'll lose access to the admin until you enable them again.",
+                              confirmLabel: "Disable access",
+                              tone: "danger",
+                            }
+                          : {
+                              title: `Enable access for ${a.email}?`,
+                              body: `They'll be able to sign in as ${a.role === "owner" ? "an owner" : "an editor"} again.`,
+                              confirmLabel: "Enable access",
+                              icon: "lock",
+                            },
                       )
                     )
                       void run(

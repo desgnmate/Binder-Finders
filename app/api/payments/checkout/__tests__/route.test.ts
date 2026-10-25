@@ -82,3 +82,21 @@ it("refuses to start Checkout that would outlive the hold", async () => {
   expect((await POST(request())).status).toBe(409);
   expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
 });
+it("explains a zero total instead of a generic failure", async () => {
+  rpcs({ data: null, error: { message: 'new row for relation "payment_attempts" violates check constraint "payment_attempts_amount_cents_check"' } });
+  const response = await POST(request());
+  expect(response.status).toBe(409);
+  expect((await response.json()).error).toMatch(/below the minimum for card payments/);
+  expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+});
+it("does not send a total below Stripe's minimum to Checkout", async () => {
+  rpcs({ data: { ...created, amountCents: 20, items: [{ name: "Energy", priceCents: 20 }] }, error: null });
+  const response = await POST(request());
+  expect(response.status).toBe(409);
+  expect((await response.json()).error).toMatch(/below the minimum for card payments/);
+  expect(mockStripe.checkout.sessions.create).not.toHaveBeenCalled();
+  expect(mockRpc).toHaveBeenCalledWith("cms_fail_stripe_payment", expect.objectContaining({
+    p_attempt_id: attemptId,
+    p_reason: "Order total is below the card payment minimum",
+  }));
+});

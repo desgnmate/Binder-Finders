@@ -12,6 +12,7 @@ import {
   type Hold,
   type AuditEntry,
 } from "../../lib/cms/types";
+import type { AdminRequestTrend } from "../../components/admin/AdminOverview";
 import { AdminConsole } from "../../components/admin/AdminConsole";
 import { stripePaymentsConfigured } from "../../lib/stripe";
 export const dynamic = "force-dynamic";
@@ -83,6 +84,17 @@ export default async function AdminPage({
     );
   }
   const { db, user, role } = auth;
+  // Requests that need a decision, a payment, or a handover. Shown in the
+  // top-bar notifications on every view, and as the overview's spotlight.
+  const attentionQuery = db
+    .from("hold_requests")
+    .select("*,hold_request_items(*)")
+    .or(
+      "status.eq.pending,and(status.eq.accepted,payment_status.neq.paid),and(status.eq.accepted,payment_status.eq.paid,fulfillment_status.eq.not_ready)",
+    )
+    .order("created_at", { ascending: false })
+    .limit(20);
+  let trend: AdminRequestTrend[] = [];
   let cards: CMSCard[] = [];
   let collectionCards: AdminCardSummary[] = [];
   let collections: Collection[] = [];
@@ -107,7 +119,8 @@ export default async function AdminPage({
   // Keep each navigation request small. The previous implementation fetched
   // every CMS table for every tab, including large JSON card and audit rows.
   if (view === "dashboard") {
-    const [cardRows, recentHolds, settingsRow, pending] = await Promise.all([
+    const since = new Date(Date.now() - 8 * 7 * 86_400_000);
+    const [cardRows, recentHolds, settingsRow, pending, trendRows] = await Promise.all([
       db.from("cards").select("publication,availability"),
       db
         .from("hold_requests")
@@ -123,14 +136,31 @@ export default async function AdminPage({
         .from("hold_requests")
         .select("id", { count: "exact", head: true })
         .eq("status", "pending"),
+      db
+        .from("hold_requests")
+        .select("created_at,status")
+        .gte("created_at", since.toISOString()),
     ]);
     if (
       cardRows.error ||
       recentHolds.error ||
       settingsRow.error ||
-      pending.error
+      pending.error ||
+      trendRows.error
     )
       return <DatabaseSetup />;
+    trend = Array.from({ length: 8 }, (_, week) => {
+      const start = since.getTime() + week * 7 * 86_400_000;
+      const rows = trendRows.data.filter((row) => {
+        const created = new Date(row.created_at).getTime();
+        return created >= start && created < start + 7 * 86_400_000;
+      });
+      return {
+        start: new Date(start).toISOString(),
+        received: rows.length,
+        completed: rows.filter((row) => row.status === "completed").length,
+      };
+    });
     stats = (cardRows.data || []).reduce(
       (result, card) => {
         if (
@@ -208,7 +238,7 @@ export default async function AdminPage({
   } else if (view === "holds") {
     const holdsResult = await db
       .from("hold_requests")
-      .select("*,hold_request_items(*)")
+      .select("*,hold_request_items(*),hold_status_history(*)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (holdsResult.error) return <DatabaseSetup />;
@@ -269,6 +299,9 @@ export default async function AdminPage({
     pendingHoldCount = pending.count || 0;
   }
 
+  const attentionRows = await attentionQuery;
+  const attention = attentionRows.error ? [] : (attentionRows.data as Hold[]);
+
   return (
     <AdminConsole
       view={view}
@@ -284,6 +317,8 @@ export default async function AdminPage({
       admins={admins}
       pendingHoldCount={pendingHoldCount}
       stats={stats}
+      attention={attention}
+      trend={trend}
       live={process.env.CMS_ENABLED === "true"}
       stripeReady={stripePaymentsConfigured()}
     />

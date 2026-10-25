@@ -161,8 +161,14 @@ export function AuthForm({ mode = "login" }: { mode?: "login" | "reset" }) {
   return (
     <div className="cms-auth">
       <div className="cms-auth-box">
-        <Link href="/">
-          <img src="/images/logo.png" alt="BinderFinders" />
+        <Link href="/" className="cms-auth-brand">
+          <span className="cms-brand-mark" aria-hidden="true">
+            BF
+          </span>
+          <span className="cms-brand-text">
+            <strong>BinderFinders</strong>
+            <small>Store manager</small>
+          </span>
         </Link>
         <h1>{mode === "reset" ? "Set your password" : "Welcome back."}</h1>
         <p className="cms-muted">
@@ -171,7 +177,7 @@ export function AuthForm({ mode = "login" }: { mode?: "login" | "reset" }) {
             : "Sign in to manage your cards and store."}
         </p>
         {error && (
-          <p role="alert" className="cms-notice cms-error">
+          <p role="alert" className="cms-banner" data-tone="error">
             {error}
           </p>
         )}
@@ -181,7 +187,7 @@ export function AuthForm({ mode = "login" }: { mode?: "login" | "reset" }) {
           </p>
         )}
         {notice && (
-          <p role="status" className="cms-notice">
+          <p role="status" className="cms-banner" data-tone="success">
             {notice}
           </p>
         )}

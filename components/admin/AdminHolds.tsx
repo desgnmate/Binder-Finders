@@ -1,9 +1,18 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, Clock3, Inbox, Search } from "lucide-react";
+import { Inbox, Layers, Search } from "lucide-react";
 import type { Hold } from "../../lib/cms/types";
-import { holdLabel, holdTotal, storeDate } from "./presentation";
+import {
+  awaitingPayment,
+  holdLabel,
+  holdRef,
+  holdTotal,
+  initials,
+  storeDate,
+  timeUntil,
+} from "./presentation";
+import { useConfirm } from "./ConfirmDialog";
 
 const paymentStatuses = [
   "unpaid",
@@ -20,27 +29,36 @@ const fulfillmentStatuses = [
   "picked_up",
   "cancelled",
 ] as const;
+const historyLabels: Record<string, string> = {
+  pending: "Request received",
+  accepted: "Accepted & reserved",
+  completed: "Sale completed",
+  rejected: "Request declined",
+  cancelled: "Hold cancelled",
+  expired: "Hold expired",
+};
+const actorLabels = { customer: "Customer", admin: "Store", system: "Automatic" };
 type Workflow = {
   paymentStatus: string;
   fulfillmentStatus: string;
   paymentReference: string;
   fulfillmentNote: string;
-  expiresAt: string;
 };
 function initialWorkflow(hold: Hold): Workflow {
-  const date = hold.expires_at ? new Date(hold.expires_at) : null;
   return {
     paymentStatus: hold.payment_status || "unpaid",
     fulfillmentStatus: hold.fulfillment_status || "not_ready",
     paymentReference: hold.payment_reference || "",
     fulfillmentNote: hold.fulfillment_note || "",
-    expiresAt:
-      date && Number.isFinite(date.getTime())
-        ? new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16)
-        : "",
   };
+}
+function localInput(value?: string | null) {
+  const date = value ? new Date(value) : null;
+  return date && Number.isFinite(date.getTime())
+    ? new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16)
+    : "";
 }
 function WorkflowEditor({
   hold,
@@ -80,112 +98,77 @@ function WorkflowEditor({
       className="cms-workflow-form"
       onSubmit={async (e) => {
         e.preventDefault();
-        const deadlineChanged =
-          draft.expiresAt !== initialWorkflow(hold).expiresAt;
-        const values = {
-          ...draft,
-          expiresAt:
-            deadlineChanged && draft.expiresAt
-              ? new Date(draft.expiresAt).toISOString()
-              : "",
-        };
-        if (await onSave(hold, values)) setBaseline(JSON.stringify(draft));
+        if (await onSave(hold, { ...draft }))
+          setBaseline(JSON.stringify(draft));
       }}
     >
-      <fieldset disabled={busy}>
-        {hold.status === "accepted" &&
-          !["paid", "refunded"].includes(draft.paymentStatus) && (
-            <div className="cms-hold-deadline">
-              <div>
-                <strong>
-                  <Clock3 size={16} /> Reservation deadline
-                </strong>
-                <p>
-                  {hold.expires_at
-                    ? `${storeDate(hold.expires_at, true)} (Melbourne)`
-                    : "No deadline set"}
-                  . Unpaid reservations expire automatically.
-                </p>
-              </div>
-              <label>
-                Extend to (max 30 days)
-                <input
-                  aria-label="Hold deadline"
-                  type="datetime-local"
-                  value={draft.expiresAt}
-                  onChange={(e) =>
-                    setDraft({ ...draft, expiresAt: e.target.value })
-                  }
-                />
-                <small>Times entered in your device&apos;s timezone.</small>
-              </label>
-            </div>
-          )}
-        <div className="cms-workflow-columns">
-          <section>
-            <h3>Payment</h3>
-            <label className="cms-field">
-              Payment
-              <select
-                value={draft.paymentStatus}
-                onChange={(e) =>
-                  setDraft({ ...draft, paymentStatus: e.target.value })
-                }
-              >
-                {paymentStatuses.map((value) => (
-                  <option key={value} value={value}>
-                    {value.charAt(0).toUpperCase() + value.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="cms-field">
-              Payment reference
-              <input
-                value={draft.paymentReference}
-                maxLength={200}
-                placeholder="Optional — bank transfer or payment ID"
-                onChange={(e) =>
-                  setDraft({ ...draft, paymentReference: e.target.value })
-                }
-              />
-            </label>
-            <p className="cms-muted">
-              Records a payment or refund already handled externally; does not
-              charge or refund money.
-            </p>
-          </section>
-          <section>
-            <h3>Handover & delivery</h3>
-            <label className="cms-field">
-              Fulfilment
-              <select
-                value={draft.fulfillmentStatus}
-                onChange={(e) =>
-                  setDraft({ ...draft, fulfillmentStatus: e.target.value })
-                }
-              >
-                {fulfillmentStatuses.map((value) => (
-                  <option key={value} value={value}>
-                    {value.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="cms-field">
-              Fulfilment note (visible to customer)
-              <textarea
-                value={draft.fulfillmentNote}
-                maxLength={1000}
-                placeholder="Pickup details or a delivery tracking reference"
-                onChange={(e) =>
-                  setDraft({ ...draft, fulfillmentNote: e.target.value })
-                }
-              />
-            </label>
-          </section>
-        </div>
-      </fieldset>
+      <div className="cms-workflow-columns">
+        <fieldset disabled={busy}>
+          <legend>Payment</legend>
+          <label className="cms-field">
+            Payment
+            <select
+              value={draft.paymentStatus}
+              onChange={(e) =>
+                setDraft({ ...draft, paymentStatus: e.target.value })
+              }
+            >
+              {paymentStatuses.map((value) => (
+                <option key={value} value={value}>
+                  {value.charAt(0).toUpperCase() + value.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="cms-field">
+            Payment reference
+            <input
+              value={draft.paymentReference}
+              maxLength={200}
+              placeholder="Bank transfer or payment ID"
+              onChange={(e) =>
+                setDraft({ ...draft, paymentReference: e.target.value })
+              }
+            />
+          </label>
+          <p className="cms-field-help">
+            Records a payment or refund already handled externally; does not
+            charge or refund money.
+          </p>
+        </fieldset>
+        <fieldset disabled={busy}>
+          <legend>Handover &amp; delivery</legend>
+          <label className="cms-field">
+            Fulfilment
+            <select
+              value={draft.fulfillmentStatus}
+              onChange={(e) =>
+                setDraft({ ...draft, fulfillmentStatus: e.target.value })
+              }
+            >
+              {fulfillmentStatuses.map((value) => (
+                <option key={value} value={value}>
+                  {(value.charAt(0).toUpperCase() + value.slice(1)).replaceAll(
+                    "_",
+                    " ",
+                  )}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="cms-field">
+            Fulfilment note (visible to customer)
+            <textarea
+              value={draft.fulfillmentNote}
+              maxLength={1000}
+              placeholder="Pickup details or a delivery tracking reference"
+              onChange={(e) =>
+                setDraft({ ...draft, fulfillmentNote: e.target.value })
+              }
+            />
+          </label>
+        </fieldset>
+      </div>
       <div className="cms-hold-footer">
         {hold.status === "accepted" && (
           <button
@@ -194,39 +177,91 @@ function WorkflowEditor({
             disabled={busy || dirty}
             onClick={() => onTransition(hold, "cancelled")}
           >
-            Cancel & release
+            Cancel &amp; release
           </button>
         )}
-        <div className="cms-hold-save">
-          {hold.status === "accepted" && (
-            <small>
-              {dirty
-                ? "Save your changes before completing or cancelling."
-                : !canComplete
-                  ? "Record payment and prepare fulfilment to complete."
-                  : "Payment recorded. Ready to complete the sale."}
-            </small>
-          )}
+        <p>
+          {dirty
+            ? "Save your changes before completing or cancelling."
+            : hold.status !== "accepted"
+              ? "Update payment or delivery details for this request."
+              : !canComplete
+                ? "Record payment and prepare fulfilment to complete."
+                : "Payment recorded. Ready to complete the sale."}
+        </p>
+        <button className="cms-btn" disabled={busy} aria-label="Save workflow">
+          {busy ? "Saving…" : "Save changes"}
+        </button>
+        {hold.status === "accepted" && (
           <button
-            className="cms-btn"
-            disabled={busy}
-            aria-label="Save workflow"
+            type="button"
+            className="cms-btn cms-btn-primary"
+            disabled={busy || !canComplete}
+            onClick={() => onTransition(hold, "completed")}
           >
-            {busy ? "Saving…" : "Save changes"}
+            Complete sale
           </button>
-          {hold.status === "accepted" && (
-            <button
-              type="button"
-              className="cms-btn cms-btn-primary"
-              disabled={busy || !canComplete}
-              onClick={() => onTransition(hold, "completed")}
-            >
-              Complete sale
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </form>
+  );
+}
+
+function DeadlineCard({
+  hold,
+  busy,
+  onSave,
+}: {
+  hold: Hold;
+  busy: boolean;
+  onSave: (hold: Hold, values: Record<string, string>) => Promise<boolean>;
+}) {
+  const [expiresAt, setExpiresAt] = useState(() => localInput(hold.expires_at));
+  useEffect(() => setExpiresAt(localInput(hold.expires_at)), [hold.expires_at]);
+  const changed = expiresAt && expiresAt !== localInput(hold.expires_at);
+  return (
+    <section className="cms-deadline-card" aria-label="Reservation deadline">
+      <span>
+        <i />
+        Reservation deadline
+      </span>
+      <div className="cms-deadline-inset">
+        <strong>
+          {hold.expires_at
+            ? storeDate(hold.expires_at, true)
+            : "No deadline set"}
+        </strong>
+        <small suppressHydrationWarning>
+          {hold.expires_at
+            ? `Expires ${timeUntil(hold.expires_at)} (Melbourne time). Unpaid reservations release the cards automatically.`
+            : "Unpaid reservations release the cards automatically."}
+        </small>
+      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (changed)
+            void onSave(hold, {
+              expiresAt: new Date(expiresAt).toISOString(),
+            });
+        }}
+      >
+        <label className="cms-field">
+          Extend to
+          <input
+            aria-label="Hold deadline"
+            type="datetime-local"
+            value={expiresAt}
+            disabled={busy}
+            onChange={(e) => setExpiresAt(e.target.value)}
+          />
+          <small>Up to 30 days. Times use your device&apos;s timezone.</small>
+        </label>
+        <button className="cms-btn" disabled={busy || !changed}>
+          Extend hold
+        </button>
+      </form>
+    </section>
   );
 }
 
@@ -252,6 +287,7 @@ export function AdminHolds({
   const handledDeepLink = useRef(initialHoldId);
   const detailRef = useRef<HTMLElement>(null);
   const [page, setPage] = useState(0);
+  const confirm = useConfirm();
   const search = useDeferredValue(query).trim().toLowerCase();
   const filterMatches = (hold: Hold, value: string) =>
     value === "all" ||
@@ -272,6 +308,9 @@ export function AdminHolds({
   const pageHolds = visible.slice(page * 10, page * 10 + 10);
   // Keep the selected editor mounted while searching. Filtering never discards edits.
   const hold = holds.find((h) => h.id === selected);
+  const history = [...(hold?.hold_status_history || [])].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
   useEffect(() => {
     onDirtyChange(dirty);
   }, [dirty, onDirtyChange]);
@@ -281,24 +320,51 @@ export function AdminHolds({
       setSelected(initialHoldId);
     handledDeepLink.current = initialHoldId;
   }, [initialHoldId, holds, dirty]);
-  function selectHold(id: string) {
+  async function selectHold(id: string) {
     if (busy || id === selected) return;
-    if (dirty && !window.confirm("Discard unsaved changes to this request?"))
+    if (
+      dirty &&
+      !(await confirm({
+        title: "Discard unsaved changes to this request?",
+        body: "Your payment and delivery edits haven't been saved.",
+        confirmLabel: "Discard changes",
+        cancelLabel: "Keep editing",
+        tone: "danger",
+        icon: "edit",
+      }))
+    )
       return;
     setDirty(false);
     setSelected(id);
     // On narrow screens the detail sits below the list; bring it into view.
-    if (window.matchMedia?.("(max-width: 700px)").matches)
+    if (window.matchMedia?.("(max-width: 1100px)").matches)
       requestAnimationFrame(() =>
         detailRef.current?.scrollIntoView?.({ behavior: "smooth" }),
       );
   }
+  const steps = hold
+    ? ([
+        ["Requested", true],
+        ["Accepted", ["accepted", "completed"].includes(hold.status)],
+        ["Paid", hold.payment_status === "paid"],
+        [
+          "Fulfilment",
+          ["ready", "shipped", "delivered", "picked_up"].includes(
+            hold.fulfillment_status || "",
+          ),
+        ],
+        ["Completed", hold.status === "completed"],
+      ] as const)
+    : [];
+  const closed = hold && ["cancelled", "rejected", "expired"].includes(hold.status);
+  const current = closed ? -1 : steps.findIndex(([, done]) => !done);
   return (
     <div className="cms-hold-workspace">
       <section className="cms-request-browser" aria-label="Request list">
         <label className="cms-search">
           <Search size={17} />
           <input
+            type="search"
             aria-label="Search hold requests"
             placeholder="Name, email or reference"
             value={query}
@@ -338,26 +404,37 @@ export function AdminHolds({
               className="cms-request-summary"
               aria-pressed={selected === h.id}
               disabled={busy}
-              onClick={() => selectHold(h.id)}
+              onClick={() => void selectHold(h.id)}
             >
               <span className="cms-request-top">
-                <strong>{h.name}</strong>
-                <ArrowRight size={15} />
+                <span
+                  className="cms-avatar"
+                  data-tone={selected === h.id ? undefined : "soft"}
+                  aria-hidden="true"
+                >
+                  {initials(h.name)}
+                </span>
+                <span>
+                  <strong>{h.name}</strong>
+                  <small>
+                    {storeDate(h.created_at)} · {h.hold_request_items.length}{" "}
+                    {h.hold_request_items.length === 1 ? "card" : "cards"}
+                  </small>
+                </span>
               </span>
-              <small>
-                {storeDate(h.created_at)} · Ref {h.id.slice(0, 8).toUpperCase()}
-              </small>
-              <span>
-                {h.hold_request_items.length} cards · <b>{holdTotal(h)}</b>
-              </span>
-              <span className="cms-badge" data-status={h.status}>
-                {holdLabel(h)}
+              <span className="cms-request-meta">
+                <span className="cms-badge" data-status={h.status}>
+                  {holdLabel(h)}
+                </span>
+                <strong className="cms-money">{holdTotal(h)}</strong>
               </span>
             </button>
           ))}
           {!visible.length && (
-            <div className="cms-empty">
-              <Inbox size={26} />
+            <div className="cms-empty cms-empty-compact">
+              <span className="cms-empty-icon">
+                <Inbox size={22} />
+              </span>
               <p>
                 {holds.length
                   ? "No requests match this search."
@@ -390,108 +467,141 @@ export function AdminHolds({
         <small className="cms-muted">Showing the latest 200 requests.</small>
       </section>
       {hold ? (
-        <section
-          ref={detailRef}
-          className="cms-request-detail"
-          aria-label={`Request from ${hold.name}`}
-        >
-          <header className="cms-request-detail-heading">
-            <div>
-              <h2>{hold.name}</h2>
-              <span className="cms-badge" data-status={hold.status}>
-                {holdLabel(hold)}
+        <>
+          <section
+            ref={detailRef}
+            className="cms-request-detail"
+            aria-label={`Request from ${hold.name}`}
+          >
+            <header className="cms-request-head">
+              <span className="cms-avatar" data-size="lg" aria-hidden="true">
+                {initials(hold.name)}
               </span>
-              <a href={`mailto:${hold.email}`}>{hold.email}</a>
-              <small>
-                Requested {storeDate(hold.created_at, true)} (Melbourne) · Ref{" "}
-                {hold.id.slice(0, 8).toUpperCase()}
-              </small>
+              <div>
+                <h2>{hold.name}</h2>
+                <a href={`mailto:${hold.email}`}>{hold.email}</a>
+                <small>
+                  Requested {storeDate(hold.created_at, true)} (Melbourne) · Ref{" "}
+                  {holdRef(hold)}
+                </small>
+              </div>
+              <div className="cms-request-total">
+                <span className="cms-badge" data-status={hold.status}>
+                  {holdLabel(hold)}
+                </span>
+                <span>Order total</span>
+                <strong>{holdTotal(hold)}</strong>
+              </div>
+              <ol className="cms-progress" aria-label="Order progress">
+                {steps.map(([label, done], i) => (
+                  <li
+                    key={label}
+                    data-state={done ? "done" : i === current ? "current" : "todo"}
+                  >
+                    {label}
+                    {i === current ? " · now" : ""}
+                  </li>
+                ))}
+              </ol>
+            </header>
+            <div className="cms-panel cms-stack">
+              <h3>Cards in this request</h3>
+              <ul className="cms-request-items">
+                {hold.hold_request_items.map((item) => (
+                  <li key={item.card_id}>
+                    <span className="cms-thumb" aria-hidden="true">
+                      <Layers size={16} />
+                    </span>
+                    <div>
+                      <strong>{item.name}</strong>
+                      <small>{item.card_id}</small>
+                    </div>
+                    <span className="cms-money">
+                      {hold.currency}{" "}
+                      {(item.price_cents / 100).toLocaleString("en-AU", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {hold.note && (
+                <div className="cms-customer-note">
+                  <strong>Message from customer</strong>
+                  <p>{hold.note}</p>
+                </div>
+              )}
             </div>
-            <div className="cms-request-detail-total">
-              <span>Total</span>
-              <strong>{holdTotal(hold)}</strong>
-            </div>
-          </header>
-          <div className="cms-request-detail-body">
-            <ol className="cms-workflow-progress" aria-label="Order progress">
-              {[
-                ["Requested", true],
-                ["Accepted", ["accepted", "completed"].includes(hold.status)],
-                ["Paid", hold.payment_status === "paid"],
-                [
-                  "Fulfilment",
-                  ["ready", "shipped", "delivered", "picked_up"].includes(
-                    hold.fulfillment_status || "",
-                  ),
-                ],
-                ["Completed", hold.status === "completed"],
-              ].map(([label, done]) => (
-                <li key={String(label)} data-done={done}>
-                  <span>{done ? <Check size={12} /> : null}</span>
-                  {label}
-                </li>
-              ))}
-            </ol>
-            <h3>Cards in this request</h3>
-            <ul className="cms-request-items">
-              {hold.hold_request_items.map((item) => (
-                <li key={item.card_id}>
-                  <div>
-                    <strong>{item.name}</strong>
-                    <small>{item.card_id}</small>
-                  </div>
-                  <span>
-                    {hold.currency}{" "}
-                    {(item.price_cents / 100).toLocaleString("en-AU", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            {hold.note && (
-              <div className="cms-customer-note">
-                <strong>Message from customer</strong>
-                <p>{hold.note}</p>
+            {["accepted", "completed", "cancelled"].includes(hold.status) && (
+              <WorkflowEditor
+                key={hold.id}
+                hold={hold}
+                busy={busy}
+                onSave={onSave}
+                onDirtyChange={setDirty}
+                onTransition={onTransition}
+              />
+            )}
+            {hold.status === "pending" && (
+              <div className="cms-workflow-form">
+                <div className="cms-hold-footer">
+                  <p>Accepting reserves these cards for {hold.name}.</p>
+                  <button
+                    disabled={busy}
+                    className="cms-btn cms-btn-danger"
+                    onClick={() => onTransition(hold, "rejected")}
+                  >
+                    Reject
+                  </button>
+                  <button
+                    disabled={busy}
+                    className="cms-btn cms-btn-primary"
+                    onClick={() => onTransition(hold, "accepted")}
+                  >
+                    Accept &amp; reserve
+                  </button>
+                </div>
               </div>
             )}
-          </div>
-          {["accepted", "completed", "cancelled"].includes(hold.status) && (
-            <WorkflowEditor
-              key={hold.id}
-              hold={hold}
-              busy={busy}
-              onSave={onSave}
-              onDirtyChange={setDirty}
-              onTransition={onTransition}
-            />
-          )}
-          {hold.status === "pending" && (
-            <div className="cms-hold-footer">
-              <p>Accepting this request reserves its cards.</p>
-              <div className="cms-actions">
-                <button
-                  disabled={busy}
-                  className="cms-btn cms-btn-danger"
-                  onClick={() => onTransition(hold, "rejected")}
-                >
-                  Reject
-                </button>
-                <button
-                  disabled={busy}
-                  className="cms-btn cms-btn-primary"
-                  onClick={() => onTransition(hold, "accepted")}
-                >
-                  Accept & reserve
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
+          </section>
+          <aside className="cms-hold-rail" aria-label="Request timeline">
+            {awaitingPayment(hold) && (
+              <DeadlineCard hold={hold} busy={busy} onSave={onSave} />
+            )}
+            <section className="cms-panel">
+              <h2>History</h2>
+              {history.length ? (
+                <ol className="cms-history">
+                  {history.map((entry) => (
+                    <li key={entry.id}>
+                      <i />
+                      <span>
+                        <strong>
+                          {historyLabels[entry.to_status] || entry.to_status}
+                        </strong>
+                        {entry.note && <small>{entry.note}</small>}
+                        <small>
+                          {storeDate(entry.created_at, true)} ·{" "}
+                          {actorLabels[entry.actor_kind] || entry.actor_kind}
+                        </small>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="cms-muted">
+                  Requested {storeDate(hold.created_at, true)}.
+                </p>
+              )}
+            </section>
+          </aside>
+        </>
       ) : (
-        <section className="cms-panel cms-empty">
-          <Inbox size={32} />
+        <section className="cms-panel cms-empty cms-request-detail">
+          <span className="cms-empty-icon">
+            <Inbox size={24} />
+          </span>
           <h2>Select a request</h2>
           <p>
             Review a customer&apos;s cards, payment, and delivery details here.

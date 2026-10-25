@@ -3,6 +3,10 @@ import type Stripe from "stripe";
 import { z } from "zod";
 import { stripeClient, stripePaymentsConfigured } from "../../../../lib/stripe";
 import { serviceClient, sessionClient } from "../../../../lib/supabase/server";
+import {
+  belowCardPaymentMinimum,
+  belowMinimumMessage,
+} from "../../../../lib/cms/payments";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,7 +16,17 @@ const schema = z.object({
   idempotencyKey: z.string().uuid(),
 });
 
+// A zero total fails the payment_attempts amount check before Stripe is
+// called; a small positive total is refused by Stripe as amount_too_small.
+function isBelowMinimum(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  return error.message === belowMinimumMessage ||
+    error.message.includes("amount_cents_check") ||
+    (error as { code?: string }).code === "amount_too_small";
+}
+
 function errorMessage(error: unknown) {
+  if (isBelowMinimum(error)) return belowMinimumMessage;
   if (error instanceof Error && error.message.includes("Stripe payments are not configured"))
     return "Online payment is not configured yet. Please contact the store.";
   if (error instanceof Error && /already been paid|Only accepted|expired|Request not found|payment is due|being prepared|being confirmed|at least 31 minutes/i.test(error.message))
@@ -22,6 +36,7 @@ function errorMessage(error: unknown) {
 
 function errorStatus(error: unknown) {
   if (error instanceof z.ZodError) return 400;
+  if (isBelowMinimum(error)) return 409;
   if (error instanceof Error && error.message.includes("Stripe payments are not configured")) return 503;
   if (error instanceof Error && /already been paid|Only accepted|expired|Request not found|payment is due|being prepared|being confirmed|at least 31 minutes/i.test(error.message)) return 409;
   return 502;
@@ -78,6 +93,8 @@ export async function POST(request: NextRequest) {
       if (!payment?.attemptId || !payment?.holdId || !payment?.amountCents || !items.length)
         throw new Error("Payment details are unavailable");
       creatingSession = true;
+      if (belowCardPaymentMinimum(String(payment.currency), Number(payment.amountCents)))
+        throw new Error(belowMinimumMessage);
       const { data: hold, error: holdError } = await db.from("hold_requests")
         .select("expires_at").eq("id", payment.holdId).single();
       if (holdError || !hold?.expires_at) throw new Error("This hold has expired");
@@ -139,7 +156,9 @@ export async function POST(request: NextRequest) {
       await db.rpc("cms_fail_stripe_payment", {
         p_attempt_id: attemptId,
         p_status: "failed",
-        p_reason: "Checkout session creation failed",
+        p_reason: isBelowMinimum(error)
+          ? "Order total is below the card payment minimum"
+          : "Checkout session creation failed",
       });
     }
     return NextResponse.json({ error: errorMessage(error) }, { status: errorStatus(error) });

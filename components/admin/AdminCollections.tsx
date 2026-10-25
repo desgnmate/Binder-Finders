@@ -2,9 +2,9 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowUp,
   BookOpen,
+  ChevronRight,
   Plus,
   Search,
   X,
@@ -12,6 +12,7 @@ import {
 import type { AdminCardSummary, Collection } from "../../lib/cms/types";
 import { SaveBar } from "./SaveBar";
 import { slugify } from "./presentation";
+import { useConfirm } from "./ConfirmDialog";
 
 const pickerLimit = 100;
 
@@ -31,6 +32,7 @@ function CollectionEditor({
   const [draft, setDraft] = useState(collection);
   const [idTouched, setIdTouched] = useState(Boolean(collection.id));
   const [query, setQuery] = useState("");
+  const confirm = useConfirm();
   const search = useDeferredValue(query).trim().toLowerCase();
   const isNew = !collection.updatedAt;
   const dirty = JSON.stringify(draft) !== JSON.stringify(collection);
@@ -48,8 +50,19 @@ function CollectionEditor({
       ),
     [cards, search],
   );
-  function close() {
-    if (!dirty || window.confirm("Discard your unsaved changes?")) onClose();
+  async function close() {
+    if (
+      !dirty ||
+      (await confirm({
+        title: "Leave without saving?",
+        body: `Your changes to ${draft.name || "this collection"} haven't been saved and will be lost.`,
+        confirmLabel: "Discard changes",
+        cancelLabel: "Keep editing",
+        tone: "danger",
+        icon: "edit",
+      }))
+    )
+      onClose();
   }
   function move(index: number, offset: number) {
     const next = [...draft.cardIds];
@@ -74,11 +87,25 @@ function CollectionEditor({
       }}
     >
       <div className="cms-editor-heading">
-        <button type="button" className="cms-back" onClick={close}>
-          <ArrowLeft size={16} /> Collections
-        </button>
-        <h1>{isNew ? "New collection" : draft.name || "Edit collection"}</h1>
-        <p>Choose which cards appear together, and in what order.</p>
+        <div>
+          <nav className="cms-breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li>
+                <button type="button" onClick={() => void close()}>
+                  Collections
+                </button>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} />
+              </li>
+              <li aria-current="page">
+                {isNew ? "New collection" : collection.name}
+              </li>
+            </ol>
+          </nav>
+          <h1>{isNew ? "New collection" : draft.name || "Edit collection"}</h1>
+          <p>Choose which cards appear together, and in what order.</p>
+        </div>
       </div>
       <fieldset disabled={busy}>
         <section className="cms-panel">
@@ -185,7 +212,7 @@ function CollectionEditor({
                 })}
               </ol>
             ) : (
-              <p className="cms-empty cms-empty-compact">
+              <p className="cms-empty cms-empty-compact" data-variant="search">
                 No cards yet. Pick cards from the list to add them here.
               </p>
             )}
@@ -236,7 +263,7 @@ function CollectionEditor({
         dirty={dirty}
         message={dirty ? "Unsaved changes" : "No changes yet"}
       >
-        <button type="button" className="cms-btn" onClick={close}>
+        <button type="button" className="cms-btn" onClick={() => void close()}>
           Cancel
         </button>
         <button className="cms-btn cms-btn-primary" disabled={busy}>
@@ -280,10 +307,12 @@ export function AdminCollections({
   if (!collections.length)
     return (
       <section className="cms-panel cms-empty">
-        <BookOpen size={28} />
+        <span className="cms-empty-icon">
+          <BookOpen size={24} />
+        </span>
         <h2>No collections yet</h2>
         <p>Group cards by set, era or theme so collectors can browse them.</p>
-        <div className="cms-actions cms-empty-actions">
+        <div className="cms-actions">
           <button
             className="cms-btn cms-btn-primary"
             onClick={() =>
@@ -300,7 +329,7 @@ export function AdminCollections({
       {collections.map((c) => (
         <article className="cms-collection-card" key={c.id}>
           <div>
-            <span className="cms-collection-order">#{c.sortOrder}</span>
+            <span className="cms-collection-order">Position {c.sortOrder}</span>
             <h2>{c.name}</h2>
             <p>
               {c.cardIds.length} {c.cardIds.length === 1 ? "card" : "cards"}

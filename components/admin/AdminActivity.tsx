@@ -49,7 +49,7 @@ function describe(entry: AuditEntry) {
     title: `${tableLabels[entry.table_name] || entry.table_name} ${entry.old_data ? "updated" : "created"}`,
     subject,
     changed: changed.map((key) =>
-      key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase(),
+      key.replace(/_cents$/, "").replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase(),
     ),
   };
 }
@@ -81,8 +81,10 @@ export function AdminActivity({
         ))}
       </div>
       {!visible.length && (
-        <div className="cms-empty">
-          <History size={26} />
+        <div className="cms-empty" data-variant="search">
+          <span className="cms-empty-icon">
+            <History size={22} />
+          </span>
           <p>
             {audit.length
               ? "No changes of this type in the latest 100."

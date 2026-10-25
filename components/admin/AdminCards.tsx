@@ -1,6 +1,18 @@
 "use client";
-import { memo, useDeferredValue, useMemo, useState } from "react";
-import { Layers, Search } from "lucide-react";
+import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Archive,
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  Layers,
+  MoreHorizontal,
+  PencilLine,
+  Search,
+} from "lucide-react";
 import type { CMSCard } from "../../lib/cms/types";
 import { updateQuery } from "./presentation";
 
@@ -23,14 +35,140 @@ function filterFor(value: string | null) {
   return listingFilters.find(([id]) => id === value) || listingFilters[0];
 }
 
+type RowActions = {
+  onEdit: (card: CMSCard) => void;
+  onDuplicate: (card: CMSCard) => void;
+  onSetPublication: (
+    card: CMSCard,
+    publication: CMSCard["publication"],
+  ) => void;
+};
+
+function RowMenu({
+  card,
+  busy,
+  actions,
+}: {
+  card: CMSCard;
+  busy: boolean;
+  actions: RowActions;
+}) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const pointer = (e: MouseEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const keydown = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", pointer);
+    window.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("mousedown", pointer);
+      window.removeEventListener("keydown", keydown);
+    };
+  }, [open]);
+  const choose = (action: () => void) => () => {
+    setOpen(false);
+    action();
+  };
+  return (
+    <div ref={root}>
+      <button
+        type="button"
+        className="cms-round"
+        data-tone="soft"
+        aria-label={`More actions for ${card.name}`}
+        aria-haspopup="true"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        <MoreHorizontal size={17} />
+      </button>
+      {open && (
+        <div
+          className="cms-menu cms-row-menu"
+          role="menu"
+          aria-label={`${card.name} actions`}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            className="cms-menu-item"
+            onClick={choose(() => actions.onEdit(card))}
+          >
+            <PencilLine size={17} />
+            Edit listing
+          </button>
+          {card.publication !== "published" && card.imageUrl && (
+            <button
+              type="button"
+              role="menuitem"
+              className="cms-menu-item"
+              disabled={busy}
+              onClick={choose(() => actions.onSetPublication(card, "published"))}
+            >
+              <Check size={17} />
+              Publish now
+            </button>
+          )}
+          <button
+            type="button"
+            role="menuitem"
+            className="cms-menu-item"
+            onClick={choose(() => actions.onDuplicate(card))}
+          >
+            <Copy size={17} />
+            Duplicate as draft
+          </button>
+          {card.publication === "published" && (
+            <a
+              role="menuitem"
+              className="cms-menu-item"
+              href={`/shop?card=${encodeURIComponent(card.id)}`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+            >
+              <ExternalLink size={17} />
+              View on storefront
+            </a>
+          )}
+          {card.publication !== "archived" &&
+            card.availability !== "reserved" && (
+              <>
+                <span className="cms-menu-sep" role="separator" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="cms-menu-item"
+                  data-tone="danger"
+                  disabled={busy}
+                  onClick={choose(() =>
+                    actions.onSetPublication(card, "archived"),
+                  )}
+                >
+                  <Archive size={17} />
+                  Archive
+                </button>
+              </>
+            )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const CardsTable = memo(function CardsTable({
   cards,
   currency,
-  onEdit,
+  busy,
+  actions,
 }: {
   cards: CMSCard[];
   currency: string;
-  onEdit: (card: CMSCard) => void;
+  busy: boolean;
+  actions: RowActions;
 }) {
   const formatter = useMemo(
     () =>
@@ -42,7 +180,7 @@ const CardsTable = memo(function CardsTable({
 
   return (
     <div className="cms-scroll">
-      <table>
+      <table className="cms-table cms-cards-table">
         <thead>
           <tr>
             <th>Card</th>
@@ -51,7 +189,7 @@ const CardsTable = memo(function CardsTable({
             <th>Publication</th>
             <th>Availability</th>
             <th>
-              <span className="cms-visually-hidden">Action</span>
+              <span className="cms-visually-hidden">Actions</span>
             </th>
           </tr>
         </thead>
@@ -60,45 +198,46 @@ const CardsTable = memo(function CardsTable({
             <tr key={card.id}>
               <td>
                 <div className="cms-card-cell">
-                  {card.imageUrl ? (
-                    <img
-                      src={card.imageUrl}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <span
-                      className="cms-scan-placeholder"
-                      aria-label="No scan uploaded"
-                    >
-                      <Layers size={18} />
-                      <small>{card.number}</small>
-                    </span>
-                  )}
+                  <span className="cms-thumb" aria-hidden="true">
+                    {card.imageUrl ? (
+                      <img
+                        src={card.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      card.number
+                    )}
+                  </span>
                   <div>
                     <button
                       type="button"
                       className="cms-row-link"
                       tabIndex={-1}
-                      onClick={() => onEdit(card)}
+                      onClick={() => actions.onEdit(card)}
                     >
                       {card.name}
                     </button>
                     <small>
                       {card.set} · {card.number}
+                      {card.imageUrl ? "" : " · no scan yet"}
                     </small>
                   </div>
                 </div>
               </td>
-              <td>{card.condition}</td>
-              <td className="cms-money">{formatter.format(card.price)}</td>
-              <td>
+              <td data-label="Condition">
+                <span className="cms-chip">{card.condition}</span>
+              </td>
+              <td data-label="Price" className="cms-money">
+                {formatter.format(card.price)}
+              </td>
+              <td data-label="Publication">
                 <span className="cms-badge" data-status={card.publication}>
                   {card.publication}
                 </span>
               </td>
-              <td>
+              <td data-label="Availability">
                 <span className="cms-badge" data-status={card.availability}>
                   {card.availability === "reserved"
                     ? "On hold"
@@ -106,13 +245,16 @@ const CardsTable = memo(function CardsTable({
                 </span>
               </td>
               <td className="cms-row-action">
-                <button
-                  className="cms-btn"
-                  onClick={() => onEdit(card)}
-                  aria-label={`Edit ${card.name} ${card.id}`}
-                >
-                  Edit
-                </button>
+                <div>
+                  <RowMenu card={card} busy={busy} actions={actions} />
+                  <button
+                    className="cms-round"
+                    onClick={() => actions.onEdit(card)}
+                    aria-label={`Edit ${card.name} ${card.id}`}
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -147,22 +289,24 @@ function PageControls({
       <div>
         <button
           type="button"
-          className="cms-btn"
+          className="cms-round"
+          data-tone="soft"
+          aria-label="Previous page"
           disabled={page === 0}
           onClick={() => onChange(page - 1)}
         >
-          Previous
+          <ChevronLeft size={16} />
         </button>
-        <span>
-          Page {page + 1} of {pageCount}
-        </span>
+        <span aria-current="page">{page + 1}</span>
+        <span>of {pageCount}</span>
         <button
           type="button"
-          className="cms-btn"
+          className="cms-round"
+          aria-label="Next page"
           disabled={page + 1 >= pageCount}
           onClick={() => onChange(page + 1)}
         >
-          Next
+          <ChevronRight size={16} />
         </button>
       </div>
     </nav>
@@ -175,23 +319,35 @@ export function AdminCards({
   cards,
   currency,
   initialFilter,
+  initialQuery = "",
   hidden,
+  busy = false,
   onEdit,
   onAdd,
+  onDuplicate = () => undefined,
+  onSetPublication = () => undefined,
 }: {
   cards: CMSCard[];
   currency: string;
   initialFilter: string | null;
+  initialQuery?: string;
   hidden: boolean;
+  busy?: boolean;
   onEdit: (card: CMSCard) => void;
   onAdd: () => void;
+  onDuplicate?: RowActions["onDuplicate"];
+  onSetPublication?: RowActions["onSetPublication"];
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [filter, setFilter] = useState(() => filterFor(initialFilter)[0]);
   const [sort, setSort] = useState("recent");
   const [page, setPage] = useState(0);
   const normalizedQuery = useDeferredValue(query).trim().toLowerCase();
   const matches = filterFor(filter)[2];
+  const actions = useMemo(
+    () => ({ onEdit, onDuplicate, onSetPublication }),
+    [onEdit, onDuplicate, onSetPublication],
+  );
   const visibleCards = useMemo(
     () =>
       [...cards]
@@ -227,12 +383,13 @@ export function AdminCards({
   }
 
   return (
-    <section className="cms-panel cms-cards-panel" hidden={hidden}>
-      <div className="cms-listing-tabs" aria-label="Listing status">
+    <section aria-label="Listings" hidden={hidden}>
+      <div className="cms-tabs" aria-label="Listing status">
         {listingFilters.map(([value, label]) => (
           <button
             key={value}
             type="button"
+            className="cms-tab"
             aria-pressed={filter === value}
             onClick={() => chooseFilter(value)}
           >
@@ -241,84 +398,103 @@ export function AdminCards({
           </button>
         ))}
       </div>
-      <div className="cms-toolbar">
-        <label className="cms-search">
-          <Search size={17} />
-          <input
-            aria-label="Search cards"
-            type="search"
-            placeholder="Search name, set, number or listing ID…"
-            value={query}
-            onChange={(e) => {
-              setPage(0);
-              setQuery(e.target.value);
-            }}
+      <div className="cms-panel cms-tabbed cms-cards-panel">
+        <div className="cms-toolbar">
+          <label className="cms-search">
+            <Search size={17} />
+            <input
+              aria-label="Search cards"
+              type="search"
+              placeholder="Search name, set, number or listing ID…"
+              value={query}
+              onChange={(e) => {
+                setPage(0);
+                setQuery(e.target.value);
+              }}
+            />
+          </label>
+          <label className="cms-sort">
+            Sort
+            <select
+              aria-label="Sort listings"
+              value={sort}
+              onChange={(e) => {
+                setPage(0);
+                setSort(e.target.value);
+              }}
+            >
+              <option value="recent">Newest listings</option>
+              <option value="name">Name A–Z</option>
+              <option value="price-low">Price: low to high</option>
+              <option value="price-high">Price: high to low</option>
+            </select>
+          </label>
+        </div>
+        {visibleCards.length > 0 ? (
+          <CardsTable
+            cards={visibleCards.slice(page * pageSize, (page + 1) * pageSize)}
+            currency={currency}
+            busy={busy}
+            actions={actions}
           />
-        </label>
-        <select
-          aria-label="Sort listings"
-          value={sort}
-          onChange={(e) => {
-            setPage(0);
-            setSort(e.target.value);
-          }}
-        >
-          <option value="recent">Newest listings</option>
-          <option value="name">Name A–Z</option>
-          <option value="price-low">Price: low to high</option>
-          <option value="price-high">Price: high to low</option>
-        </select>
-      </div>
-      <CardsTable
-        cards={visibleCards.slice(page * pageSize, (page + 1) * pageSize)}
-        currency={currency}
-        onEdit={onEdit}
-      />
-      {!visibleCards.length && (
-        <div className="cms-empty">
-          <Layers size={26} />
-          <p>
-            {cards.length
-              ? "No listings match this search or status."
-              : "No listings yet. Add your first card to start selling."}
-          </p>
-          <div className="cms-actions cms-empty-actions">
-            {(query || filter !== "all") && (
+        ) : (
+          <div
+            className="cms-empty"
+            data-variant={cards.length ? "search" : undefined}
+          >
+            <span className="cms-empty-icon">
+              {cards.length ? <Search size={24} /> : <Layers size={24} />}
+            </span>
+            <strong>
+              {cards.length
+                ? query
+                  ? `No listings match “${query}”`
+                  : "No listings with this status"
+                : "No listings yet"}
+            </strong>
+            <span>
+              {cards.length
+                ? "Try another name or set, or clear the filters."
+                : "Add your first card to start selling."}
+            </span>
+            <div className="cms-actions">
+              {(query || filter !== "all") && (
+                <button
+                  type="button"
+                  className="cms-btn"
+                  onClick={() => {
+                    setQuery("");
+                    chooseFilter("all");
+                  }}
+                >
+                  Clear filters
+                </button>
+              )}
               <button
                 type="button"
-                className="cms-btn"
-                onClick={() => {
-                  setQuery("");
-                  chooseFilter("all");
-                }}
+                className="cms-btn cms-btn-primary"
+                onClick={onAdd}
               >
-                Clear filters
+                Add card
               </button>
-            )}
-            <button
-              type="button"
-              className="cms-btn cms-btn-primary"
-              onClick={onAdd}
-            >
-              Add card
-            </button>
+            </div>
           </div>
-        </div>
-      )}
-      <PageControls
-        page={page}
-        pageSize={pageSize}
-        total={visibleCards.length}
-        label="listings"
-        onChange={setPage}
-      />
-      {visibleCards.length > 0 && visibleCards.length <= pageSize && (
-        <p className="cms-muted cms-table-footnote">
-          {visibleCards.length}{" "}
-          {visibleCards.length === 1 ? "listing" : "listings"}
-          {cards.length === 1000 ? " · Showing the latest 1,000" : ""}
-        </p>
-      )}
+        )}
+        <PageControls
+          page={page}
+          pageSize={pageSize}
+          total={visibleCards.length}
+          label="listings"
+          onChange={setPage}
+        />
+        {visibleCards.length > 0 && visibleCards.length <= pageSize && (
+          <p className="cms-table-footnote">
+            {visibleCards.length}{" "}
+            {visibleCards.length === 1 ? "listing" : "listings"}
+            {cards.length === 1000 ? " · Showing the latest 1,000" : ""}
+          </p>
+        )}
+      </div>
     </section>
   );
 }
