@@ -32,3 +32,33 @@ export function storeDate(value: string, withTime = false) {
     timeZone: "Australia/Melbourne",
   }).format(new Date(value));
 }
+
+export function slugify(value: string, maxLength: number) {
+  return value
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, maxLength)
+    .replace(/-+$/, "");
+}
+
+// Admin sub-states (editor open, list filter) live in the query string so the
+// browser back button and refresh behave as expected. Next keeps
+// useSearchParams in sync with these native history calls.
+export function updateQuery(
+  changes: Record<string, string | null>,
+  mode: "push" | "replace" = "replace",
+) {
+  const params = new URLSearchParams(window.location.search);
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+  }
+  window.history[mode === "push" ? "pushState" : "replaceState"](
+    null,
+    "",
+    `?${params}`,
+  );
+}

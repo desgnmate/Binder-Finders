@@ -17,6 +17,7 @@ jest.mock("next/navigation", () => ({
     push: jest.fn(),
     prefetch: jest.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 jest.mock("../../../lib/supabase/browser", () => ({
   browserClient: jest.fn(),

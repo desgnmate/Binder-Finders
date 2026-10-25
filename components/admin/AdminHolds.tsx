@@ -250,6 +250,7 @@ export function AdminHolds({
   const [selected, setSelected] = useState(initialHoldId || holds[0]?.id || "");
   const [dirty, setDirty] = useState(false);
   const handledDeepLink = useRef(initialHoldId);
+  const detailRef = useRef<HTMLElement>(null);
   const [page, setPage] = useState(0);
   const search = useDeferredValue(query).trim().toLowerCase();
   const filterMatches = (hold: Hold, value: string) =>
@@ -286,6 +287,11 @@ export function AdminHolds({
       return;
     setDirty(false);
     setSelected(id);
+    // On narrow screens the detail sits below the list; bring it into view.
+    if (window.matchMedia?.("(max-width: 700px)").matches)
+      requestAnimationFrame(() =>
+        detailRef.current?.scrollIntoView?.({ behavior: "smooth" }),
+      );
   }
   return (
     <div className="cms-hold-workspace">
@@ -385,6 +391,7 @@ export function AdminHolds({
       </section>
       {hold ? (
         <section
+          ref={detailRef}
           className="cms-request-detail"
           aria-label={`Request from ${hold.name}`}
         >
