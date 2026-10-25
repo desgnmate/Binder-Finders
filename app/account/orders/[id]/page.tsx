@@ -7,6 +7,10 @@ import { stripePaymentsConfigured } from "../../../../lib/stripe";
 import { CancelHoldButton } from "../../../../components/account/CancelHoldButton";
 import { PayHoldButton } from "../../../../components/account/PayHoldButton";
 import {
+  belowCardPaymentMinimum,
+  belowMinimumMessage,
+} from "../../../../lib/cms/payments";
+import {
   daysLeft,
   formatDate,
   formatMoney,
@@ -234,7 +238,12 @@ export default async function CustomerOrderDetail({
               <strong>Payment note:</strong> {data.payment_failure_reason}
             </p>
           )}
-          {canPay && <PayHoldButton id={data.id} enabled={stripePaymentsConfigured()} />}
+          {canPay &&
+            (belowCardPaymentMinimum(data.currency, total) ? (
+              <p className="ac-note">{belowMinimumMessage}</p>
+            ) : (
+              <PayHoldButton id={data.id} enabled={stripePaymentsConfigured()} />
+            ))}
           <hr className="ac-divider" />
           <div className="ac-pay__row">
             <span>Fulfilment</span>

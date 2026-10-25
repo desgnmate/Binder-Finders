@@ -9,7 +9,7 @@ export default async function LoginPage({
   return (
     <>
       {searchParams.error === "access" && (
-        <div role="alert" className="cms-notice cms-warning">
+        <div role="alert" className="cms-banner" data-tone="warning">
           Your account does not have administrator access. Ask the store owner
           to grant access.
         </div>

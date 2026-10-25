@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./admin.css";
-const outfit = Outfit({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-admin",
@@ -15,5 +15,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className={`cms ${outfit.variable}`}>{children}</div>;
+  return <div className={`cms ${jakarta.variable}`}>{children}</div>;
 }

@@ -79,7 +79,6 @@ it("keeps completed-order controls available and saves shipping details", async 
       fulfillmentStatus: "shipped",
       paymentReference: "payment-1",
       fulfillmentNote: "Tracking ABC",
-      expiresAt: "",
     }),
   );
   expect(mockRefresh).toHaveBeenCalled();
@@ -128,7 +127,6 @@ it("opens the requested hold and protects unsaved edits when switching requests"
     name: "Second buyer",
     payment_reference: "second-reference",
   };
-  const confirm = jest.spyOn(window, "confirm").mockReturnValue(false);
   render(
     <AdminConsole {...props} holds={[hold, other]} initialHoldId={other.id} />,
   );
@@ -139,17 +137,26 @@ it("opens the requested hold and protects unsaved edits when switching requests"
     target: { value: "unsaved" },
   });
   fireEvent.click(screen.getByRole("button", { name: /Test buyer/ }));
-  expect(confirm).toHaveBeenCalledWith(
-    "Discard unsaved changes to this request?",
+  const dialog = await screen.findByRole("alertdialog", {
+    name: "Discard unsaved changes to this request?",
+  });
+  // The safe choice has focus, so Enter never discards by accident.
+  expect(within(dialog).getByRole("button", { name: "Keep editing" })).toHaveFocus();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Keep editing" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
   );
   expect(screen.getByLabelText("Payment reference")).toHaveValue("unsaved");
-  confirm.mockReturnValue(true);
   fireEvent.click(screen.getByRole("button", { name: /Test buyer/ }));
+  fireEvent.click(
+    within(await screen.findByRole("alertdialog")).getByRole("button", {
+      name: "Discard changes",
+    }),
+  );
   expect(
-    screen.getByRole("region", { name: "Request from Test buyer" }),
+    await screen.findByRole("region", { name: "Request from Test buyer" }),
   ).toBeInTheDocument();
   expect(screen.getByLabelText("Payment reference")).toHaveValue("payment-1");
-  confirm.mockRestore();
 });
 
 it("keeps all requests reachable through filters and reports empty searches", () => {
@@ -168,7 +175,7 @@ it("keeps all requests reachable through filters and reports empty searches", ()
     screen.queryByRole("button", { name: /Test buyer/ }),
   ).not.toBeInTheDocument();
   fireEvent.change(
-    screen.getByRole("textbox", { name: "Search hold requests" }),
+    screen.getByRole("searchbox", { name: "Search hold requests" }),
     { target: { value: "does not match" } },
   );
   expect(
@@ -270,4 +277,29 @@ it("filters and sorts listings without changing their data", () => {
   expect(screen.getByText("Second card")).toBeInTheDocument();
   expect(screen.queryByText("First card")).not.toBeInTheDocument();
   expect(mockUpdate).not.toHaveBeenCalled();
+});
+
+it("asks for confirmation in a modal before accepting a request", async () => {
+  render(
+    <AdminConsole
+      {...props}
+      holds={[{ ...hold, status: "pending", payment_status: "unpaid" }]}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Accept & reserve" }));
+  const dialog = await screen.findByRole("dialog", {
+    name: "Accept and reserve these cards?",
+  });
+  expect(within(dialog).getByText("Test card")).toBeInTheDocument();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+  expect(mockUpdate).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Accept & reserve" }));
+  fireEvent.click(
+    within(await screen.findByRole("dialog")).getByRole("button", {
+      name: "Accept & reserve",
+    }),
+  );
+  await waitFor(() =>
+    expect(mockUpdate).toHaveBeenCalledWith(hold.id, { status: "accepted" }),
+  );
 });
