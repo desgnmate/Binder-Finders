@@ -19,15 +19,29 @@ body:has(.cms) [data-music-loading] { display: none; }
   --danger: #b42318;
   --danger-solid: #c4321c;
   min-height: 100svh;
-  padding: 16px;
   box-sizing: border-box;
-  background: var(--canvas);
+  background: var(--frame);
   color: var(--ink);
   font-family: var(--font-admin), system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.5;
 }
 .cms *, .cms *::before, .cms *::after { box-sizing: border-box; }
+
+/* Scrollbars: slim rounded pills that float over the surface they scroll,
+   dark on light panels and light on the black sidebar. */
+@supports not selector(::-webkit-scrollbar) {
+  html:has(.cms) { scrollbar-width: thin; scrollbar-color: #c3c6cd #f5f6f8; }
+  .cms * { scrollbar-width: thin; scrollbar-color: #c3c6cd transparent; }
+  .cms-nav, .cms-nav * { scrollbar-color: #3a3d42 transparent; }
+}
+html:has(.cms)::-webkit-scrollbar, .cms ::-webkit-scrollbar { width: 10px; height: 10px; }
+html:has(.cms)::-webkit-scrollbar-track { background: #f5f6f8; }
+.cms ::-webkit-scrollbar-track, .cms ::-webkit-scrollbar-corner { background: transparent; }
+html:has(.cms)::-webkit-scrollbar-thumb, .cms ::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: #c3c6cd padding-box; }
+html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:hover { background-color: #9ea2aa; }
+.cms-nav::-webkit-scrollbar-thumb { background-color: #3a3d42; }
+.cms-nav::-webkit-scrollbar-thumb:hover { background-color: #55585e; }
 :where(.cms) :is(button, input, select, textarea) { font: inherit; color: inherit; }
 .cms button, .cms a { touch-action: manipulation; }
 .cms button { cursor: pointer; }
@@ -51,8 +65,8 @@ body:has(.cms) [data-music-loading] { display: none; }
 .cms-wide { grid-column: 1 / -1; }
 
 /* Shell ------------------------------------------------------------------ */
-.cms-app { display: flex; gap: 18px; min-height: calc(100svh - 32px); padding: 14px; border-radius: 32px; background: var(--frame); }
-.cms-nav { position: sticky; top: 30px; align-self: flex-start; width: 248px; flex-shrink: 0; height: calc(100svh - 60px); overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 24px 14px 16px; border-radius: 24px; background: var(--ink); color: #fff; scrollbar-width: thin; }
+.cms-app { display: flex; gap: 18px; min-height: 100svh; padding: 14px; background: var(--frame); }
+.cms-nav { position: sticky; top: 14px; align-self: flex-start; width: 248px; flex-shrink: 0; height: calc(100svh - 28px); overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 24px 14px 16px; border-radius: 24px; background: var(--ink); color: #fff; }
 .cms-nav-drawer-heading { display: flex; align-items: center; gap: 12px; padding: 0 6px 22px; }
 .cms-brand-mark { width: 38px; height: 38px; flex-shrink: 0; display: grid; place-items: center; border-radius: 12px; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 14px; text-decoration: none; }
 .cms-brand-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -423,7 +437,7 @@ body:has(.cms) [data-music-loading] { display: none; }
 .cms-hold-workspace { display: grid; grid-template-columns: 280px minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
 .cms-request-browser { position: sticky; top: 30px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 24px; background: #fff; }
 .cms-request-browser .cms-search { flex: none; }
-.cms-request-list { display: grid; gap: 8px; max-height: calc(100svh - 330px); min-height: 120px; overflow-y: auto; scrollbar-width: thin; }
+.cms-request-list { display: grid; gap: 8px; max-height: calc(100svh - 330px); min-height: 120px; overflow-y: auto; }
 .cms-request-summary { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 14px; border: 0; border-radius: 18px; background: var(--soft); text-align: left; }
 .cms-request-summary:hover:not(:disabled) { background: #f0f1f4; }
 .cms-request-summary[aria-pressed="true"] { background: var(--yellow-soft); }
@@ -586,8 +600,7 @@ body:has(.cms) [data-music-loading] { display: none; }
   .cms-request-list { max-height: 420px; }
 }
 @media (max-width: 960px) {
-  .cms { padding: 0; }
-  .cms-app { min-height: 100svh; padding: 12px; border-radius: 0; }
+  .cms-app { padding: 12px; }
   .cms-nav { position: fixed; inset: 0 auto 0 0; z-index: 90; width: min(304px, 86vw); height: 100svh; padding: 18px 14px; border-radius: 0 28px 28px 0; transform: translateX(-102%); visibility: hidden; transition: transform 0.2s ease, visibility 0s 0.2s; }
   .cms-nav[data-open="true"] { transform: none; visibility: visible; transition: transform 0.2s ease; }
   .cms-icon-btn.cms-nav-close { display: inline-grid; background: var(--dark-3); color: #fff; }
