@@ -98,7 +98,13 @@ function WorkflowEditor({
       className="cms-workflow-form"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (await onSave(hold, { ...draft }))
+        // Send only what was edited, so a stale page never overwrites a
+        // payment the customer completed after it loaded.
+        const loaded = initialWorkflow(hold);
+        const changed = Object.fromEntries(
+          Object.entries(draft).filter(([key, value]) => value !== loaded[key as keyof Workflow]),
+        );
+        if (await onSave(hold, changed))
           setBaseline(JSON.stringify(draft));
       }}
     >
@@ -170,7 +176,7 @@ function WorkflowEditor({
         </fieldset>
       </div>
       <div className="cms-hold-footer">
-        {hold.status === "accepted" && (
+        {hold.status === "accepted" && hold.payment_status !== "paid" && (
           <button
             type="button"
             className="cms-btn cms-btn-danger"

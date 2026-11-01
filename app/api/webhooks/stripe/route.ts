@@ -12,8 +12,10 @@ function sessionData(event: Stripe.Event) {
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   const signature = request.headers.get("stripe-signature");
-  if (!secret || !signature)
+  if (!secret)
     return Response.json({ error: "Webhook is not configured" }, { status: 503 });
+  if (!signature)
+    return Response.json({ error: "Missing webhook signature" }, { status: 400 });
 
   let event: Stripe.Event;
   try {

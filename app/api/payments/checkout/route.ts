@@ -6,6 +6,7 @@ import { serviceClient, sessionClient } from "../../../../lib/supabase/server";
 import {
   belowCardPaymentMinimum,
   belowMinimumMessage,
+  stripeUnitAmount,
 } from "../../../../lib/cms/payments";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +63,12 @@ export async function POST(request: NextRequest) {
     const stripe = stripeClient();
     const payload = schema.parse(await request.json());
     db = serviceClient();
+    // Refuse a too-short hold before creating a payment attempt, so the order
+    // is not left marked "failed" as if the customer's card had declined.
+    const { data: current } = await db.from("hold_requests")
+      .select("expires_at").eq("id", payload.holdId).single();
+    if (current?.expires_at && new Date(current.expires_at).getTime() - Date.now() < 31 * 60_000)
+      throw new Error("At least 31 minutes must remain on the hold to start payment. Please contact the store to extend it.");
     const { data: payment, error: beginError } = await db.rpc("cms_begin_stripe_payment", {
       p_hold_id: payload.holdId,
       p_customer_user_id: user.id,
@@ -113,7 +120,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
           price_data: {
             currency: String(payment.currency).toLowerCase(),
-            unit_amount: item.priceCents,
+            unit_amount: stripeUnitAmount(String(payment.currency), item.priceCents),
             product_data: { name: item.name.slice(0, 250) },
           },
         })),

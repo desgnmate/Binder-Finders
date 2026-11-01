@@ -15,7 +15,6 @@ import {
   Layers,
   BookOpen,
   Inbox,
-  Type,
   SlidersHorizontal,
   History,
   Plus,
@@ -107,7 +106,6 @@ const navigation = [
   ["cards", "Cards", Layers, "Sell"],
   ["holds", "Hold requests", Inbox, "Sell"],
   ["collections", "Collections", BookOpen, "Sell"],
-  ["content", "Website content", Type, "Store"],
   ["settings", "Settings", SlidersHorizontal, "Store"],
   ["activity", "Activity", History, "Store"],
 ] as const;

@@ -55,6 +55,13 @@ it("creates a session from server-side prices and attaches it", async () => {
   }), { idempotencyKey: `binderfinders-payment-${idempotencyKey}` });
   expect(mockRpc).toHaveBeenCalledWith("cms_attach_stripe_session", { p_attempt_id: attemptId, p_session_id: "cs_test_new" });
 });
+it("charges a JPY hold in whole yen", async () => {
+  rpcs({ data: { ...created, currency: "jpy", amountCents: 500000, items: [{ name: "Charizard", priceCents: 500000 }] }, error: null });
+  expect((await POST(request())).status).toBe(200);
+  expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(expect.objectContaining({
+    line_items: [expect.objectContaining({ price_data: expect.objectContaining({ currency: "jpy", unit_amount: 5000 }) })],
+  }), expect.anything());
+});
 it("reuses an open session instead of creating another", async () => {
   rpcs({ data: { ...created, state: "existing", sessionId: "cs_test_open" }, error: null });
   mockStripe.checkout.sessions.retrieve.mockResolvedValue({ id: "cs_test_open", status: "open", url: "https://checkout.stripe.test/open" });

@@ -74,10 +74,9 @@ it("keeps completed-order controls available and saves shipping details", async 
   );
   fireEvent.click(screen.getByRole("button", { name: "Save workflow" }));
   await waitFor(() =>
+    // Only edited fields are sent, so a stale page cannot undo a payment.
     expect(mockUpdate).toHaveBeenCalledWith(hold.id, {
-      paymentStatus: "paid",
       fulfillmentStatus: "shipped",
-      paymentReference: "payment-1",
       fulfillmentNote: "Tracking ABC",
     }),
   );
@@ -208,9 +207,10 @@ it("does not offer completion before payment and fulfilment are recorded", () =>
     target: { value: "unsaved" },
   });
   expect(screen.getByRole("button", { name: "Complete sale" })).toBeDisabled();
+  // A paid hold must be refunded before it can be cancelled.
   expect(
-    screen.getByRole("button", { name: "Cancel & release" }),
-  ).toBeDisabled();
+    screen.queryByRole("button", { name: "Cancel & release" }),
+  ).not.toBeInTheDocument();
 });
 
 it("shows the real Stripe configuration and links to the specific request", () => {
