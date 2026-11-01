@@ -2,6 +2,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin, serviceClient } from "../../lib/supabase/server";
+import { closeOpenCheckouts } from "../../lib/stripe-reconciliation";
 import {
   cardSchema,
   collectionSchema,
@@ -95,6 +96,8 @@ export async function updateHoldWorkflow(id: string, input: unknown) {
       })
       .parse(input);
     z.string().uuid().parse(id);
+    if (values.status === "cancelled" || values.status === "rejected")
+      await closeOpenCheckouts(id);
     const { error } = await db.rpc("cms_set_hold_workflow", {
       p_id: id,
       p_status: values.status ?? null,

@@ -78,7 +78,8 @@ export default async function CustomerOrderDetail({
     data.status === "accepted" &&
     ["unpaid", "pending", "failed"].includes(data.payment_status || "unpaid") &&
     !!data.expires_at &&
-    new Date(data.expires_at).getTime() > Date.now() &&
+    // Stripe Checkout needs 30 minutes; the API refuses anything shorter.
+    new Date(data.expires_at).getTime() - Date.now() > 31 * 60_000 &&
     query.payment !== "success";
 
   const status = holdStatus(data.status);
@@ -94,6 +95,19 @@ export default async function CustomerOrderDetail({
   let nextLine: React.ReactNode = null;
   if (data.status === "pending") {
     nextLine = "We're checking your cards. We'll email you once they're reserved.";
+  } else if (
+    data.status === "accepted" &&
+    data.payment_status !== "pending" &&
+    query.payment !== "success" &&
+    !["paid", "refunded"].includes(data.payment_status || "unpaid") &&
+    !!data.expires_at &&
+    new Date(data.expires_at).getTime() > Date.now() &&
+    !canPay
+  ) {
+    nextLine = "Less than 30 minutes are left on this hold, which isn't enough time for secure checkout. Contact the store to extend it.";
+  } else if (data.status === "accepted" && data.payment_status === "pending" && !canPay) {
+    // Back from Stripe: the pay button is hidden while the webhook lands.
+    nextLine = "We're waiting for Stripe to confirm your payment. Refresh this page in a minute.";
   } else if (data.status === "accepted" && data.payment_status === "pending") {
     nextLine = "Checkout is in progress. You can reopen it below; cancellation is available after it finishes or expires.";
   } else if (canPay && data.expires_at) {

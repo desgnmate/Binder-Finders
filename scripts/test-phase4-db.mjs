@@ -12,6 +12,7 @@ const migrations = [
   "202609270001_phase4_stripe_payments.sql",
   "202609280001_phase4_checkout_safety.sql",
   "202610240001_phase4_payment_retry_fix.sql",
+  "202611020001_hold_payment_integrity.sql",
 ];
 await db.exec(`
   create role anon;
@@ -129,9 +130,10 @@ await addCard("phase4-card-3");
 await addCard("phase4-card-4");
 const paidAtDeadline = await acceptedHold("phase4-card-3");
 const expiredAtDeadline = await acceptedHold("phase4-card-4");
-await as("authenticated", owner);
+// Simulate holds reaching their deadline (admins can no longer set one this short).
+await as("postgres");
 for (const id of [paidAtDeadline, expiredAtDeadline]) {
-  await db.query("select public.cms_set_hold_deadline($1,now()+interval '1 second')", [id]);
+  await db.query("update public.hold_requests set expires_at=now()+interval '1 second' where id=$1", [id]);
 }
 await as("service_role");
 const paidAttempt = (await db.query("select public.cms_begin_stripe_payment($1,$2,$3) as result", [paidAtDeadline, customer, crypto.randomUUID()])).rows[0].result;
@@ -155,5 +157,60 @@ await as("postgres");
 assert.equal((await db.query("select status,payment_status from public.hold_requests where id=$1", [paidAtDeadline])).rows[0].payment_status, "paid");
 assert.equal((await db.query("select status from public.hold_requests where id=$1", [expiredAtDeadline])).rows[0].status, "expired");
 
+// ── Payment integrity guards ─────────────────────────────────────────────
+const workflow = (id, status, payment, reference = null) => db.query(
+  "select public.cms_set_hold_workflow($1,$2,$3,null,$4,null)", [id, status, payment, reference]);
+
+// A stale admin save cannot undo a Stripe payment or clear its reference.
+await as("authenticated", owner);
+await assert.rejects(workflow(holdId, null, "unpaid"), /paid through Stripe/);
+await db.query("select public.cms_set_hold_workflow($1,null,null,'shipped',null,'Tracking 1')", [holdId]);
+await as("postgres");
+paid = (await db.query("select payment_status,payment_reference from public.hold_requests where id=$1", [holdId])).rows[0];
+assert.equal(paid.payment_status, "paid");
+assert.equal(paid.payment_reference, "pi_test_phase4_1");
+
+// A paid hold cannot be cancelled until it is refunded, and then it can.
+await as("authenticated", owner);
+await assert.rejects(workflow(holdId, "cancelled", null), /Refund the payment/);
+await workflow(holdId, "cancelled", "refunded");
+await as("postgres");
+const refunded = (await db.query("select status,payment_status from public.hold_requests where id=$1", [holdId])).rows[0];
+assert.deepEqual(refunded, { status: "cancelled", payment_status: "refunded" });
+assert.equal((await db.query("select availability from public.cards where id='phase4-card-1'")).rows[0].availability, "available");
+
+// No manual payment or completion while the customer has Checkout open.
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-5");
+const openHold = await acceptedHold("phase4-card-5");
+await as("service_role");
+const openAttempt = (await db.query("select public.cms_begin_stripe_payment($1,$2,$3) as result", [openHold, customer, crypto.randomUUID()])).rows[0].result;
+await db.query("select public.cms_attach_stripe_session($1,$2)", [openAttempt.attemptId, "cs_test_phase4_open"]);
+await as("authenticated", owner);
+await assert.rejects(workflow(openHold, null, "paid", "cash"), /Stripe checkout open/);
+await db.query("select public.cms_set_hold_workflow($1,null,null,'ready',null,null)", [openHold]);
+
+// The hold always leaves the customer at least 31 minutes to pay.
+await addCard("phase4-card-6");
+const shortHold = await acceptedHold("phase4-card-6");
+await as("authenticated", owner);
+await assert.rejects(
+  db.query("select public.cms_set_hold_deadline($1,now()+interval '10 minutes')", [shortHold]),
+  /at least 31 minutes/,
+);
+await db.query("select public.cms_set_hold_deadline($1,now()+interval '2 hours')", [shortHold]);
+
+// A late expiry event for an old session leaves the newer Checkout untouched.
+await as("service_role");
+const oldAttempt = (await db.query("select public.cms_begin_stripe_payment($1,$2,$3) as result", [shortHold, customer, crypto.randomUUID()])).rows[0].result;
+await db.query("select public.cms_attach_stripe_session($1,$2)", [oldAttempt.attemptId, "cs_test_phase4_old"]);
+await db.query("select public.cms_fail_stripe_payment($1,'expired','Checkout session expired')", [oldAttempt.attemptId]);
+const newAttempt = (await db.query("select public.cms_begin_stripe_payment($1,$2,$3) as result", [shortHold, customer, crypto.randomUUID()])).rows[0].result;
+await db.query("select public.cms_attach_stripe_session($1,$2)", [newAttempt.attemptId, "cs_test_phase4_new"]);
+await db.query("select public.cms_record_stripe_webhook($1,$2,$3,$4,$5,$6,$7)", ["evt_phase4_late_old", "checkout.session.expired", oldAttempt.attemptId, "cs_test_phase4_old", null, "expired", "Stripe checkout session expired"]);
+await as("postgres");
+assert.equal((await db.query("select payment_status from public.hold_requests where id=$1", [shortHold])).rows[0].payment_status, "pending");
+
 await db.close();
-console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout.");
+console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, and payment integrity guards.");

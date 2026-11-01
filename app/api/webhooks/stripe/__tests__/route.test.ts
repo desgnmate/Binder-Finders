@@ -19,7 +19,10 @@ beforeEach(() => {
 });
 afterAll(() => { process.env = originalEnv; });
 it("rejects unsigned and badly signed requests", async () => {
-  expect((await POST(request(null))).status).toBe(503);
+  expect((await POST(request(null))).status).toBe(400);
+  delete process.env.STRIPE_WEBHOOK_SECRET;
+  expect((await POST(request())).status).toBe(503);
+  process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_only";
   mockConstructEvent.mockImplementation(() => { throw new Error("No signatures found"); });
   expect((await POST(request())).status).toBe(400);
   expect(mockRpc).not.toHaveBeenCalled();
