@@ -34,7 +34,7 @@ export function HeroNav() {
         aria-label="Primary"
         data-nav-pill="true"
         data-nav-type-scale="umano"
-        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-white px-4 py-3 md:px-6 md:py-5 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
+        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-white px-4 py-2 md:pl-6 md:pr-2.5 md:py-2 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
       >
         <div className="flex items-center justify-between gap-4">
           <Link
@@ -44,12 +44,12 @@ export function HeroNav() {
             <img
               src="/images/logo.png"
               alt="BinderFinders Logo"
-              className="h-7 w-auto object-contain [image-rendering:auto]"
+              className="h-6 w-auto object-contain [image-rendering:auto]"
             />
           </Link>
 
-          <div className="flex items-center gap-4 md:gap-6">
-            <ul className="hidden md:flex items-center gap-6 font-body text-base font-semibold text-ink-black">
+          <div className="flex items-center gap-3 md:gap-5">
+            <ul className="hidden md:flex items-center gap-4 font-body text-[15px] font-semibold text-ink-black">
               {NAV_ITEMS.map((item) => (
                 <li key={item.label}>
                   <Link
@@ -65,15 +65,15 @@ export function HeroNav() {
             <Link
               href="/checkout"
               aria-label="My Bag"
-              className="flex h-12 w-12 items-center justify-center p-2 text-ink-black transition-all duration-200 hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
+              className="flex h-11 w-11 items-center justify-center p-2 text-ink-black transition-all duration-200 hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
             >
-              <ShoppingBag size={22} strokeWidth={2} aria-hidden="true" />
+              <ShoppingBag size={20} strokeWidth={2} aria-hidden="true" />
             </Link>
 
             <Link
               href="/account"
               aria-label="Account"
-              className="flex h-10 w-10 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full border-2 border-ink-black bg-ink-black p-2 sm:px-3.5 sm:py-2.5 text-white transition-all duration-200 hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+              className="flex h-10 w-10 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full border-2 border-ink-black bg-ink-black p-2 sm:px-4 sm:py-2 text-white transition-all duration-200 hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
             >
               <UserRound size={16} aria-hidden="true" />
               <span className="hidden sm:inline text-sm font-semibold">Account</span>

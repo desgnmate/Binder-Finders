@@ -342,8 +342,8 @@ export function AdminHolds({
       return;
     setDirty(false);
     setSelected(id);
-    // On narrow screens the detail sits below the list; bring it into view.
-    if (window.matchMedia?.("(max-width: 1100px)").matches)
+    // On narrow screens (no laptop zoom) the detail sits below the list; bring it into view.
+    if (window.matchMedia?.("(max-width: 960px)").matches)
       requestAnimationFrame(() =>
         detailRef.current?.scrollIntoView?.({ behavior: "smooth" }),
       );

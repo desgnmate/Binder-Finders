@@ -18,7 +18,14 @@ body:has(.cms) [data-music-loading] { display: none; }
   --dark-3: #2a2c30;
   --danger: #b42318;
   --danger-solid: #c4321c;
-  min-height: 100svh;
+  /* Laptop screens get the whole manager at a smaller scale (see the media
+     queries below). Zoom also scales viewport units, so full-window sizes
+     divide it back out. */
+  --cms-zoom: 1;
+  --screen-h: calc(100svh / var(--cms-zoom));
+  --screen-w: calc(100vw / var(--cms-zoom));
+  zoom: var(--cms-zoom);
+  min-height: var(--screen-h);
   box-sizing: border-box;
   background: var(--frame);
   color: var(--ink);
@@ -65,8 +72,8 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 .cms-wide { grid-column: 1 / -1; }
 
 /* Shell ------------------------------------------------------------------ */
-.cms-app { display: flex; gap: 18px; min-height: 100svh; padding: 14px; background: var(--frame); }
-.cms-nav { position: sticky; top: 14px; align-self: flex-start; width: 248px; flex-shrink: 0; height: calc(100svh - 28px); overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 24px 14px 16px; border-radius: 24px; background: var(--ink); color: #fff; }
+.cms-app { display: flex; gap: 18px; min-height: var(--screen-h); padding: 14px; background: var(--frame); }
+.cms-nav { position: sticky; top: 14px; align-self: flex-start; width: 248px; flex-shrink: 0; height: calc(var(--screen-h) - 28px); overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding: 24px 14px 16px; border-radius: 24px; background: var(--ink); color: #fff; }
 .cms-nav-drawer-heading { display: flex; align-items: center; gap: 12px; padding: 0 6px 22px; }
 .cms-brand-mark { width: 38px; height: 38px; flex-shrink: 0; display: grid; place-items: center; border-radius: 12px; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 14px; text-decoration: none; }
 .cms-brand-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -119,7 +126,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 /* Dropdown menus */
 .cms-popover { position: relative; }
 .cms-menu { position: absolute; top: calc(100% + 10px); right: 0; z-index: 50; width: 300px; padding: 8px; border-radius: 22px; background: #fff; box-shadow: 0 18px 44px rgba(20, 21, 23, 0.18); display: flex; flex-direction: column; }
-.cms-menu-wide { width: 400px; max-width: calc(100vw - 32px); }
+.cms-menu-wide { width: 400px; max-width: calc(var(--screen-w) - 32px); }
 .cms-menu-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 8px; }
 .cms-menu-head h2 { font-size: 16px; }
 .cms-menu-account { display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 4px; border-radius: 16px; background: var(--ink); color: #fff; }
@@ -283,7 +290,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 .cms-banner[data-tone="warning"] { background: #fff4d6; color: #6b3d00; }
 .cms-banner[data-tone="error"] { background: #fef3f2; color: #8e1f12; }
 .cms-banner[data-tone="success"] { background: #e3f4e8; color: #1e5a35; }
-.cms-toast { position: fixed; right: 24px; bottom: 24px; z-index: 80; display: flex; align-items: center; gap: 12px; width: min(440px, calc(100vw - 32px)); padding: 12px 12px 12px 14px; border-radius: 18px; background: var(--ink); color: #fff; box-shadow: 0 12px 30px rgba(20, 21, 23, 0.25); font-size: 14px; font-weight: 600; }
+.cms-toast { position: fixed; right: 24px; bottom: 24px; z-index: 80; display: flex; align-items: center; gap: 12px; width: min(440px, calc(var(--screen-w) - 32px)); padding: 12px 12px 12px 14px; border-radius: 18px; background: var(--ink); color: #fff; box-shadow: 0 12px 30px rgba(20, 21, 23, 0.25); font-size: 14px; font-weight: 600; }
 .cms-toast > span:nth-child(2) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .cms-toast-icon { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #3ddc84; color: #0f3d22; }
 .cms-toast[role="alert"] .cms-toast-icon { background: #ff6b57; color: #3d0b04; }
@@ -313,7 +320,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 
 /* Modal */
 .cms-modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; background: rgba(20, 21, 23, 0.55); animation: cms-fade 0.12s ease-out; }
-.cms-modal { width: min(560px, 100%); max-height: calc(100svh - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 28px; border-radius: 28px; background: #fff; color: var(--ink); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3); }
+.cms-modal { width: min(560px, 100%); max-height: calc(var(--screen-h) - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 28px; border-radius: 28px; background: #fff; color: var(--ink); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3); }
 .cms-modal-head { display: flex; align-items: flex-start; gap: 14px; }
 .cms-modal-head > div { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .cms-modal-head h2 { font-size: 20px; }
@@ -437,7 +444,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 .cms-hold-workspace { display: grid; grid-template-columns: 280px minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
 .cms-request-browser { position: sticky; top: 30px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 24px; background: #fff; }
 .cms-request-browser .cms-search { flex: none; }
-.cms-request-list { display: grid; gap: 8px; max-height: calc(100svh - 330px); min-height: 120px; overflow-y: auto; }
+.cms-request-list { display: grid; gap: 8px; max-height: calc(var(--screen-h) - 330px); min-height: 120px; overflow-y: auto; }
 .cms-request-summary { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 14px; border: 0; border-radius: 18px; background: var(--soft); text-align: left; }
 .cms-request-summary:hover:not(:disabled) { background: #f0f1f4; }
 .cms-request-summary[aria-pressed="true"] { background: var(--yellow-soft); }
@@ -563,7 +570,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 .cms-activity details { margin-top: 8px; }
 
 /* Sign in */
-.cms-auth { min-height: calc(100svh - 32px); display: grid; place-items: center; padding: 24px; border-radius: 32px; background: var(--frame); }
+.cms-auth { min-height: calc(var(--screen-h) - 32px); display: grid; place-items: center; padding: 24px; border-radius: 32px; background: var(--frame); }
 .cms-auth-box { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; padding: 32px; border-radius: 28px; background: #fff; box-shadow: 0 24px 60px rgba(20, 21, 23, 0.08); }
 .cms-auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; color: var(--ink); text-decoration: none; }
 .cms-auth-brand .cms-brand-text small { color: var(--muted); }
@@ -575,7 +582,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 .cms > .cms-banner { max-width: 440px; margin: 0 auto 16px; }
 
 /* Loading skeleton */
-.cms-loading { display: flex; gap: 18px; min-height: calc(100svh - 32px); padding: 14px; border-radius: 32px; background: var(--frame); }
+.cms-loading { display: flex; gap: 18px; min-height: calc(var(--screen-h) - 32px); padding: 14px; border-radius: 32px; background: var(--frame); }
 .cms-loading-nav { width: 248px; flex-shrink: 0; border-radius: 24px; background: var(--ink); }
 .cms-loading-main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 8px; }
 .cms-loading-main > span, .cms-loading-stats > span { display: block; border-radius: 22px; background: #fff; animation: cms-pulse 1.1s ease-in-out infinite alternate; }
@@ -588,11 +595,16 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 @keyframes cms-spin { to { transform: rotate(360deg); } }
 @keyframes cms-fade { from { background-color: rgba(20, 21, 23, 0); } }
 
-@media (max-width: 1400px) {
+/* Laptop scaling. Breakpoints below compare the real window width, so the
+   ones that switch layouts allow for the extra room the zoom creates. */
+@media (min-width: 961px) and (max-width: 1439px) { .cms { --cms-zoom: 0.75; } }
+@media (min-width: 1440px) and (max-width: 1679px) { .cms { --cms-zoom: 0.85; } }
+
+@media (max-width: 1050px) {
   .cms-hold-workspace { grid-template-columns: 280px minmax(0, 1fr); }
   .cms-hold-rail { grid-column: 2; }
 }
-@media (max-width: 1100px) {
+@media (max-width: 960px) {
   .cms-hold-workspace { grid-template-columns: minmax(0, 1fr); }
   .cms-hold-rail { grid-column: 1; }
   .cms-collection-columns { grid-template-columns: minmax(0, 1fr); }
@@ -601,7 +613,7 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 }
 @media (max-width: 960px) {
   .cms-app { padding: 12px; }
-  .cms-nav { position: fixed; inset: 0 auto 0 0; z-index: 90; width: min(304px, 86vw); height: 100svh; padding: 18px 14px; border-radius: 0 28px 28px 0; transform: translateX(-102%); visibility: hidden; transition: transform 0.2s ease, visibility 0s 0.2s; }
+  .cms-nav { position: fixed; inset: 0 auto 0 0; z-index: 90; width: min(304px, 86vw); height: var(--screen-h); padding: 18px 14px; border-radius: 0 28px 28px 0; transform: translateX(-102%); visibility: hidden; transition: transform 0.2s ease, visibility 0s 0.2s; }
   .cms-nav[data-open="true"] { transform: none; visibility: visible; transition: transform 0.2s ease; }
   .cms-icon-btn.cms-nav-close { display: inline-grid; background: var(--dark-3); color: #fff; }
   .cms-nav-close:hover:not(:disabled) { background: #3a3d42; }
@@ -613,8 +625,8 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
   .cms-title { flex: 1; }
   .cms-topsearch { display: none; }
   .cms-settings-section { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .cms-auth { min-height: 100svh; border-radius: 0; }
-  .cms-loading { padding: 12px; border-radius: 0; min-height: 100svh; }
+  .cms-auth { min-height: var(--screen-h); border-radius: 0; }
+  .cms-loading { padding: 12px; border-radius: 0; min-height: var(--screen-h); }
   .cms-loading-nav { display: none; }
 }
 @media (max-width: 700px) {
