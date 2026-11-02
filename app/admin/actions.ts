@@ -14,6 +14,14 @@ function refresh() {
   revalidatePath("/admin");
 }
 function message(error: unknown) {
+  // A ZodError's message is its JSON issue list; show the first issue instead.
+  if (error instanceof z.ZodError) {
+    const issue = error.issues[0];
+    const field = issue?.path.join(" ");
+    return issue
+      ? `${field ? `Check ${field}: ` : ""}${issue.message}`
+      : "Some details are missing or invalid.";
+  }
   return error instanceof Error
     ? error.message
     : "The change could not be saved. Please try again.";

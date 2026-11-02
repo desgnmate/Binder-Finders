@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Lock } from "lucide-react";
-import { daysLeft, formatDate, formatMoney, holdStatus, paymentStatus, shortId } from "./status";
+import { formatDate, formatDeadline, formatMoney, holdStatus, paymentStatus, shortId, timeLeft } from "./status";
 
 export type RecentHold = {
   id: string;
@@ -132,7 +132,7 @@ export function AccountOverview({
                     <p className="ac-px">Request {shortId(nextUp.id)}</p>
                     {nextUp.expires_at && (
                       <p className="ac-nextup__deadline">
-                        Pay by {formatDate(nextUp.expires_at)} · {daysLeft(nextUp.expires_at) === 1 ? "1 day" : `${daysLeft(nextUp.expires_at)} days`} left
+                        Pay by {formatDeadline(nextUp.expires_at)} · {timeLeft(nextUp.expires_at)} left
                       </p>
                     )}
                   </div>

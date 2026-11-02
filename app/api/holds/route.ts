@@ -47,7 +47,15 @@ export async function POST(req: NextRequest) {
     const text = await req.text();
     if (text.length > 12000)
       return NextResponse.json({ error: "Request too large" }, { status: 413 });
-    const payload = schema.parse(JSON.parse(text));
+    const parsed = schema.parse(JSON.parse(text));
+    // Emails for the hold go to the verified account, never to an address
+    // typed into the form.
+    if (!user.email)
+      return NextResponse.json(
+        { error: "Add an email address to your account before requesting a hold." },
+        { status: 403 },
+      );
+    const payload = { ...parsed, email: user.email.toLowerCase() };
     const ip = process.env.VERCEL
       ? req.headers.get("x-vercel-forwarded-for") || "unknown"
       : "local";

@@ -52,6 +52,18 @@ function initialWorkflow(hold: Hold): Workflow {
     fulfillmentNote: hold.fulfillment_note || "",
   };
 }
+const completedFulfillment = ["ready", "shipped", "delivered", "picked_up"];
+// Mirrors cms_set_hold_workflow: only an accepted hold takes payment and
+// delivery changes; completed and cancelled ones may only become refunded.
+function workflowOptions(hold: Hold) {
+  const payment = hold.payment_status || "unpaid";
+  const fulfillment = hold.fulfillment_status || "not_ready";
+  if (hold.status === "accepted")
+    return { payment: [...paymentStatuses] as string[], fulfillment: [...fulfillmentStatuses] as string[] };
+  const refundable = [...new Set([payment, "refunded"])];
+  if (hold.status === "completed") return { payment: refundable, fulfillment: completedFulfillment };
+  return { payment: refundable, fulfillment: [fulfillment] };
+}
 function localInput(value?: string | null) {
   const date = value ? new Date(value) : null;
   return date && Number.isFinite(date.getTime())
@@ -87,6 +99,7 @@ function WorkflowEditor({
     onDirtyChange(dirty);
   }, [dirty, onDirtyChange]);
   useEffect(() => () => onDirtyChange(false), [onDirtyChange]);
+  const options = workflowOptions(hold);
   const canComplete =
     hold.payment_status === "paid" &&
     ["ready", "shipped", "delivered", "picked_up"].includes(
@@ -119,7 +132,7 @@ function WorkflowEditor({
                 setDraft({ ...draft, paymentStatus: e.target.value })
               }
             >
-              {paymentStatuses.map((value) => (
+              {options.payment.map((value) => (
                 <option key={value} value={value}>
                   {value.charAt(0).toUpperCase() + value.slice(1)}
                 </option>
@@ -148,11 +161,12 @@ function WorkflowEditor({
             Fulfilment
             <select
               value={draft.fulfillmentStatus}
+              disabled={options.fulfillment.length < 2}
               onChange={(e) =>
                 setDraft({ ...draft, fulfillmentStatus: e.target.value })
               }
             >
-              {fulfillmentStatuses.map((value) => (
+              {options.fulfillment.map((value) => (
                 <option key={value} value={value}>
                   {(value.charAt(0).toUpperCase() + value.slice(1)).replaceAll(
                     "_",
@@ -189,8 +203,10 @@ function WorkflowEditor({
         <p>
           {dirty
             ? "Save your changes before completing or cancelling."
-            : hold.status !== "accepted"
-              ? "Update payment or delivery details for this request."
+            : hold.status === "cancelled"
+              ? "Cancelled. Record a refund here if one was issued."
+              : hold.status === "completed"
+                ? "Sale completed. Update delivery or record a refund."
               : !canComplete
                 ? "Record payment and prepare fulfilment to complete."
                 : "Payment recorded. Ready to complete the sale."}

@@ -66,6 +66,15 @@ export function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+/** Deadlines need the time too: a hold that ends at 9am is gone by evening. */
+export function formatDeadline(value: string) {
+  return new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Australia/Melbourne",
+  }).format(new Date(value));
+}
+
 export function formatMoney(currency: string, cents: number) {
   return `${currency} ${new Intl.NumberFormat("en-AU", {
     minimumFractionDigits: 2,
@@ -80,4 +89,14 @@ export function shortId(id: string) {
 /** Whole days left before a deadline, counting a partial day as one. */
 export function daysLeft(deadline: string, now = Date.now()) {
   return Math.max(0, Math.ceil((new Date(deadline).getTime() - now) / 86_400_000));
+}
+
+/** Time left before a deadline in its largest whole unit, e.g. "2 days" or "40 minutes". */
+export function timeLeft(deadline: string, now = Date.now()) {
+  const minutes = Math.max(0, Math.floor((new Date(deadline).getTime() - now) / 60_000));
+  const [value, unit] =
+    minutes >= 1440 ? [Math.floor(minutes / 1440), "day"]
+      : minutes >= 60 ? [Math.floor(minutes / 60), "hour"]
+        : [minutes, "minute"];
+  return `${value} ${unit}${value === 1 ? "" : "s"}`;
 }

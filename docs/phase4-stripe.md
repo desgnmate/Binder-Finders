@@ -56,6 +56,12 @@ of failing it (which could leave two payable sessions for one hold), refuses to
 reuse a finished attempt's key with Stripe, and acknowledges late webhooks for
 a superseded session instead of returning 500.
 
+Apply `supabase/migrations/202611020002_hold_workflow_integrity.sql` after
+`202611020001_hold_payment_integrity.sql`. It allows payment and delivery
+changes only on accepted holds, makes reconciliation rotate through overdue
+checkouts, releases refunded holds at their deadline, and stops emailing
+customers when checkout starts or is abandoned.
+
 The first two migrations have been applied to the BinderFinders Supabase production
 project. The second one completed successfully on 25 September 2026.
 

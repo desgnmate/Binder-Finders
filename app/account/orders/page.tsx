@@ -5,6 +5,7 @@ import { ArrowRight, Clock } from "lucide-react";
 import { sessionClient } from "../../../lib/supabase/server";
 import {
   formatDate,
+  formatDeadline,
   formatMoney,
   fulfilmentStatus,
   holdStatus,
@@ -171,7 +172,7 @@ export default async function CustomerOrdersPage({
                     {awaitingPayment && hold.expires_at && (
                       <span className="ac-deadline">
                         <Clock size={16} strokeWidth={2.4} aria-hidden="true" />
-                        Hold deadline: {formatDate(hold.expires_at)}
+                        Hold deadline: {formatDeadline(hold.expires_at)}
                       </span>
                     )}
                     {hold.status === "pending" && (

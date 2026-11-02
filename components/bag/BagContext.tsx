@@ -45,24 +45,32 @@ export function BagProvider({ children }: { children: ReactNode }) {
   const [cardIds, setCardIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load persisted ids on mount.
+  // Load persisted ids on mount, and follow changes made in other tabs so a
+  // bag cleared by a submitted request is not written back from a stale tab.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
+    const read = (raw: string | null) => {
+      try {
+        const parsed = raw ? JSON.parse(raw) : [];
         if (Array.isArray(parsed)) {
-          // Filter to valid card ids only.
+          // Keep string ids only, without duplicates.
           const valid = parsed.filter((id: unknown) => typeof id === "string");
-          // Deduplicate.
           setCardIds(Array.from(new Set(valid as string[])));
         }
+      } catch {
+        // Corrupt storage — ignore.
       }
+    };
+    try {
+      read(localStorage.getItem(STORAGE_KEY));
     } catch {
-      // Corrupt storage — ignore.
-    } finally {
-      setHydrated(true);
+      // Storage unavailable — start empty.
     }
+    setHydrated(true);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY) read(event.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   // Persist on change — but only after the initial hydration so we don't
