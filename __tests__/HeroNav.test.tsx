@@ -70,7 +70,7 @@ describe("HeroNav", () => {
     expect(nav.className).toMatch(/\bmx-auto\b/);
   });
 
-  it("applies the Umano nav type scale (text-base / font-semibold) and signals it via data-nav-type-scale='umano'", () => {
+  it("applies the compact nav type scale (15px / font-semibold) and signals it via data-nav-type-scale='umano'", () => {
     const { container } = render(<HeroNav />);
     const nav = screen.getByRole("navigation");
     expect(nav.getAttribute("data-nav-type-scale")).toBe("umano");
@@ -78,7 +78,7 @@ describe("HeroNav", () => {
     const list = nav.querySelector("ul") as HTMLElement | null;
     expect(list).not.toBeNull();
     const listClass = list!.className;
-    expect(listClass).toMatch(/\btext-base\b/);
+    expect(listClass).toMatch(/\btext-\[15px\]/);
     expect(listClass).toMatch(/\bfont-semibold\b/);
   });
 
@@ -89,21 +89,21 @@ describe("HeroNav", () => {
   //   (43px radius). Live-captured on 2026-06-18 at a 980px viewport.
   // ---------------------------------------------------------------------------
 
-  it("sizes the pill to Umano's ~80px height (py-5 vertical padding, not py-2)", () => {
+  it("keeps the pill slim (py-2 vertical padding, not the old py-5)", () => {
     const { container } = render(<HeroNav />);
     const nav = screen.getByRole("navigation");
     // Umano's nav pill is 81px tall. py-5 (20px) on each side of the ~39px
     // CTA gives ~79px, within 2px of Umano. The previous build used
     // py-2 (8px) which produced a 48px pill — almost half the size.
-    expect(nav.className).toMatch(/\bpy-5\b/);
-    expect(nav.className).not.toMatch(/\bpy-2\b/);
+    expect(nav.className).toMatch(/\bmd:py-2\b/);
+    expect(nav.className).not.toMatch(/\bpy-5\b/);
   });
 
-  it("spaces the nav items at Umano's 24px gap (gap-6, not gap-4)", () => {
+  it("spaces the nav items at a 16px gap (gap-4)", () => {
     const { container } = render(<HeroNav />);
     const list = screen.getByRole("navigation").querySelector("ul") as HTMLElement;
-    expect(list.className).toMatch(/\bgap-6\b/);
-    expect(list.className).not.toMatch(/\bgap-4\b/);
+    expect(list.className).toMatch(/\bgap-4\b/);
+    expect(list.className).not.toMatch(/\bgap-6\b/);
   });
 
   it("styles the nav links as Umano-style pill links (rounded-lg + px-2.5 py-1.5)", () => {
@@ -119,11 +119,11 @@ describe("HeroNav", () => {
   it("keeps the 'My Bag' action icon-only, prominent, and touch-sized", () => {
     const { container } = render(<HeroNav />);
     const myBag = screen.getByRole("link", { name: /My Bag/i });
-    expect(myBag.className).toMatch(/\bh-12\b/);
-    expect(myBag.className).toMatch(/\bw-12\b/);
+    expect(myBag.className).toMatch(/\bh-11\b/);
+    expect(myBag.className).toMatch(/\bw-11\b/);
     expect(myBag.textContent).toBe("");
     expect(myBag.className).not.toMatch(/\bbg-ink-black\b/);
-    expect(myBag.querySelector("svg")).toHaveAttribute("width", "22");
+    expect(myBag.querySelector("svg")).toHaveAttribute("width", "20");
   });
 
   it("uses a white background for the navigation bar", () => {
