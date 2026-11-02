@@ -47,7 +47,7 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
         <nav className="flex items-center gap-4 sm:gap-6 font-body text-sm font-semibold text-ink-black">
           <Link
             href="/pokedex"
-            className={`transition-colors hover:text-brand-blue ${
+            className={`inline-flex items-center transition-colors hover:text-brand-blue ${
               isPokedex
                 ? "underline decoration-4 underline-offset-4 decoration-brand-blue font-black"
                 : "text-ink-black/75 hover:opacity-100"
@@ -57,7 +57,7 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           </Link>
           <Link
             href="/#binder"
-            className="hidden sm:inline text-ink-black/75 transition-colors hover:text-brand-blue"
+            className="hidden sm:inline-flex items-center text-ink-black/75 transition-colors hover:text-brand-blue"
           >
             Binder
           </Link>
@@ -66,18 +66,18 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           <Link
             href="/checkout"
             aria-label={`My Bag (${count} cards)`}
-            className="inline-flex h-10 w-10 items-center justify-center p-2 text-ink-black hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
+            className="inline-flex h-11 w-11 items-center justify-center p-2 text-ink-black hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
           >
-            <ShoppingBag size={14} className="stroke-[2.5]" aria-hidden="true" />
+            <ShoppingBag size={20} strokeWidth={2} aria-hidden="true" />
           </Link>
 
           <Link
             href="/account"
             aria-label="Account"
-            className="inline-flex h-10 w-10 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full border-2 border-ink-black bg-ink-black p-2 sm:px-3.5 sm:py-1.5 text-white hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95 transition-all duration-150 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+            className="inline-flex h-10 w-10 sm:h-auto sm:w-auto items-center justify-center gap-1.5 rounded-full border-2 border-ink-black bg-ink-black p-2 sm:px-4 sm:py-2 text-white hover:bg-brand-blue hover:-translate-y-0.5 active:scale-95 transition-all duration-150 shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
           >
-            <UserRound size={15} className="stroke-[2.5]" aria-hidden="true" />
-            <span className="hidden sm:inline text-xs font-black">Account</span>
+            <UserRound size={16} aria-hidden="true" />
+            <span className="hidden sm:inline text-sm font-semibold">Account</span>
           </Link>
         </nav>
       </div>
