@@ -141,7 +141,7 @@ export function BinderSection() {
             </p>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <div className="mb-3 flex items-center justify-between gap-4">
               <span className="font-retro text-[8px] uppercase tracking-widest text-white/35">
                 Select era
@@ -154,7 +154,7 @@ export function BinderSection() {
             <div
               role="tablist"
               aria-label="Binder eras"
-              className="grid gap-2 sm:grid-cols-3"
+              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {BINDER_TABS.map((tab) => {
                 const active = tab.id === activeTabId;
@@ -165,9 +165,9 @@ export function BinderSection() {
                     aria-selected={active}
                     data-binder-tab={tab.id}
                     onClick={() => setActiveTabId(tab.id)}
-                    className={`rounded-2xl border px-4 py-3 text-left font-body text-sm font-bold transition-all duration-200 ${active
-                      ? "border-brand-yellow bg-brand-yellow text-ink-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.22)]"
-                      : "border-white/15 bg-white/5 text-white/55 hover:border-white/35 hover:bg-white/10 hover:text-white"
+                    className={`shrink-0 whitespace-nowrap rounded-full border-2 px-4 py-2 font-body text-sm font-bold transition-colors duration-200 ${active
+                      ? "border-brand-yellow bg-brand-yellow text-ink-black"
+                      : "border-white/20 bg-transparent text-white/70 hover:border-white/50 hover:text-white"
                       }`}
                   >
                     {tab.label}
