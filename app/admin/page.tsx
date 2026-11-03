@@ -102,6 +102,7 @@ export default async function AdminPage({
   let settingsUpdatedAt = "";
   let holds: Hold[] = [];
   let audit: AuditEntry[] = [];
+  let orderAlertEmail = "";
   let admins: {
     user_id: string;
     email: string;
@@ -261,7 +262,7 @@ export default async function AdminPage({
     settingsUpdatedAt = settingsRow.data.updated_at;
     pendingHoldCount = pending.count || 0;
   } else if (view === "settings") {
-    const [settingsRow, adminRows, pending] = await Promise.all([
+    const [settingsRow, adminRows, pending, alertEmail] = await Promise.all([
       db
         .from("store_settings")
         .select("data,updated_at")
@@ -272,11 +273,14 @@ export default async function AdminPage({
         .from("hold_requests")
         .select("id", { count: "exact", head: true })
         .eq("status", "pending"),
+      db.rpc("cms_get_order_alert_email"),
     ]);
     if (settingsRow.error || adminRows.error || pending.error)
       return <DatabaseSetup />;
     settings = settingsSchema.parse(settingsRow.data.data);
     settingsUpdatedAt = settingsRow.data.updated_at;
+    // Older databases without the private setting still load the page.
+    orderAlertEmail = alertEmail.error ? "" : String(alertEmail.data || "");
     admins = adminRows.data;
     pendingHoldCount = pending.count || 0;
   } else {
@@ -315,6 +319,7 @@ export default async function AdminPage({
       holds={holds}
       audit={audit}
       admins={admins}
+      orderAlertEmail={orderAlertEmail}
       pendingHoldCount={pendingHoldCount}
       stats={stats}
       attention={attention}

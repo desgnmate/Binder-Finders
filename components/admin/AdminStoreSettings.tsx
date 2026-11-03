@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Lock } from "lucide-react";
 import { useConfirm } from "./ConfirmDialog";
 import type { StoreSettings } from "../../lib/cms/types";
-import { inviteAdmin, setAdmin } from "../../app/admin/actions";
+import { inviteAdmin, saveOrderAlertEmail, setAdmin } from "../../app/admin/actions";
 import { SaveBar } from "./SaveBar";
 
 type Run = (
@@ -323,6 +323,58 @@ export function AdminSettingsForm({
           onDiscard={onDiscard}
         />
       )}
+    </form>
+  );
+}
+
+export function AdminOrderAlerts({
+  email,
+  canEdit,
+  busy,
+  run,
+}: {
+  email: string;
+  canEdit: boolean;
+  busy: boolean;
+  run: Run;
+}) {
+  const [draft, setDraft] = useState(email);
+  const dirty = draft.trim() !== email;
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void run(() => saveOrderAlertEmail(draft), "Order alerts updated.");
+      }}
+    >
+      <SettingsSection
+        title="Order alerts"
+        description="Where new hold request alerts are emailed. Customers never see this address."
+      >
+        <label className="cms-field cms-wide">
+          Order alerts email
+          <input
+            type="email"
+            maxLength={200}
+            value={draft}
+            disabled={busy || !canEdit}
+            placeholder="Every active administrator"
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <small>
+            {canEdit
+              ? "Leave empty to alert every active administrator instead."
+              : "Only store owners can change where order alerts go."}
+          </small>
+        </label>
+        {canEdit && (
+          <div className="cms-actions cms-wide">
+            <button className="cms-btn" disabled={busy || !dirty}>
+              Save order alerts
+            </button>
+          </div>
+        )}
+      </SettingsSection>
     </form>
   );
 }

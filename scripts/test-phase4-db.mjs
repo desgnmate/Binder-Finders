@@ -14,6 +14,7 @@ const migrations = [
   "202610240001_phase4_payment_retry_fix.sql",
   "202611020001_hold_payment_integrity.sql",
   "202611020002_hold_workflow_integrity.sql",
+  "202611030001_order_alert_email.sql",
 ];
 await db.exec(`
   create role anon;
@@ -308,5 +309,35 @@ const secondBatch = (await db.query("select attempt_id from public.cms_due_strip
 assert.equal(firstBatch.length, 1);
 assert.notDeepEqual(firstBatch, secondBatch, "The next run checks a different overdue attempt");
 
+// ── Order alerts go to the store inbox, not every admin login ────────────
+const staffAlerts = async (id) => {
+  await as("postgres");
+  return (await db.query("select to_email from public.notification_outbox where hold_id=$1 and kind='staff_request_received' order by to_email", [id])).rows.map((r) => r.to_email);
+};
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-14");
+assert.deepEqual(await staffAlerts(await submit("phase4-card-14")), ["binderfinders@gmail.com"], "New holds alert the store inbox only");
+
+const editor = "55555555-5555-4555-8555-555555555555";
+await as("postgres");
+await db.query("insert into auth.users(id,email,email_confirmed_at) values($1,'editor@example.test',now())", [editor]);
+await db.query("insert into public.admin_users(user_id,email,role) values($1,'editor@example.test','editor')", [editor]);
+await as("authenticated", editor);
+assert.equal((await db.query("select public.cms_get_order_alert_email() as email")).rows[0].email, "binderfinders@gmail.com");
+await assert.rejects(db.query("select public.cms_set_order_alert_email('someone@example.test')"), /Only an owner/);
+await as("authenticated", customer);
+await assert.rejects(db.query("select public.cms_get_order_alert_email()"), /Administrator access required/);
+await as("anon");
+await assert.rejects(db.query("select order_alert_email from public.store_private_settings"), /permission denied/);
+
+await as("authenticated", owner);
+await assert.rejects(db.query("select public.cms_set_order_alert_email('not-an-email')"), /valid email/);
+await db.query("select public.cms_set_order_alert_email('  Orders@Example.TEST ')");
+assert.equal((await db.query("select public.cms_get_order_alert_email() as email")).rows[0].email, "orders@example.test");
+await db.query("select public.cms_set_order_alert_email('')");
+await addCard("phase4-card-15");
+assert.deepEqual(await staffAlerts(await submit("phase4-card-15")), ["editor@example.test", "owner@example.test"], "With no store inbox, every active admin is alerted");
+
 await db.close();
-console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, and workflow integrity.");
+console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, and order alert routing.");

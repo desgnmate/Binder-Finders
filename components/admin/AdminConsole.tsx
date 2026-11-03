@@ -52,6 +52,7 @@ import { AdminCards } from "./AdminCards";
 import { AdminCollections } from "./AdminCollections";
 import {
   AdminAccess,
+  AdminOrderAlerts,
   AdminContentForm,
   AdminSettingsForm,
 } from "./AdminStoreSettings";
@@ -100,6 +101,7 @@ type Props = {
   trend?: AdminRequestTrend[];
   live: boolean;
   stripeReady?: boolean;
+  orderAlertEmail?: string;
 };
 const navigation = [
   ["dashboard", "Overview", LayoutDashboard, "Sell"],
@@ -991,6 +993,12 @@ function Console(props: Props) {
               onChange={setDraftSettings}
               onDiscard={() => setDraftSettings(settings)}
               onSave={saveDraftSettings}
+            />
+            <AdminOrderAlerts
+              email={props.orderAlertEmail || ""}
+              canEdit={user.role === "owner"}
+              busy={busy}
+              run={run}
             />
             {user.role === "owner" && (
               <AdminAccess

@@ -73,6 +73,18 @@ export async function saveSettings(input: unknown, expected: string) {
     return { ok: false, error: message(e) };
   }
 }
+export async function saveOrderAlertEmail(email: string) {
+  try {
+    const { db } = await requireAdmin(true);
+    const next = z.union([z.literal(""), z.string().trim().email().max(200)]).parse(email.trim());
+    const { error } = await db.rpc("cms_set_order_alert_email", { p_email: next });
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: message(e) };
+  }
+}
 export async function transitionHold(id: string, status: string) {
   // Retained for older clients, with the same validation as the current editor.
   return updateHoldWorkflow(id, { status });
