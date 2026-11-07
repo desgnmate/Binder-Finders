@@ -1,27 +1,29 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, Fredoka, Rammetto_One } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import "./responsive.css";
 
 // Stock and prices must reflect the database, never a build-time snapshot.
 export const dynamic = "force-dynamic";
 
-const pressStart = Press_Start_2P({
-  subsets: ["latin"],
+// Fonts ship with the app (latin subsets from Google Fonts, SIL OFL) so a
+// build never depends on fetching them from Google.
+const pressStart = localFont({
+  src: "./fonts/PressStart2P-Regular-latin.woff2",
   weight: "400",
   display: "swap",
   variable: "--font-retro-proxy",
 });
 
-const fredoka = Fredoka({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const fredoka = localFont({
+  src: "./fonts/Fredoka-400-600-latin.woff2",
+  weight: "400 600",
   display: "swap",
   variable: "--font-body-proxy",
 });
 
-const rammetto = Rammetto_One({
-  subsets: ["latin"],
+const rammetto = localFont({
+  src: "./fonts/RammettoOne-Regular-latin.woff2",
   weight: "400",
   display: "swap",
   variable: "--font-heading-proxy",

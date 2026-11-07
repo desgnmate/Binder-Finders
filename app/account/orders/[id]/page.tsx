@@ -11,8 +11,9 @@ import {
   belowMinimumMessage,
 } from "../../../../lib/cms/payments";
 import {
-  daysLeft,
+  timeLeft,
   formatDate,
+  formatDeadline,
   formatMoney,
   fulfilmentStatus,
   holdStatus,
@@ -74,13 +75,17 @@ export default async function CustomerOrderDetail({
     ["pending", "accepted"].includes(data.status) &&
     !["paid", "refunded"].includes(data.payment_status || "unpaid") &&
     !(data.status === "accepted" && data.payment_status === "pending");
+  const msLeft = data.expires_at ? new Date(data.expires_at).getTime() - Date.now() : 0;
   const canPay =
     data.status === "accepted" &&
     ["unpaid", "pending", "failed"].includes(data.payment_status || "unpaid") &&
-    !!data.expires_at &&
-    // Stripe Checkout needs 30 minutes; the API refuses anything shorter.
-    new Date(data.expires_at).getTime() - Date.now() > 31 * 60_000 &&
-    query.payment !== "success";
+    msLeft > 0 &&
+    (data.payment_status === "pending"
+      // An open Checkout can be reopened until the deadline; it is hidden only
+      // while the customer is back from Stripe waiting for the webhook.
+      ? query.payment !== "success"
+      // A new Checkout needs 30 minutes; the API refuses anything shorter.
+      : msLeft > 31 * 60_000);
 
   const status = holdStatus(data.status);
   const payment = paymentStatus(data.payment_status);
@@ -89,7 +94,10 @@ export default async function CustomerOrderDetail({
   const showTrack = !closed && data.payment_status !== "refunded";
   const steps = progressSteps(data.status, data.payment_status || "unpaid", data.fulfillment_status || "not_ready");
   const current = steps.findIndex((step) => !step.done);
-  const showDeadline = data.status === "accepted" && !!data.expires_at;
+  const showDeadline =
+    data.status === "accepted" &&
+    !!data.expires_at &&
+    !["paid", "refunded"].includes(data.payment_status || "unpaid");
   const deadlineSticker = showDeadline && canPay;
 
   let nextLine: React.ReactNode = null;
@@ -111,7 +119,7 @@ export default async function CustomerOrderDetail({
   } else if (data.status === "accepted" && data.payment_status === "pending") {
     nextLine = "Checkout is in progress. You can reopen it below; cancellation is available after it finishes or expires.";
   } else if (canPay && data.expires_at) {
-    nextLine = <>Next: pay before <strong>{formatDate(data.expires_at)}</strong> and we&apos;ll pack your cards.</>;
+    nextLine = <>Next: pay before <strong>{formatDeadline(data.expires_at)}</strong> and we&apos;ll pack your cards.</>;
   } else if (data.payment_status === "paid" && current === 3) {
     nextLine = "Payment received. We're packing your cards next.";
   } else if (current === 4) {
@@ -223,7 +231,7 @@ export default async function CustomerOrderDetail({
               <strong>
                 {new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", timeZone: "Australia/Melbourne" }).format(new Date(data.expires_at))}
               </strong>
-              <small>{daysLeft(data.expires_at) === 1 ? "1 day" : `${daysLeft(data.expires_at)} days`}</small>
+              <small>{timeLeft(data.expires_at)}</small>
             </div>
           )}
           <div className={`ac-pay__head${deadlineSticker ? " ac-pay__head--sticker" : ""}`}>
@@ -244,7 +252,7 @@ export default async function CustomerOrderDetail({
           )}
           {showDeadline && data.expires_at && (
             <p>
-              Hold deadline: <strong>{formatDate(data.expires_at)}</strong>
+              Hold deadline: <strong>{formatDeadline(data.expires_at)}</strong>
             </p>
           )}
           {data.payment_failure_reason && (

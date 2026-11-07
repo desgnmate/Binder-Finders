@@ -66,8 +66,17 @@ export function CheckoutMartClient({
   useEffect(() => {
     if (!hydrated || !customer) return;
     setContactName((current) => current || customer.name);
-    setContactEmail((current) => current || customer.email);
+    // Hold emails always go to the signed-in account's address.
+    setContactEmail(customer.email);
   }, [hydrated, customer]);
+
+  // A retry reuses the request key only for the exact same request. Once the
+  // bag or contact details change, the next submit is a new request, so a
+  // lost response can never make the server replay an older bag.
+  const requestSignature = JSON.stringify([items.map((c) => c.id), contactName, contactEmail, pickupNote]);
+  useEffect(() => {
+    requestKey.current = '';
+  }, [requestSignature]);
 
   const canContinue = count > 0 && items.every(isCardAvailable) && settings.holdsEnabled && !busy;
   const canSubmit = canContinue && !!contactName.trim() && !!contactEmail.trim();
@@ -225,11 +234,18 @@ export function CheckoutMartClient({
                         type="email"
                         required
                         value={contactEmail}
+                        readOnly={!!customer}
+                        aria-describedby={customer ? "checkout-email-help" : undefined}
                         onChange={(e) => setContactEmail(e.target.value)}
                         placeholder="you@kanto.com"
-                        className="w-full rounded-xl border-2 border-ink-black bg-white px-4 py-3 font-body text-sm font-semibold text-ink-black shadow-[2px_2px_0_0_rgba(26,26,26,1)] focus:outline-none focus:bg-brand-yellow/5 focus:shadow-[3px_3px_0_0_rgba(26,26,26,1)] transition-all placeholder:text-ink-black/30"
+                        className="w-full rounded-xl border-2 border-ink-black bg-white px-4 py-3 font-body text-sm font-semibold text-ink-black shadow-[2px_2px_0_0_rgba(26,26,26,1)] focus:outline-none focus:bg-brand-yellow/5 focus:shadow-[3px_3px_0_0_rgba(26,26,26,1)] transition-all placeholder:text-ink-black/30 read-only:bg-ink-black/5"
                       />
                     </div>
+                    {customer && (
+                      <p id="checkout-email-help" className="font-body text-xs text-ink-black/60">
+                        Updates go to your account email.
+                      </p>
+                    )}
                   </div>
 
                   {/* Pickup Note Input */}

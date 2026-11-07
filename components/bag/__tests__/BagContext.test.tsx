@@ -116,4 +116,17 @@ describe("BagContext", () => {
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].id).toBe("charizard-base1");
   });
+
+  it("follows a bag cleared in another tab instead of writing it back", () => {
+    const { result } = renderHook(() => useBag(), { wrapper });
+    act(() => {
+      result.current.addCard("charizard-base1");
+    });
+    act(() => {
+      localStorage.setItem(STORAGE_KEY, "[]");
+      window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY, newValue: "[]" }));
+    });
+    expect(result.current.count).toBe(0);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe("[]");
+  });
 });

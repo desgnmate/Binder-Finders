@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./admin.css";
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+// Bundled like the storefront fonts in app/layout.tsx; see app/fonts/README.md.
+const jakarta = localFont({
+  src: "../fonts/PlusJakartaSans-200-800-latin.woff2",
+  weight: "200 800",
   display: "swap",
   variable: "--font-admin",
 });

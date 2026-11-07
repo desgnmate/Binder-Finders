@@ -2,8 +2,9 @@
  * BinderFinders unified data — Pokédex grid tiles + binder pages + hero fan.
  *
  * Gen 3 (Emerald) sprites are served locally from `public/sprites/gen3/`
- * (sourced from the "Gen 3 Sprite Pack V1.0" asset drop — see the
- * project root for the original files).
+ * for every Pokémon in the Gen III games (#1–386). The original 28 came from
+ * the "Gen 3 Sprite Pack V1.0" asset drop (128px); the rest are PokeAPI's
+ * Emerald sprites (sprites/pokemon/versions/generation-iii/emerald, 64px).
  *
  * TCG card images are pulled from the Pokemon TCG API CDN
  * (https://pokemontcg.io/) — these are high-res scans of real Gen 1 era

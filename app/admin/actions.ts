@@ -14,6 +14,14 @@ function refresh() {
   revalidatePath("/admin");
 }
 function message(error: unknown) {
+  // A ZodError's message is its JSON issue list; show the first issue instead.
+  if (error instanceof z.ZodError) {
+    const issue = error.issues[0];
+    const field = issue?.path.join(" ");
+    return issue
+      ? `${field ? `Check ${field}: ` : ""}${issue.message}`
+      : "Some details are missing or invalid.";
+  }
   return error instanceof Error
     ? error.message
     : "The change could not be saved. Please try again.";
@@ -60,6 +68,18 @@ export async function saveSettings(input: unknown, expected: string) {
     });
     if (error) throw new Error(error.message);
     refresh();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: message(e) };
+  }
+}
+export async function saveOrderAlertEmail(email: string) {
+  try {
+    const { db } = await requireAdmin(true);
+    const next = z.union([z.literal(""), z.string().trim().email().max(200)]).parse(email.trim());
+    const { error } = await db.rpc("cms_set_order_alert_email", { p_email: next });
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: message(e) };

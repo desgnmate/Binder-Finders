@@ -6,7 +6,10 @@ const mockSingle = jest.fn();
 const mockGetUser = jest.fn();
 const mockStripe = { checkout: { sessions: { create: jest.fn(), retrieve: jest.fn(), expire: jest.fn() } } };
 jest.mock("../../../../../lib/supabase/server", () => ({
-  serviceClient: () => ({ rpc: mockRpc, from: () => ({ select: () => ({ eq: () => ({ single: mockSingle }) }) }) }),
+  serviceClient: () => {
+    const query = { eq: () => query, single: mockSingle };
+    return { rpc: mockRpc, from: () => ({ select: () => query }) };
+  },
   sessionClient: async () => ({ auth: { getUser: mockGetUser } }),
 }));
 jest.mock("../../../../../lib/stripe", () => ({ stripeClient: () => mockStripe, stripePaymentsConfigured: () => true }));
@@ -106,4 +109,12 @@ it("does not send a total below Stripe's minimum to Checkout", async () => {
     p_attempt_id: attemptId,
     p_reason: "Order total is below the card payment minimum",
   }));
+});
+it("reopens an open Checkout even when under 31 minutes remain", async () => {
+  mockSingle.mockResolvedValue({ data: { expires_at: new Date(Date.now() + 10 * 60_000).toISOString(), payment_status: "pending" }, error: null });
+  rpcs({ data: { ...created, state: "existing", sessionId: "cs_test_open" }, error: null });
+  mockStripe.checkout.sessions.retrieve.mockResolvedValue({ id: "cs_test_open", status: "open", url: "https://checkout.stripe.test/open" });
+  const response = await POST(request());
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ url: "https://checkout.stripe.test/open" });
 });

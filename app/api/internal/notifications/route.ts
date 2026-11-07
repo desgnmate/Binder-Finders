@@ -50,6 +50,15 @@ async function processNotifications(request: Request) {
     );
   }
 
+  // Customers reply to the store inbox; store alerts reply to the customer.
+  // A database without the private settings table simply sends no reply-to.
+  const storeInbox = await db
+    .from("store_private_settings")
+    .select("order_alert_email")
+    .eq("id", true)
+    .maybeSingle()
+    .then(({ data: row }) => (row?.order_alert_email as string | null) || null, () => null);
+
   let sent = 0;
   let failed = 0;
   let acknowledgementFailed = 0;
@@ -63,16 +72,16 @@ async function processNotifications(request: Request) {
     try {
       let body = row.delivery_body;
       if (!body) {
-        const email = renderHoldNotification(
-          row.kind as HoldNotificationKind,
-          row.payload as HoldNotificationPayload,
-        );
+        const payload = row.payload as HoldNotificationPayload;
+        const email = renderHoldNotification(row.kind as HoldNotificationKind, payload);
+        const replyTo = row.kind === "staff_request_received" ? payload.email : storeInbox;
         const prepared = await db.rpc("cms_prepare_notification", {
           p_id: row.id,
           p_claim_token: row.claim_token,
           p_body: {
             from: process.env.RESEND_FROM_EMAIL,
             to: [row.to_email],
+            ...(replyTo ? { reply_to: replyTo } : {}),
             subject: email.subject,
             html: email.html,
             text: email.text,

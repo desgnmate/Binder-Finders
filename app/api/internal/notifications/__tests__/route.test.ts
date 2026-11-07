@@ -1,7 +1,13 @@
 /** @jest-environment node */
 import { GET } from "../route";
 const mockRpc = jest.fn();
-jest.mock("../../../../../lib/supabase/server", () => ({ serviceClient: () => ({ rpc: mockRpc }) }));
+const mockStoreInbox = jest.fn();
+jest.mock("../../../../../lib/supabase/server", () => ({
+  serviceClient: () => ({
+    rpc: mockRpc,
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mockStoreInbox }) }) }),
+  }),
+}));
 const originalFetch = global.fetch;
 const originalEnv = { ...process.env };
 const body = { from: "sender@example.test", to: ["buyer@example.test"], subject: "Receipt", text: "Hello" };
@@ -16,6 +22,7 @@ beforeEach(() => {
   process.env.RESEND_API_KEY = "test-only";
   process.env.RESEND_FROM_EMAIL = "sender@example.test";
   mockFetch = jest.fn().mockResolvedValue({ ok: true });
+  mockStoreInbox.mockResolvedValue({ data: { order_alert_email: "store@example.test" }, error: null });
   global.fetch = mockFetch;
   mockRpc.mockImplementation(async (name) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
@@ -83,4 +90,30 @@ it("freezes a newly rendered email before sending", async () => {
   expect((await GET(request())).status).toBe(200);
   expect(mockRpc).toHaveBeenCalledWith("cms_prepare_notification", expect.objectContaining({ p_id: 42, p_claim_token: "test-lease", p_body: expect.objectContaining({ subject: expect.stringContaining("ABC") }) }));
   expect(mockFetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: JSON.stringify(body) }));
+});
+it("sets reply-to: customers reply to the store, store alerts reply to the customer", async () => {
+  const pending = { reference: "ABC", name: "Buyer", email: "buyer@example.test", status: "pending", currency: "AUD", totalCents: 1000, items: [] };
+  mockRpc.mockImplementation(async (name, args) => {
+    if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_claim_notification_outbox") return { data: [
+      { ...row, id: 1, delivery_body: null, kind: "customer_request_received", payload: pending },
+      { ...row, id: 2, delivery_body: null, kind: "staff_request_received", to_email: "store@example.test", payload: pending },
+    ], error: null };
+    if (name === "cms_prepare_notification") return { data: args.p_body, error: null };
+    return { data: true, error: null };
+  });
+  expect((await GET(request())).status).toBe(200);
+  expect(mockRpc).toHaveBeenCalledWith("cms_prepare_notification", expect.objectContaining({ p_id: 1, p_body: expect.objectContaining({ reply_to: "store@example.test" }) }));
+  expect(mockRpc).toHaveBeenCalledWith("cms_prepare_notification", expect.objectContaining({ p_id: 2, p_body: expect.objectContaining({ reply_to: "buyer@example.test" }) }));
+});
+it("sends without reply-to when the store inbox cannot be read", async () => {
+  mockStoreInbox.mockRejectedValue(new Error("relation does not exist"));
+  mockRpc.mockImplementation(async (name, args) => {
+    if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_claim_notification_outbox") return { data: [{ ...row, delivery_body: null, payload: { reference: "ABC", name: "Buyer", email: "buyer@example.test", status: "pending", currency: "AUD", totalCents: 1000, items: [] } }], error: null };
+    if (name === "cms_prepare_notification") return { data: args.p_body, error: null };
+    return { data: true, error: null };
+  });
+  expect((await GET(request())).status).toBe(200);
+  expect(mockRpc).toHaveBeenCalledWith("cms_prepare_notification", expect.objectContaining({ p_body: expect.not.objectContaining({ reply_to: expect.anything() }) }));
 });

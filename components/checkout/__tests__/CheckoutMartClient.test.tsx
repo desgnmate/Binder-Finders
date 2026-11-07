@@ -33,7 +33,7 @@ function renderWithBag(ui: React.ReactElement) {
   return render(<BagProvider>{ui}</BagProvider>);
 }
 
-const testCustomer = { email: "", name: "" };
+const testCustomer = { email: "ash@example.com", name: "" };
 
 beforeEach(() => {
   mockCurrency = 'AUD';
@@ -121,7 +121,7 @@ describe("CheckoutMartClient", () => {
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
 
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
-    await user.type(screen.getByLabelText(/email/i), "ash@example.com");
+    expect(screen.getByLabelText(/email/i)).toHaveAttribute("readonly");
     await user.click(screen.getByRole("button", { name: /request hold/i }));
 
     expect(await screen.findByRole("heading", { name: /hold received/i })).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe("CheckoutMartClient", () => {
   it('keeps the bag when the server rejects a request',async()=>{
     (global.fetch as jest.Mock).mockResolvedValueOnce({ok:false,json:async()=>({error:'A card price changed. Refresh your bag.'})});
     const user=userEvent.setup();renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}/>);
-    await user.type(screen.getByLabelText(/name/i),'Ash');await user.type(screen.getByLabelText(/email/i),'ash@example.com');
+    await user.type(screen.getByLabelText(/name/i),'Ash');
     await user.click(screen.getByRole('button',{name:/request hold/i}));
     expect(await screen.findByRole('alert')).toHaveTextContent('price changed');
     expect(screen.getByText('Charizard')).toBeInTheDocument();

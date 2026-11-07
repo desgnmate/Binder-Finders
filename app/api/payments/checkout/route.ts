@@ -65,9 +65,12 @@ export async function POST(request: NextRequest) {
     db = serviceClient();
     // Refuse a too-short hold before creating a payment attempt, so the order
     // is not left marked "failed" as if the customer's card had declined.
+    // A pending hold may already have an open Checkout, which stays payable
+    // until the deadline and needs no new 30-minute window to reopen.
     const { data: current } = await db.from("hold_requests")
-      .select("expires_at").eq("id", payload.holdId).single();
-    if (current?.expires_at && new Date(current.expires_at).getTime() - Date.now() < 31 * 60_000)
+      .select("expires_at,payment_status").eq("id", payload.holdId).eq("customer_user_id", user.id).single();
+    if (current?.expires_at && current.payment_status !== "pending"
+      && new Date(current.expires_at).getTime() - Date.now() < 31 * 60_000)
       throw new Error("At least 31 minutes must remain on the hold to start payment. Please contact the store to extend it.");
     const { data: payment, error: beginError } = await db.rpc("cms_begin_stripe_payment", {
       p_hold_id: payload.holdId,
@@ -165,7 +168,9 @@ export async function POST(request: NextRequest) {
         p_status: "failed",
         p_reason: isBelowMinimum(error)
           ? "Order total is below the card payment minimum"
-          : "Checkout session creation failed",
+          : error instanceof Error && error.message.includes("At least 31 minutes")
+            ? "Not enough time left on the hold to pay online"
+            : "Checkout session creation failed",
       });
     }
     return NextResponse.json({ error: errorMessage(error) }, { status: errorStatus(error) });
