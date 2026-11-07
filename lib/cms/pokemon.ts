@@ -33,8 +33,11 @@ export function catalogPokemon(cards: ShopCard[]): PokemonTile[] {
       ];
     });
 }
+// Gen III games cover National Pokédex #1–386; public/sprites/gen3 holds an
+// Emerald sprite for each. Later Pokémon have no Gen III sprite.
+const GEN3_LAST_ID = 386;
 export function pokemonImage(id: number) {
-  return POKEDEX_TILES.some((p) => p.id === id)
+  return Number.isInteger(id) && id >= 1 && id <= GEN3_LAST_ID
     ? `/sprites/gen3/${id}.png`
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 }
