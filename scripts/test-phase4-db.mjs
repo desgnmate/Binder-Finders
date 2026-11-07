@@ -15,6 +15,7 @@ const migrations = [
   "202611020001_hold_payment_integrity.sql",
   "202611020002_hold_workflow_integrity.sql",
   "202611030001_order_alert_email.sql",
+  "202611070001_notification_payload_details.sql",
 ];
 await db.exec(`
   create role anon;
@@ -338,6 +339,18 @@ assert.equal((await db.query("select public.cms_get_order_alert_email() as email
 await db.query("select public.cms_set_order_alert_email('')");
 await addCard("phase4-card-15");
 assert.deepEqual(await staffAlerts(await submit("phase4-card-15")), ["editor@example.test", "owner@example.test"], "With no store inbox, every active admin is alerted");
+
+// ── Email payload carries the order link, deadline and card details ──────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-16");
+const emailHoldId = await acceptedHold("phase4-card-16");
+await as("postgres");
+const reservedEmail = (await db.query("select payload from public.notification_outbox where hold_id=$1 and kind='customer_status_changed' order by id desc limit 1", [emailHoldId])).rows[0].payload;
+assert.equal(reservedEmail.holdId, emailHoldId);
+assert.ok(reservedEmail.expiresAt, "The reserved email knows the payment deadline");
+assert.equal(reservedEmail.items[0].set, "Base Set");
+assert.equal(reservedEmail.items[0].number, "4/102");
 
 await db.close();
 console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, and order alert routing.");
