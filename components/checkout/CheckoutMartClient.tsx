@@ -135,7 +135,7 @@ export function CheckoutMartClient({
           />
         ) : (
           <>
-            <div className="flex flex-col gap-3">
+            <div data-motion="hero" className="flex flex-col gap-3">
               <Link href="/shop" className="self-start text-[15px] font-semibold text-ink-black">← Keep browsing</Link>
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h1 className={`${headline} m-0 text-[40px] leading-[1.05] md:text-[52px]`}>Your bag</h1>

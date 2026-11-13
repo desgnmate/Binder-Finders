@@ -31,7 +31,7 @@ export default async function AboutPage() {
     <PageShell>
       <section className="py-14 md:py-16">
         <div className={`${wrap} flex flex-wrap items-center gap-12`}>
-          <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[18px]">
+          <div data-motion="hero" className="flex min-w-0 flex-[1_1_520px] flex-col gap-[18px]">
             <span className={`${px} text-[#7b39ed]`}>About BinderFinders</span>
             <h1 className={`${headline} m-0 text-[40px] leading-[1.05] md:text-[56px]`}>Real scans, real cards</h1>
             <p className="m-0 max-w-[560px] text-[19px] leading-relaxed">
@@ -43,7 +43,7 @@ export default async function AboutPage() {
               <Link href="/how-holds-work" className={`${btnWhite} min-h-[52px]`}>How holds work</Link>
             </div>
           </div>
-          <div className="flex min-w-0 flex-[1_1_420px] justify-center py-6" aria-hidden="true">
+          <div data-motion="fan" className="flex min-w-0 flex-[1_1_420px] justify-center py-6" aria-hidden="true">
             {FAN.map((card) => (
               <div
                 key={card.id}
@@ -59,8 +59,8 @@ export default async function AboutPage() {
 
       <section className="mx-4 rounded-[40px] bg-ink-black py-16 text-white">
         <div className={`${wrap} flex flex-col gap-8`}>
-          <h2 className={`${headline} m-0 text-[30px] md:text-[36px]`}>How we list cards</h2>
-          <ol className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 data-motion="reveal" className={`${headline} m-0 text-[30px] md:text-[36px]`}>How we list cards</h2>
+          <ol data-motion="pop" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, i) => (
               <li
                 key={step.title}
@@ -77,7 +77,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="py-[72px]">
-        <div className={`${wrap} flex flex-col gap-4 text-[17px] leading-[1.65]`}>
+        <div data-motion="stagger" className={`${wrap} flex flex-col gap-4 text-[17px] leading-[1.65]`}>
           <h2 className={`${headline} m-0 text-[28px] md:text-[32px]`}>Why we started</h2>
           <p className="m-0 max-w-[760px]">{content.aboutBody}</p>
           <p className="m-0 max-w-[760px]">
@@ -94,7 +94,7 @@ export default async function AboutPage() {
 
       <section className="pb-[72px]">
         <div className={wrap}>
-          <div className={`${box} flex flex-wrap items-center justify-between gap-6 rounded-[32px] !bg-brand-blue p-8 text-white md:p-10`}>
+          <div data-motion="reveal" className={`${box} flex flex-wrap items-center justify-between gap-6 rounded-[32px] !bg-brand-blue p-8 text-white md:p-10`}>
             <div className="flex max-w-[620px] flex-col gap-2">
               <h2 className={`${headline} m-0 text-[26px] md:text-[30px]`}>Hunting a card?</h2>
               <p className="m-0 text-[17px]">

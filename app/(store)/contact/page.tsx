@@ -29,7 +29,7 @@ export default async function ContactPage({
     <PageShell background="#ffd6e7" compactFooter>
       <main className="flex-1 pb-20 pt-14">
         <div className={`${wrap} flex flex-wrap items-start gap-10`}>
-          <section className="flex min-w-0 flex-[1_1_400px] flex-col gap-5">
+          <section data-motion="hero" className="flex min-w-0 flex-[1_1_400px] flex-col gap-5">
             <span className={`${px} text-[#7b39ed]`}>Need a closer look?</span>
             <h1 className={`${headline} m-0 text-[40px] leading-[1.05] md:text-[56px]`}>Contact us</h1>
             <p className="m-0 max-w-[480px] text-lg leading-relaxed">{content.footerDescription}</p>

@@ -107,7 +107,7 @@ export default async function HowHoldsWorkPage() {
       <JsonLd data={faqJsonLd} />
       <section className="pb-12 pt-14">
         <div className={`${wrap} flex flex-col gap-8`}>
-          <div className="flex max-w-[720px] flex-col gap-3.5">
+          <div data-motion="hero" className="flex max-w-[720px] flex-col gap-3.5">
             <span className={`${px} text-[#7b39ed]`}>Hold first, pay later</span>
             <h1 className={`${headline} m-0 text-[40px] leading-[1.05] md:text-[56px]`}>How holds work</h1>
             <p className="m-0 text-[19px] leading-relaxed">
@@ -115,7 +115,7 @@ export default async function HowHoldsWorkPage() {
               check the card, and only then do you pay.
             </p>
           </div>
-          <ol className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ol data-motion="pop" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, i) => (
               <li key={step.title} className="flex flex-col gap-2.5 rounded-[22px] border-[3px] border-ink-black bg-white p-[22px] shadow-[5px_5px_0_#1a1a1a]">
                 <span
@@ -135,14 +135,14 @@ export default async function HowHoldsWorkPage() {
 
       <section className="pb-[72px]">
         <div className={`${wrap} flex flex-wrap items-start gap-10`}>
-          <div className="flex flex-[1_1_280px] flex-col gap-4 md:max-w-[360px]">
+          <div data-motion="reveal" className="flex flex-[1_1_280px] flex-col gap-4 md:max-w-[360px]">
             <h2 className={`${headline} m-0 text-[30px] md:text-[34px]`}>Questions</h2>
             <p className="m-0 leading-normal">Can&apos;t find your answer? We read every message.</p>
             <Link href="/contact" className={`${btnDark} self-start`}>Contact us</Link>
           </div>
           <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-3.5">
             {groups.map((group, gi) => (
-              <div key={group.topic} className="flex flex-col gap-3.5">
+              <div key={group.topic} data-motion="stagger" className="flex flex-col gap-3.5">
                 <h3 className={`${px} m-0 text-[9px] ${gi ? "pt-3" : ""}`}>{group.topic}</h3>
                 {group.items.map((item, i) => (
                   <details

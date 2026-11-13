@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Menu, ShoppingBag, UserRound, X } from "lucide-react";
 import { BagContext } from "../bag/BagContext";
 import { btnDark, btnWhite, wrap } from "./ui";
@@ -21,15 +21,23 @@ export function SiteHeader() {
   // The 404 page renders outside the store layout, where there is no bag.
   const count = useContext(BagContext)?.count ?? 0;
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const isActive = (href: string) =>
     href === "/shop" ? pathname === "/shop" || pathname.startsWith("/cards/") : pathname === href;
 
   return (
-    <header className="pt-5">
+    <header data-site-header className="sticky top-0 z-50 pt-4 md:pt-5">
       <div className={wrap}>
         <nav
           aria-label="Main"
-          className="rounded-[28px] border-[3px] border-ink-black bg-white py-2 pl-4 pr-2 shadow-[4px_4px_0_#1a1a1a] sm:py-2.5 sm:pl-6 sm:pr-3 md:rounded-full"
+          data-scrolled={scrolled ? "true" : undefined}
+          className="rounded-[28px] border-[3px] border-ink-black bg-white py-2 pl-4 pr-2 shadow-[4px_4px_0_#1a1a1a] transition-[box-shadow,transform] duration-300 data-[scrolled=true]:shadow-[6px_6px_0_#1a1a1a] sm:py-2.5 sm:pl-6 sm:pr-3 md:rounded-full"
         >
           <div className="flex items-center gap-3">
             <Link href="/" aria-label="BinderFinders home" className="flex shrink-0 items-center">

@@ -38,6 +38,7 @@ export function ContactForm({
 
   return (
     <form
+      data-motion="rise"
       aria-labelledby="contact-form-title"
       noValidate
       className={`${box} relative flex min-w-0 flex-[1_1_520px] flex-col gap-[18px] overflow-hidden rounded-[28px] p-6 md:p-7`}
