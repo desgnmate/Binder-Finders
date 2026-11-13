@@ -16,6 +16,7 @@ import {
   BookOpen,
   Inbox,
   SlidersHorizontal,
+  Sparkles,
   History,
   Plus,
   LogOut,
@@ -45,9 +46,11 @@ import {
   saveCollection,
   saveSettings,
   updateHoldWorkflow,
+  deleteHold,
 } from "../../app/admin/actions";
 import { AdminOverview, type AdminRequestTrend } from "./AdminOverview";
 import { AdminHolds } from "./AdminHolds";
+import { AdminPokedex } from "./AdminPokedex";
 import { AdminCards } from "./AdminCards";
 import { AdminCollections } from "./AdminCollections";
 import {
@@ -102,12 +105,14 @@ type Props = {
   live: boolean;
   stripeReady?: boolean;
   orderAlertEmail?: string;
+  cardPokemonIds?: number[];
 };
 const navigation = [
   ["dashboard", "Overview", LayoutDashboard, "Sell"],
   ["cards", "Cards", Layers, "Sell"],
   ["holds", "Hold requests", Inbox, "Sell"],
   ["collections", "Collections", BookOpen, "Sell"],
+  ["pokedex", "Pokédex", Sparkles, "Store"],
   ["settings", "Settings", SlidersHorizontal, "Store"],
   ["activity", "Activity", History, "Store"],
 ] as const;
@@ -116,6 +121,7 @@ const descriptions: Record<string, string> = {
   holds: "Review requests, confirm availability, and complete sales.",
   collections: "Organise your cards into collections collectors can explore.",
   content: "Update the words your collectors see on the storefront.",
+  pokedex: "Choose which Pokémon appear in the storefront Pokédex.",
   settings: "Manage store preferences, payments, and administrator access.",
   activity: "A clear record of changes made to your store.",
 };
@@ -231,7 +237,7 @@ function Console(props: Props) {
             : undefined;
   const settingsDirty = useMemo(
     () =>
-      (props.view === "content" || props.view === "settings") &&
+      (props.view === "content" || props.view === "pokedex" || props.view === "settings") &&
       JSON.stringify(draftSettings) !== JSON.stringify(settings),
     [draftSettings, props.view, settings],
   );
@@ -470,6 +476,18 @@ function Console(props: Props) {
             ? "Request declined."
             : "Hold cancelled and cards released.",
     );
+  }
+  async function removeHold(hold: Hold) {
+    const ok = await confirm({
+      title: "Delete this request?",
+      body: `${hold.name}'s request and its history will be removed from the admin and from their account. They won't be emailed. This can't be undone.`,
+      confirmLabel: "Delete request",
+      cancelLabel: "Keep it",
+      tone: "danger",
+      icon: "warning",
+    });
+    if (!ok) return;
+    void run(() => deleteHold(hold.id), "Request deleted.");
   }
   async function quickUpdateCard(
     card: CMSCard,
@@ -969,6 +987,7 @@ function Console(props: Props) {
             busy={busy}
             onSave={saveHoldWorkflow}
             onTransition={(hold, status) => void transitionHold(hold, status)}
+            onDelete={(hold) => void removeHold(hold)}
             onDirtyChange={setHoldDirty}
           />
         )}
@@ -977,6 +996,17 @@ function Console(props: Props) {
             draft={draftSettings}
             dirty={settingsDirty}
             busy={busy}
+            onChange={setDraftSettings}
+            onDiscard={() => setDraftSettings(settings)}
+            onSave={saveDraftSettings}
+          />
+        )}
+        {props.view === "pokedex" && (
+          <AdminPokedex
+            draft={draftSettings}
+            dirty={settingsDirty}
+            busy={busy}
+            cardPokemonIds={props.cardPokemonIds || []}
             onChange={setDraftSettings}
             onDiscard={() => setDraftSettings(settings)}
             onSave={saveDraftSettings}

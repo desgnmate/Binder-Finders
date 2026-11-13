@@ -14,8 +14,8 @@ import { catalogPokemon, pokemonImage as gen3Sprite, type PokemonTile as Pokedex
 
 
 export function PokedexPageClient() {
-  const {cards}=useCatalog();
-  const POKEDEX_TILES=useMemo(()=>catalogPokemon(cards),[cards]);
+  const {cards,settings}=useCatalog();
+  const POKEDEX_TILES=useMemo(()=>catalogPokemon(cards,settings.pokedexIds),[cards,settings.pokedexIds]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState<number>(POKEDEX_TILES[0].id);
 
@@ -146,6 +146,7 @@ function PokedexDeviceTile({
         <img
           src={gen3Sprite(tile.id)}
           alt={tile.name}
+          loading="lazy"
           width={120}
           height={120}
           className="pokedex-sprite h-full w-full object-contain [image-rendering:pixelated]"

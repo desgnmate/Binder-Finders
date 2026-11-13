@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { HoldDelivery } from "../delivery";
 import type { ShopCard } from "../data";
 
 const imageUrl = z
@@ -125,6 +126,8 @@ export const settingsSchema = z
     holdsEnabled: z.boolean(),
     holdDurationHours: z.number().int().min(1).max(720).default(48),
     content: contentSchema,
+    /** Pokémon shown in the Pokédex (National Dex #1–386). Unset uses the built-in list. */
+    pokedexIds: z.array(z.number().int().min(1).max(386)).max(386).optional(),
   })
   .refine((v) => !v.holdsEnabled || v.currency !== "", {
     message: "Choose the store currency before enabling holds",
@@ -178,6 +181,8 @@ export interface Hold {
     | "picked_up"
     | "cancelled";
   fulfillment_note?: string | null;
+  /** Where the cards go. Missing on holds made before addresses were collected. */
+  delivery?: HoldDelivery | null;
   approved_at?: string | null;
   expires_at?: string | null;
   created_at: string;

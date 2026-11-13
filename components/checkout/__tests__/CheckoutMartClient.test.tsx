@@ -47,6 +47,13 @@ afterEach(() => {
   localStorage.clear();
 });
 
+async function fillAddress(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText(/street address/i), "1 Pallet St");
+  await user.type(screen.getByLabelText(/suburb/i), "Fitzroy");
+  await user.selectOptions(screen.getByLabelText(/^state/i), "VIC");
+  await user.type(screen.getByLabelText(/postcode/i), "3065");
+}
+
 describe("CheckoutMartClient", () => {
   it.each(['', 'AUD', 'PHP'])('uses only the configured currency (%s) for totals and items', currency => {
     mockCurrency = currency;
@@ -122,6 +129,7 @@ describe("CheckoutMartClient", () => {
 
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
     expect(screen.getByLabelText(/email/i)).toHaveAttribute("readonly");
+    await fillAddress(user);
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
     await user.click(screen.getByRole("button", { name: /request hold/i }));
 
@@ -141,6 +149,7 @@ describe("CheckoutMartClient", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({ok:false,json:async()=>({error:'A card price changed. Refresh your bag.'})});
     const user=userEvent.setup();renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}/>);
     await user.type(screen.getByLabelText(/name/i),'Ash');
+    await fillAddress(user);
     await user.click(screen.getByRole('checkbox',{name:/terms of sale/i}));
     await user.click(screen.getByRole('button',{name:/request hold/i}));
     expect(await screen.findByRole('alert')).toHaveTextContent('price changed');
@@ -176,9 +185,41 @@ describe("CheckoutMartClient", () => {
     const user = userEvent.setup();
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     await user.type(screen.getByLabelText(/name/i), "Ash");
+    await fillAddress(user);
     expect(screen.getByRole("button", { name: /request hold/i })).toBeDisabled();
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
     expect(screen.getByRole("button", { name: /request hold/i })).toBeEnabled();
+  });
+
+  it("needs a delivery address before a posted hold can be sent", async () => {
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    await user.type(screen.getByLabelText(/name/i), "Ash");
+    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
+    expect(screen.getByRole("button", { name: /request hold/i })).toBeDisabled();
+    expect(screen.getByText(/add your delivery address/i)).toBeInTheDocument();
+    await fillAddress(user);
+    expect(screen.getByRole("button", { name: /request hold/i })).toBeEnabled();
+  });
+
+  it("sends the delivery address with the hold", async () => {
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
+    await fillAddress(user);
+    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
+    await user.click(screen.getByRole("button", { name: /request hold/i }));
+    await screen.findByRole("heading", { name: /hold received/i });
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.delivery).toMatchObject({
+      method: "post",
+      recipient: "Ash Ketchum",
+      line1: "1 Pallet St",
+      suburb: "Fitzroy",
+      state: "VIC",
+      postcode: "3065",
+    });
+    expect(body.note).toBe("Delivery: Tracked post\nAsh Ketchum\n1 Pallet St\nFitzroy VIC 3065\nAustralia");
   });
 
   it("writes a delivery-only note when the customer adds nothing", () => {
