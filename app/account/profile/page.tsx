@@ -4,7 +4,7 @@ import { sessionClient } from "../../../lib/supabase/server";
 import { CustomerProfileForm } from "../../../components/account/CustomerProfileForm";
 import { Check, LockKeyhole } from "lucide-react";
 
-export const metadata = { title: "Profile & security | BinderFinders" };
+export const metadata = { title: "Profile & security" };
 
 export default async function CustomerProfilePage() {
   const db = await sessionClient();

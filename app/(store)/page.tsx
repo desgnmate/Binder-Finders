@@ -5,6 +5,11 @@ import { AboutSection } from "../../components/about/AboutSection";
 import { SiteFooter } from "../../components/footer/SiteFooter";
 import { ScrollGradientZone } from "../../components/ScrollGradientZone";
 import { RevealFooterLayout } from "../../components/RevealFooterLayout";
+import { JsonLd } from "../../components/seo/JsonLd";
+import { getCatalog } from "../../lib/cms/catalog";
+import { DEFAULT_TITLE, pageMetadata, storeJsonLd } from "../../lib/seo";
+
+export const metadata = pageMetadata({ title: DEFAULT_TITLE, path: "/", absoluteTitle: true });
 
 /**
  * Home page flow:
@@ -27,9 +32,11 @@ const HERO_TO_POKEDEX_GRADIENT =
 const BINDER_TO_FOOTER_GRADIENT =
   "linear-gradient(to bottom, #3194EE 0%, rgba(49, 148, 238, 0) 100%)";
 
-export default function Home() {
+export default async function Home() {
+  const { settings } = await getCatalog();
   return (
     <main className="pokeball-cursor relative bg-[#7b39ed] overflow-x-hidden">
+      <JsonLd data={storeJsonLd({ description: settings?.content?.storeDescription, location: settings?.content?.location })} />
       <RevealFooterLayout footer={<SiteFooter />}>
         {/* Hero + About + Pokédex share one continuous white → blue gradient. */}
         <div style={{ background: HERO_TO_POKEDEX_GRADIENT }}>

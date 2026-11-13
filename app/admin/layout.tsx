@@ -9,7 +9,7 @@ const jakarta = localFont({
   variable: "--font-admin",
 });
 export const metadata: Metadata = {
-  title: "Admin · BinderFinders",
+  title: "Admin",
   robots: { index: false, follow: false },
 };
 export default function AdminLayout({
