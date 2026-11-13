@@ -26,7 +26,7 @@ export default async function ContactPage({
   const reference = card ? `${card.name} – ${card.set} ${card.number} (${card.condition})` : "";
 
   return (
-    <PageShell background="#ffd6e7" compactFooter>
+    <PageShell background="#ffd6e7">
       <main className="flex-1 pb-20 pt-14">
         <div className={`${wrap} flex flex-wrap items-start gap-10`}>
           <section data-motion="hero" className="flex min-w-0 flex-[1_1_400px] flex-col gap-5">
