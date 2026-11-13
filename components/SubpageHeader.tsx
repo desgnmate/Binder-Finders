@@ -61,6 +61,19 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           >
             Binder
           </Link>
+          {[
+            { label: "About", href: "/about" },
+            { label: "How holds work", href: "/how-holds-work" },
+            { label: "Contact", href: "/contact" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="hidden md:inline-flex items-center text-ink-black/75 transition-colors hover:text-brand-blue"
+            >
+              {link.label}
+            </Link>
+          ))}
           
           {/* Dynamic My Bag icon with an accessible item count */}
           <Link
