@@ -16,6 +16,7 @@ const migrations = [
   "202611020002_hold_workflow_integrity.sql",
   "202611030001_order_alert_email.sql",
   "202611070001_notification_payload_details.sql",
+  "202611140001_hold_delete_and_delivery.sql",
 ];
 await db.exec(`
   create role anon;
@@ -352,5 +353,45 @@ assert.ok(reservedEmail.expiresAt, "The reserved email knows the payment deadlin
 assert.equal(reservedEmail.items[0].set, "Base Set");
 assert.equal(reservedEmail.items[0].number, "4/102");
 
+// ── Holds record a delivery address ───────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-17");
+await as("service_role");
+const postal = { method: "post", recipient: " Ash Ketchum ", phone: "0400 000 000", line1: "1 Pallet St", line2: "", suburb: "Fitzroy", state: "vic", postcode: "3065" };
+const postHoldId = (await db.query("select public.cms_submit_hold($1,$2,$3) as id", [{
+  name: "Test customer", email: "customer@example.test", note: "", cardIds: ["phase4-card-17"], prices: { "phase4-card-17": 1250 }, requestKey: crypto.randomUUID(), delivery: postal,
+}, "phase4-test-ip-2", customer])).rows[0].id;
+await as("postgres");
+const saved = (await db.query("select delivery from public.hold_requests where id=$1", [postHoldId])).rows[0].delivery;
+assert.equal(saved.recipient, "Ash Ketchum");
+assert.equal(saved.state, "VIC");
+assert.equal(saved.country, "Australia");
+await as("service_role");
+await assert.rejects(
+  db.query("select public.cms_submit_hold($1,$2,$3)", [{
+    name: "Test customer", email: "customer@example.test", note: "", cardIds: ["phase4-card-1"], prices: {}, requestKey: crypto.randomUUID(), delivery: { ...postal, postcode: "30" },
+  }, "phase4-test-ip-3", customer]),
+  /Check your delivery address/,
+);
+
+// ── The store can delete requests that never became a sale ────────────────
+await as("authenticated", owner);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [emailHoldId]), /Cancel it before deleting/);
+await db.query("select public.cms_transition_hold($1,'rejected')", [postHoldId]);
+await as("authenticated", customer);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /Administrator access required/);
+await as("authenticated", owner);
+await db.query("select public.cms_delete_hold($1)", [postHoldId]);
+await as("postgres");
+assert.equal((await db.query("select count(*)::int as n from public.hold_requests where id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.hold_request_items where request_id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.hold_status_history where hold_id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.audit_log where table_name='hold_requests' and record_id=$1 and new_data is null", [postHoldId])).rows[0].n, 1);
+const paidHold = (await db.query("select id from public.hold_requests where payment_status='paid' limit 1")).rows[0];
+assert.ok(paidHold, "An earlier check leaves a paid hold to test against");
+await as("authenticated", owner);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [paidHold.id]), /kept for your records|Cancel it before deleting/);
+
 await db.close();
-console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, and order alert routing.");
+console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, order alert routing, delivery addresses and hold deletion.");

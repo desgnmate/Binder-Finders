@@ -33,3 +33,22 @@ it("sends hold emails to the verified account, not the typed address", async () 
     p_customer_user_id: "user-1",
   }));
 });
+
+it("passes the delivery address to the database", async () => {
+  const delivery = { method: "post", recipient: "Ash", line1: "1 Pallet St", suburb: "Fitzroy", state: "VIC", postcode: "3065" };
+  const req = new NextRequest("https://local.test/api/holds", {
+    method: "POST", headers: { origin: "https://local.test", "content-type": "application/json" }, body: JSON.stringify({ ...body, delivery }),
+  });
+  expect((await POST(req)).status).toBe(201);
+  expect(mockRpc).toHaveBeenCalledWith("cms_submit_hold", expect.objectContaining({
+    p_request: expect.objectContaining({ delivery: expect.objectContaining({ ...delivery, line2: "", phone: "" }) }),
+  }));
+});
+it("rejects an incomplete address", async () => {
+  const req = new NextRequest("https://local.test/api/holds", {
+    method: "POST", headers: { origin: "https://local.test", "content-type": "application/json" },
+    body: JSON.stringify({ ...body, delivery: { method: "post", recipient: "Ash", line1: "", suburb: "Fitzroy", state: "VIC", postcode: "30" } }),
+  });
+  expect((await POST(req)).status).toBe(400);
+  expect(mockRpc).not.toHaveBeenCalled();
+});

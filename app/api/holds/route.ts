@@ -3,11 +3,14 @@ import { revalidateTag } from "next/cache";
 import { createHmac } from "node:crypto";
 import { z } from "zod";
 import { serviceClient, sessionClient } from "../../../lib/supabase/server";
+import { deliverySchema } from "../../../lib/delivery";
 export const dynamic = "force-dynamic";
 const schema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(200),
   note: z.string().max(2000),
+  // Optional so a bag page loaded before addresses were collected still works.
+  delivery: deliverySchema.nullish(),
   cardIds: z.array(z.string().max(100)).min(1).max(30),
   prices: z.record(z.string(), z.number().int().nonnegative()),
   requestKey: z.string().uuid(),
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest) {
     });
     if (error) {
       const safe =
-        /no longer available|price changed|Too many requests|currently unavailable/.test(
+        /no longer available|price changed|Too many requests|currently unavailable|delivery address|post or pickup/.test(
           error.message,
         );
       return NextResponse.json(

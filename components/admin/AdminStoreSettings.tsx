@@ -75,7 +75,7 @@ function SettingsSection({
   );
 }
 
-function FormSaveBar({
+export function FormSaveBar({
   dirty,
   busy,
   label,

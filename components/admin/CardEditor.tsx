@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { pokemonImage, pokemonName } from "../../lib/cms/pokemon";
 import { AlertCircle, Check, ChevronRight, Copy, Upload, X } from "lucide-react";
 import { saveCard, uploadImage } from "../../app/admin/actions";
 import { type CMSCard, cardSchema } from "../../lib/cms/types";
@@ -323,6 +324,12 @@ export function CardEditor({
                   value={value.pokemonId}
                   onChange={(e) => change("pokemonId", Number(e.target.value))}
                 />
+                {pokemonName(value.pokemonId) && (
+                  <span className="cms-pokemon-preview">
+                    <img src={pokemonImage(value.pokemonId)} alt="" width={32} height={32} />
+                    {pokemonName(value.pokemonId)}
+                  </span>
+                )}
               </label>
               <label className="cms-field">
                 Rarity

@@ -14,8 +14,8 @@ import {
 const PREVIEW_CAP = 10;
 
 export function PokedexSection() {
-  const {cards}=useCatalog();
-  const POKEDEX_TILES=useMemo(()=>catalogPokemon(cards),[cards]);
+  const {cards,settings}=useCatalog();
+  const POKEDEX_TILES=useMemo(()=>catalogPokemon(cards,settings.pokedexIds),[cards,settings.pokedexIds]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState<number>(POKEDEX_TILES[0].id);
 
@@ -181,6 +181,7 @@ function PokedexDeviceTile({
         <img
           src={gen3Sprite(tile.id)}
           alt={tile.name}
+          loading="lazy"
           width={80}
           height={80}
           className="pokedex-sprite h-full w-full object-contain [image-rendering:pixelated]"
