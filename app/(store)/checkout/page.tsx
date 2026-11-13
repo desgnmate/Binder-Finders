@@ -25,7 +25,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     }
   }
   return (
-    <PageShell compactFooter>
+    <PageShell>
       <CheckoutMartClient initialCardId={params.card} customer={customer} />
     </PageShell>
   );

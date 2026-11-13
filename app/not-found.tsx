@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { SiteHeader } from "../components/site/SiteHeader";
-import { PageMotion } from "../components/site/PageMotion";
+import { Suspense } from "react";
+import { PageShell } from "../components/site/PageShell";
+import { AccountFooter } from "../components/account/AccountFooter";
 import { btn, headline, px, wrap } from "../components/site/ui";
 
 export const metadata = { title: "Page not found", robots: { index: false, follow: true } };
 
 export default function NotFound() {
   return (
-    <PageMotion className="flex min-h-screen flex-col bg-ink-black font-body text-white">
-      <SiteHeader />
-      <main className="flex flex-1 items-center py-16">
+    // This page sits outside the store layout, so the footer loads the store's
+    // contact details itself (the same way the account pages do).
+    <PageShell background="#1a1a1a" footer={<Suspense fallback={null}><AccountFooter /></Suspense>}>
+      <main className="flex flex-1 items-center py-16 text-white">
         <div className={`${wrap} flex flex-wrap items-center justify-between gap-12`}>
           <div data-motion="hero" className="flex min-w-0 flex-[1_1_520px] flex-col gap-5">
             <span className={`${px} text-brand-yellow`}>Error 404</span>
@@ -54,6 +56,6 @@ export default function NotFound() {
           </div>
         </div>
       </main>
-    </PageMotion>
+    </PageShell>
   );
 }
