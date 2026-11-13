@@ -31,7 +31,7 @@ export function PolicyLayout({
   return (
     <PageShell compactFooter>
       <section className="pb-8 pt-14">
-        <div className={`${wrap} flex flex-col gap-[18px]`}>
+        <div data-motion="hero" className={`${wrap} flex flex-col gap-[18px]`}>
           <nav aria-label="Policies" className="flex flex-wrap gap-2.5">
             {TABS.map((tab) => (
               <Link
@@ -56,7 +56,7 @@ export function PolicyLayout({
       </section>
       <main className="flex-1 pb-20">
         <div className={`${wrap} flex flex-wrap items-start gap-12`}>
-          <nav aria-label="Sections" className="flex w-full flex-col md:w-auto md:max-w-[280px] md:flex-[1_1_240px]">
+          <nav aria-label="Sections" data-motion="stagger" className="flex w-full flex-col md:w-auto md:max-w-[280px] md:flex-[1_1_240px]">
             <span className={`${px} pb-2 text-[9px]`}>On this page</span>
             {sections.map((s, i) => (
               <a
@@ -72,7 +72,7 @@ export function PolicyLayout({
           </nav>
           <article className="flex min-w-0 max-w-[760px] flex-[999_1_560px] flex-col gap-3.5 text-[17px] leading-[1.7] [&_a]:font-semibold [&_a]:text-ink-black [&_a]:underline [&_ul]:m-0 [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-1.5 [&_ul]:pl-[22px] [&_p]:m-0">
             {sections.map((s, i) => (
-              <section key={s.id} id={s.id} className="flex scroll-mt-6 flex-col gap-3.5">
+              <section key={s.id} id={s.id} data-motion="reveal" className="flex scroll-mt-28 flex-col gap-3.5">
                 <h2 className={`${headline} mt-3.5 flex items-baseline gap-3.5 text-2xl first:mt-0`}>
                   <span className="font-retro text-[11px] text-[#7b39ed]">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}

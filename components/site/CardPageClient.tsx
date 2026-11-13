@@ -20,7 +20,7 @@ export function CardScans({ card, faceColor }: { card: ShopCard & { additionalIm
   const current = scans[active];
 
   return (
-    <section aria-label="Card scans" className="flex min-w-0 flex-[1_1_480px] flex-col gap-4">
+    <section aria-label="Card scans" data-motion="rise" className="flex min-w-0 flex-[1_1_480px] flex-col gap-4">
       <div className="flex justify-center rounded-[28px] border-[3px] border-ink-black bg-ink-black p-6 shadow-[6px_6px_0_#1a1a1a] md:p-8">
         {current ? (
           <img

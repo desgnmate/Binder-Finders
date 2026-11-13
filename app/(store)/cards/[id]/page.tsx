@@ -80,7 +80,7 @@ export default async function CardPage({ params }: Props) {
           <div className="flex flex-wrap items-start gap-10">
             <CardScans card={card} faceColor={face} />
 
-            <section className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
+            <section data-motion="hero" className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
               <div className="flex flex-wrap gap-2">
                 <span className={chip} style={{ background: face }}>{card.type}</span>
                 <span className={chip}>{card.set} · {card.year}</span>
@@ -145,7 +145,7 @@ export default async function CardPage({ params }: Props) {
                 </h2>
                 <Link href="/shop" className={btnWhite}>See all</Link>
               </div>
-              <ul className="m-0 grid list-none grid-cols-2 gap-6 p-0 md:grid-cols-4">
+              <ul data-motion="stagger" className="m-0 grid list-none grid-cols-2 gap-6 p-0 md:grid-cols-4">
                 {more.map((c) => (
                   <li key={c.id}>
                     <Link href={cardPath(c.id)} className="flex flex-col gap-2.5 text-ink-black no-underline">

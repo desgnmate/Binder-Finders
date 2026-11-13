@@ -912,3 +912,17 @@ body {
   scrollbar-width: auto;
   scrollbar-color: #fedd25 #f1ebd9;
 }
+
+/* Page intros animated by components/site/PageMotion.tsx. Hidden until GSAP
+   plays them so they don't flash first; if the script never runs they appear
+   anyway after a moment. */
+html.motion-ok [data-motion="hero"] > *,
+html.motion-ok [data-motion="rise"] {
+  opacity: 0;
+  animation: motion-fallback 0s 1.5s forwards;
+}
+@keyframes motion-fallback {
+  to {
+    opacity: 1;
+  }
+}

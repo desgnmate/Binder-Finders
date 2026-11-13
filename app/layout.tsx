@@ -54,7 +54,17 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Lets CSS hide page intros until GSAP plays them, only when motion is allowed. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('motion-ok')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="font-body antialiased">
         {children}
       </body>
