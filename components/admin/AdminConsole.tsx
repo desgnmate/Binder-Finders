@@ -480,7 +480,7 @@ function Console(props: Props) {
   async function removeHold(hold: Hold) {
     const ok = await confirm({
       title: "Delete this request?",
-      body: `${hold.name}'s request and its history will be removed from the admin and from their account. They won't be emailed. This can't be undone.`,
+      body: `${hold.name}'s request and its history will be removed from the admin and from their account. Deleting doesn't email them. This can't be undone.`,
       confirmLabel: "Delete request",
       cancelLabel: "Keep it",
       tone: "danger",
@@ -983,7 +983,8 @@ function Console(props: Props) {
         {props.view === "holds" && (
           <AdminHolds
             holds={holds}
-            initialHoldId={props.initialHoldId}
+            // The address bar wins: links to a request (bell, overview, emails) update it.
+            initialHoldId={searchParams.get("hold") || props.initialHoldId}
             busy={busy}
             onSave={saveHoldWorkflow}
             onTransition={(hold, status) => void transitionHold(hold, status)}

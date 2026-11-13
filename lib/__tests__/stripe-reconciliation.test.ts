@@ -59,3 +59,9 @@ it("cannot close Checkout without Stripe credentials", async () => {
   mockAttempts.mockResolvedValue({ data: [{ id: "attempt-1", checkout_session_id: "cs_open" }], error: null });
   await expect(closeOpenCheckouts(holdId)).rejects.toThrow(/Payment is in progress/);
 });
+
+it("speaks to the customer when they cancel and their payment just landed", async () => {
+  mockAttempts.mockResolvedValue({ data: [{ id: "attempt-1", checkout_session_id: "cs_paid" }], error: null });
+  mockStripe.checkout.sessions.retrieve.mockResolvedValue({ id: "cs_paid", status: "complete", payment_status: "paid", payment_intent: "pi_1" });
+  await expect(closeOpenCheckouts(holdId, "customer")).rejects.toThrow(/Your payment has just gone through/);
+});

@@ -17,6 +17,7 @@ const migrations = [
   "202611030001_order_alert_email.sql",
   "202611070001_notification_payload_details.sql",
   "202611140001_hold_delete_and_delivery.sql",
+  "202611140002_order_qa_fixes.sql",
 ];
 await db.exec(`
   create role anon;
@@ -379,6 +380,10 @@ await assert.rejects(
 await as("authenticated", owner);
 await assert.rejects(db.query("select public.cms_delete_hold($1)", [emailHoldId]), /Cancel it before deleting/);
 await db.query("select public.cms_transition_hold($1,'rejected')", [postHoldId]);
+// The decline email is still queued, so the request can't be deleted yet.
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /still being sent/);
+await as("postgres");
+await db.query("update public.notification_outbox set status='sent', sent_at=now() where hold_id=$1", [postHoldId]);
 await as("authenticated", customer);
 await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /Administrator access required/);
 await as("authenticated", owner);
@@ -393,5 +398,45 @@ assert.ok(paidHold, "An earlier check leaves a paid hold to test against");
 await as("authenticated", owner);
 await assert.rejects(db.query("select public.cms_delete_hold($1)", [paidHold.id]), /kept for your records|Cancel it before deleting/);
 
+// ── Deadline notes use Melbourne time ─────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-18");
+const extendId = await acceptedHold("phase4-card-18");
+await as("authenticated", owner);
+const newDeadline = new Date(Date.now() + 3 * 86_400_000);
+newDeadline.setUTCMinutes(30, 0, 0);
+await db.query("select public.cms_set_hold_deadline($1,$2)", [extendId, newDeadline.toISOString()]);
+await as("postgres");
+const extendNote = (await db.query("select note from public.hold_status_history where hold_id=$1 and note like 'Deadline%' order by id desc limit 1", [extendId])).rows[0].note;
+const melbourne = Object.fromEntries(new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Melbourne", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(newDeadline).map((p) => [p.type, p.value]));
+assert.equal(extendNote, `Deadline extended to ${melbourne.day} ${melbourne.month} ${melbourne.year}, ${melbourne.hour}:${melbourne.minute} ${melbourne.dayPeriod.toUpperCase()} Melbourne time`);
+
+// ── Status emails know what changed ───────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-19");
+const mailHoldId = await acceptedHold("phase4-card-19");
+const latestMail = async () => (await db.query("select payload from public.notification_outbox where hold_id=$1 and kind='customer_status_changed' order by id desc limit 1", [mailHoldId])).rows[0].payload;
+const mailCount = async () => (await db.query("select count(*)::int as n from public.notification_outbox where hold_id=$1 and kind='customer_status_changed'", [mailHoldId])).rows[0].n;
+await as("postgres");
+const beforeNote = await mailCount();
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,null,null,null,null,$2)", [mailHoldId, "Packing tomorrow"]);
+await as("postgres");
+assert.equal(await mailCount(), beforeNote, "A note on an unpaid hold doesn't re-send the reserved email");
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,null,'paid',null,'manual',null)", [mailHoldId]);
+await db.query("select public.cms_set_hold_workflow($1,null,'refunded',null,null,null)", [mailHoldId]);
+await as("postgres");
+assert.equal((await latestMail()).refundedNow, true);
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,'cancelled',null,null,null,null)", [mailHoldId]);
+await as("postgres");
+const closing = await latestMail();
+assert.equal(closing.status, "cancelled");
+assert.equal(closing.statusChanged, true);
+assert.equal(closing.refundedNow, false);
+
 await db.close();
-console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, order alert routing, delivery addresses and hold deletion.");
+console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, order alert routing, delivery addresses, hold deletion and status email changes.");

@@ -20,7 +20,8 @@ const paymentLabels: Record<string, string> = {
   unpaid: "Unpaid",
   pending: "Checkout open",
   paid: "Paid",
-  failed: "Failed",
+  // Usually an expired or abandoned checkout rather than a declined card.
+  failed: "Not completed",
   refunded: "Refunded",
 };
 
@@ -66,13 +67,17 @@ export function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-/** Deadlines need the time too: a hold that ends at 9am is gone by evening. */
+/**
+ * Deadlines need the time too: a hold that ends at 9am is gone by evening.
+ * Customers outside Victoria need to know whose 9am it is.
+ */
 export function formatDeadline(value: string) {
-  return new Intl.DateTimeFormat("en-AU", {
+  const time = new Intl.DateTimeFormat("en-AU", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Australia/Melbourne",
   }).format(new Date(value));
+  return `${time} Melbourne time`;
 }
 
 export function formatMoney(currency: string, cents: number) {
