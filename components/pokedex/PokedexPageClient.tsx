@@ -8,6 +8,8 @@ import {
   getTypeBadgeColor,
 } from "../../lib/data";
 import { SubpageHeader } from "../SubpageHeader";
+import { RevealFooterLayout } from "../RevealFooterLayout";
+import { SiteFooter } from "../footer/SiteFooter";
 import { PokemonSummary } from "./PokemonSummary";
 import { useCatalog } from "../CatalogProvider";
 import { catalogPokemon, pokemonImage as gen3Sprite, type PokemonTile as PokedexTile } from "../../lib/cms/pokemon";
@@ -37,7 +39,9 @@ export function PokedexPageClient() {
     POKEDEX_TILES[0];
 
   return (
-    <main data-pokedex-page data-pokedex-preview="true" className="pokeball-cursor min-h-screen bg-[#3194EE] text-ink-black overflow-x-hidden">
+    <main data-pokedex-page data-pokedex-preview="true" className="pokeball-cursor relative min-h-screen bg-[#7b39ed] text-ink-black overflow-x-hidden">
+      <RevealFooterLayout footer={<SiteFooter />}>
+      <div className="min-h-screen bg-[#3194EE]">
       <SubpageHeader title="Dedicated Pokédex" />
 
 
@@ -112,6 +116,8 @@ export function PokedexPageClient() {
           </div>
         </div>
       </section>
+      </div>
+      </RevealFooterLayout>
     </main>
   );
 }

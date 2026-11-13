@@ -69,3 +69,32 @@ describe("Admin hold requests", () => {
     expect(customerMessage(hold({ note: "Delivery: Tracked post\n\nHi" }))).toBe("Delivery: Tracked post\n\nHi");
   });
 });
+
+describe("Admin hold list paging", () => {
+  it("steps back a page when the last request on it goes away", () => {
+    const many = Array.from({ length: 11 }, (_, i) =>
+      hold({ id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(i).padStart(12, "0")}`, name: `Collector ${i}` }),
+    );
+    const { rerender } = render(<AdminHolds {...props} holds={many} />);
+    screen.getByRole("button", { name: "Next" }).click();
+    return Promise.resolve().then(() => {
+      rerender(<AdminHolds {...props} holds={many.slice(0, 10)} />);
+      expect(screen.getAllByText(/^Collector \d+$/).length).toBeGreaterThan(0);
+    });
+  });
+});
+
+describe("Admin hold links", () => {
+  it("switches back to a linked request after another one was opened", async () => {
+    const first = hold({ name: "First buyer" });
+    const second = hold({ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", name: "Second buyer" });
+    const { rerender } = render(<AdminHolds {...props} holds={[first, second]} initialHoldId={first.id} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: /Second buyer/ }));
+    expect(screen.getByRole("region", { name: "Request from Second buyer" })).toBeInTheDocument();
+    expect(window.location.search).toContain(`hold=${second.id}`);
+    // The address bar now names the second request; a link to the first changes it back.
+    rerender(<AdminHolds {...props} holds={[first, second]} initialHoldId={second.id} />);
+    rerender(<AdminHolds {...props} holds={[first, second]} initialHoldId={first.id} />);
+    expect(screen.getByRole("region", { name: "Request from First buyer" })).toBeInTheDocument();
+  });
+});

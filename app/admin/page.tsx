@@ -78,11 +78,16 @@ export default async function AdminPage({
   try {
     auth = await requireAdmin();
   } catch (e) {
+    if (e instanceof Error && e.message.includes("permission"))
+      redirect("/admin/login?error=access");
+    // Come back to the same screen (e.g. the request linked from an email) after signing in.
+    const back = new URLSearchParams();
+    if (searchParams.view) back.set("view", searchParams.view);
+    if (searchParams.hold) back.set("hold", searchParams.hold);
     redirect(
-      "/admin/login" +
-        (e instanceof Error && e.message.includes("permission")
-          ? "?error=access"
-          : ""),
+      back.size
+        ? `/admin/login?next=${encodeURIComponent(`/admin?${back}`)}`
+        : "/admin/login",
     );
   }
   const { db, user, role } = auth;
@@ -247,6 +252,16 @@ export default async function AdminPage({
       .limit(200);
     if (holdsResult.error) return <DatabaseSetup />;
     holds = holdsResult.data as Hold[];
+    // A link to an older request (beyond the latest 200) still opens it.
+    const linked = searchParams.hold;
+    if (linked && /^[0-9a-f-]{36}$/i.test(linked) && !holds.some((hold) => hold.id === linked)) {
+      const older = await db
+        .from("hold_requests")
+        .select("*,hold_request_items(*),hold_status_history(*)")
+        .eq("id", linked)
+        .maybeSingle();
+      if (older.data) holds = [...holds, older.data as Hold];
+    }
     pendingHoldCount = holds.filter((hold) => hold.status === "pending").length;
   } else if (view === "content") {
     const [settingsRow, pending] = await Promise.all([

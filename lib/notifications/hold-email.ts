@@ -17,6 +17,10 @@ export type HoldNotificationPayload = {
   fulfillmentNote?: string | null;
   items: { cardId: string; name: string; priceCents: number; set?: string | null; number?: string | null }[];
   note?: string | null;
+  /** Set when the hold's status changed in this update. */
+  statusChanged?: boolean;
+  /** Set when this update recorded the refund. */
+  refundedNow?: boolean;
   createdAt?: string;
   expiresAt?: string | null;
   paidAt?: string | null;
@@ -111,7 +115,11 @@ export function holdEmailVariant(kind: HoldNotificationKind, payload: HoldNotifi
   if (kind === "staff_request_received") return "staff";
   if (kind === "customer_request_received") return "received";
   const fulfillment = payload.fulfillmentStatus || "not_ready";
-  if (payload.paymentStatus === "refunded") return "refunded";
+  // Newer payloads say what changed. A hold closed after an earlier refund
+  // gets the closing email, not the refund email again. Older payloads
+  // (without the flag) keep the previous behaviour.
+  const refundIsNews = payload.refundedNow ?? (payload.statusChanged ? false : true);
+  if (payload.paymentStatus === "refunded" && refundIsNews) return "refunded";
   if (payload.status === "rejected") return "declined";
   if (payload.status === "cancelled") return "cancelled";
   if (payload.status === "expired") return "expired";

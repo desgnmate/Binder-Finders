@@ -521,7 +521,7 @@ function ConfirmationPanel({
           ))}
         </ol>
         <div className="flex flex-wrap gap-3">
-          <Link href="/account/orders" className={`${btnDark} min-h-[52px]`}>Track this request</Link>
+          <Link href={reference ? `/account/orders/${reference}` : "/account/orders"} className={`${btnDark} min-h-[52px]`}>Track this request</Link>
           <Link href="/shop" className={`${btnWhite} min-h-[52px]`}>Keep browsing</Link>
         </div>
         <p className="m-0 text-sm">

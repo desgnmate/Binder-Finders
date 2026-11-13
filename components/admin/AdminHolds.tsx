@@ -5,6 +5,7 @@ import { Copy, Inbox, Layers, MapPin, Search, Trash2 } from "lucide-react";
 import { addressLines } from "../../lib/delivery";
 import type { Hold } from "../../lib/cms/types";
 import {
+  updateQuery,
   awaitingPayment,
   holdLabel,
   holdRef,
@@ -396,7 +397,11 @@ export function AdminHolds({
       ),
     [holds, filter, search],
   );
-  const pageHolds = visible.slice(page * 10, page * 10 + 10);
+  // After the last request on a page is accepted, declined or deleted, step
+  // back to the last page that still has requests instead of showing nothing.
+  const lastPage = Math.max(0, Math.ceil(visible.length / 10) - 1);
+  const currentPage = Math.min(page, lastPage);
+  const pageHolds = visible.slice(currentPage * 10, currentPage * 10 + 10);
   // Keep the selected editor mounted while searching. Filtering never discards edits.
   const hold = holds.find((h) => h.id === selected);
   const history = [...(hold?.hold_status_history || [])].sort(
@@ -427,6 +432,9 @@ export function AdminHolds({
       return;
     setDirty(false);
     setSelected(id);
+    // Keep the address bar on this request, so a later link to the request
+    // that was open before (e.g. from a notification) still switches to it.
+    updateQuery({ hold: id });
     // On narrow screens (no laptop zoom) the detail sits below the list; bring it into view.
     if (window.matchMedia?.("(max-width: 960px)").matches)
       requestAnimationFrame(() =>
@@ -538,18 +546,18 @@ export function AdminHolds({
           <div className="cms-request-pagination">
             <button
               className="cms-btn"
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
             >
               Previous
             </button>
             <span>
-              {page + 1} / {Math.ceil(visible.length / 10)}
+              {currentPage + 1} / {Math.ceil(visible.length / 10)}
             </span>
             <button
               className="cms-btn"
-              disabled={(page + 1) * 10 >= visible.length}
-              onClick={() => setPage(page + 1)}
+              disabled={(currentPage + 1) * 10 >= visible.length}
+              onClick={() => setPage(currentPage + 1)}
             >
               Next
             </button>

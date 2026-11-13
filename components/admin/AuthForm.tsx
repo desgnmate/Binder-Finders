@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { browserClient } from "../../lib/supabase/browser";
-export function AuthForm({ mode = "login" }: { mode?: "login" | "reset" }) {
+export function AuthForm({ mode = "login", next = "/admin" }: { mode?: "login" | "reset"; next?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -128,7 +128,7 @@ export function AuthForm({ mode = "login" }: { mode?: "login" | "reset" }) {
           throw new Error(
             "The email or password is incorrect. Please try again.",
           );
-        window.location.assign("/admin");
+        window.location.assign(next);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to sign in.");
