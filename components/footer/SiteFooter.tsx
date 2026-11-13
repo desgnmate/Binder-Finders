@@ -128,6 +128,22 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
             </div>
           </div>
 
+          {/* Help and policy pages */}
+          <nav aria-label="Store information" className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3 md:justify-start">
+            {[
+              { label: "About", href: "/about" },
+              { label: "How holds work", href: "/how-holds-work" },
+              { label: "Shipping & returns", href: "/shipping-returns" },
+              { label: "Contact", href: "/contact" },
+              { label: "Privacy", href: "/privacy" },
+              { label: "Terms", href: "/terms" },
+            ].map((link) => (
+              <Link key={link.href} href={link.href} className="font-body text-sm font-semibold text-white/80 hover:text-brand-yellow">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
           {/* Row 3: Fun fact ticker + copyright bar */}
           <div className="mt-12 relative">
             <div className="absolute bottom-full left-0 right-0 pointer-events-none z-10">

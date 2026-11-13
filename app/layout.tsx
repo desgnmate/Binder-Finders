@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./responsive.css";
+import { DEFAULT_TITLE, SITE_NAME, isIndexable, pageMetadata, siteUrl } from "../lib/seo";
 
 // Stock and prices must reflect the database, never a build-time snapshot.
 export const dynamic = "force-dynamic";
@@ -29,11 +30,20 @@ const rammetto = localFont({
   variable: "--font-heading-proxy",
 });
 
-export const metadata: Metadata = {
-  title: "BinderFinders — Home of Vintage Pokemon Cards",
-  description:
-    "Browse our collection of graded and raw Hoenn-era collectibles from Binders to Gem Mint Singles. Flatbed scanned, certified centering.",
-};
+export function generateMetadata(): Metadata {
+  return {
+    metadataBase: new URL(siteUrl()),
+    applicationName: SITE_NAME,
+    // No path: a canonical set here would be inherited by every page and
+    // point them all at the home page. Each public page sets its own.
+    ...pageMetadata({ title: DEFAULT_TITLE, absoluteTitle: true }),
+    // Pages name themselves; the template adds the brand after.
+    title: { default: DEFAULT_TITLE, template: `%s | ${SITE_NAME}` },
+    robots: isIndexable()
+      ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } }
+      : { index: false, follow: false },
+  };
+}
 
 export default function RootLayout({
   children,

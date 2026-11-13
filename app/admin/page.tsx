@@ -44,7 +44,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { view } = await searchParams;
   return {
-    title: `${viewTitles[view as AdminView] || "Overview"} · Admin · BinderFinders`,
+    title: `${viewTitles[view as AdminView] || "Overview"} · Admin`,
   };
 }
 

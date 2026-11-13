@@ -1,5 +1,9 @@
 import { CheckoutMartClient } from "../../../components/checkout/CheckoutMartClient";
+import { PageShell } from "../../../components/site/PageShell";
 import { configured, sessionClient } from "../../../lib/supabase/server";
+
+// Each visitor's checkout is different; it has nothing to show in search.
+export const metadata = { title: "Your bag", robots: { index: false, follow: true } };
 
 interface CheckoutPageProps {
   searchParams: Promise<{ card?: string }>;
@@ -20,5 +24,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       };
     }
   }
-  return <CheckoutMartClient initialCardId={params.card} customer={customer} />;
+  return (
+    <PageShell compactFooter>
+      <CheckoutMartClient initialCardId={params.card} customer={customer} />
+    </PageShell>
+  );
 }

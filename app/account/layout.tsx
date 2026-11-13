@@ -4,7 +4,7 @@ import { AccountShell } from "../../components/account/AccountShell";
 import "./account.css";
 
 export const metadata = {
-  title: "My account | BinderFinders",
+  title: "My account",
   robots: { index: false, follow: false },
 };
 
