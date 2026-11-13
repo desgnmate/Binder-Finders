@@ -1,9 +1,26 @@
 import { getCatalog } from "../../../lib/cms/catalog";
+import type { Metadata } from "next";
 import { CardDetailClient } from "../../../components/shop/CardDetailClient";
+import { cardMetadata, pageMetadata } from "../../../lib/seo";
 
 
 interface ShopPageProps {
   searchParams: Promise<{ q?: string; card?: string; type?: string; set?: string; pokemon?:string }>;
+}
+
+const SHOP_DESCRIPTION =
+  "Shop vintage Pokémon cards, graded and raw. Every listing shows real flatbed scans of the actual card, front and back.";
+
+export async function generateMetadata({ searchParams }: ShopPageProps): Promise<Metadata> {
+  const { cards, settings } = await getCatalog();
+  const { card: cardId } = await searchParams;
+  if (cardId) {
+    const card = cards.find((c) => c.id === cardId);
+    if (!card) return { title: "Card not found", robots: { index: false, follow: true } };
+    return cardMetadata(card, settings?.currency);
+  }
+  // Searches and filters are views of the same shop, so they all point to it.
+  return pageMetadata({ title: "Shop vintage Pokémon cards", description: SHOP_DESCRIPTION, path: "/shop" });
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {

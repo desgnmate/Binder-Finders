@@ -113,7 +113,7 @@ export const defaultContent: z.infer<typeof contentSchema> = {
     "Ask for extra scans, corner photos, condition notes, holds, or a bundle quote.",
   storeDescription:
     "BinderFinders is a vintage Pokémon TCG shop specializing in Hoenn-era collectibles. Every card is hand-inspected, flatbed scanned, and graded for centering before listing.",
-  contactEmail: "hello@binderfinders.com",
+  contactEmail: "ross@binderfinders.com",
   location: "Melbourne, Australia",
 };
 export const settingsSchema = z

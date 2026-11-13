@@ -112,5 +112,5 @@ it("shows cart images and respects a saved bag over a checkout card parameter", 
   render(<BagProvider><CheckoutMartClient initialCardId="charizard-base1" customer={{ email: "ash@example.com", name: "Ash Ketchum" }} /></BagProvider>);
   expect(screen.getByRole("img", { name: "Blastoise card" })).toHaveAttribute("src", SHOP_CARDS[1].imageUrl);
   expect(screen.queryByRole("img", { name: "Charizard card" })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Inspect Blastoise" })).toHaveAttribute("href", "/shop?card=blastoise-base1");
+  expect(screen.getByRole("link", { name: "View Blastoise" })).toHaveAttribute("href", "/cards/blastoise-base1");
 });
