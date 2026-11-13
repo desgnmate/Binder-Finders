@@ -23,6 +23,13 @@ describe("HeroNav", () => {
     expect(accountIndex).toBeGreaterThan(myBagIndex);
   });
 
+  it("links to the About, How holds work and Contact pages", () => {
+    render(<HeroNav />);
+    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
+    expect(screen.getByRole("link", { name: "How holds work" })).toHaveAttribute("href", "/how-holds-work");
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+  });
+
   it("shows a shopping bag icon next to the 'My Bag' item", () => {
     render(<HeroNav />);
     const myBagLink = screen.getByRole("link", { name: /My Bag/i });

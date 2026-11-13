@@ -7,8 +7,9 @@ import Link from "next/link";
 const NAV_ITEMS = [
   { label: "Shop Cards", href: "/#binder" },
   { label: "Pokedex", href: "/pokedex" },
-  { label: "About", href: "/#about" },
-  { label: "Contact", href: "/#contact" },
+  { label: "About", href: "/about" },
+  { label: "How holds work", href: "/how-holds-work" },
+  { label: "Contact", href: "/contact" },
 ] as const;
 
 /**
