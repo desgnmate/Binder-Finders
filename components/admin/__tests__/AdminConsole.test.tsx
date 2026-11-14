@@ -240,7 +240,7 @@ it("filters and sorts listings without changing their data", () => {
     year: 1999,
     number: "1",
     rarity: "Common" as const,
-    condition: "RAW NM" as const,
+    condition: "NM" as const,
     type: "Grass" as const,
     price: 20,
     imageUrl: "",

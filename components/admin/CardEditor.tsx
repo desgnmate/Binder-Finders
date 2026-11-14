@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { pokemonImage, pokemonName } from "../../lib/cms/pokemon";
+import { GRADED_CONDITIONS, RARITIES, RAW_CONDITIONS } from "../../lib/card-grades";
 import { AlertCircle, Check, ChevronRight, Copy, Upload, X } from "lucide-react";
 import { saveCard, uploadImage } from "../../app/admin/actions";
 import { type CMSCard, cardSchema } from "../../lib/cms/types";
@@ -16,7 +17,7 @@ const empty: CMSCard = {
   year: 1999,
   number: "",
   rarity: "Common",
-  condition: "RAW NM",
+  condition: "NM",
   type: "Grass",
   price: 0,
   imageUrl: "",
@@ -40,16 +41,6 @@ const fieldLabels: Record<string, string> = {
   backImageUrl: "Back scan",
   description: "Condition notes",
 };
-const rarities = [
-  "Common",
-  "Uncommon",
-  "Rare",
-  "Rare Holo",
-  "Ultra Rare",
-  "Secret Rare",
-  "Shining Holo",
-];
-const conditions = ["RAW NM", "RAW LP", "PSA 8", "PSA 9", "PSA 10"];
 const types = [
   "Fire",
   "Water",
@@ -339,7 +330,7 @@ export function CardEditor({
                     change("rarity", e.target.value as CMSCard["rarity"])
                   }
                 >
-                  {rarities.map((v) => (
+                  {RARITIES.map((v) => (
                     <option key={v}>{v}</option>
                   ))}
                 </select>
@@ -358,25 +349,26 @@ export function CardEditor({
                 </select>
               </label>
             </div>
-            <fieldset>
-              <legend>Condition / grade</legend>
-              <div className="cms-pills">
-                {conditions.map((v) => (
-                  <label key={v}>
-                    <input
-                      type="radio"
-                      name="condition"
-                      value={v}
-                      checked={value.condition === v}
-                      onChange={() =>
-                        change("condition", v as CMSCard["condition"])
-                      }
-                    />
-                    {v}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <label className="cms-field">
+              Condition / grade
+              <select
+                value={value.condition}
+                onChange={(e) =>
+                  change("condition", e.target.value as CMSCard["condition"])
+                }
+              >
+                <optgroup label="Raw">
+                  {RAW_CONDITIONS.map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Graded">
+                  {GRADED_CONDITIONS.map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </optgroup>
+              </select>
+            </label>
             <label className="cms-field">
               Condition notes
               <textarea

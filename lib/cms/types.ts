@@ -1,6 +1,14 @@
 import { z } from "zod";
 import type { HoldDelivery } from "../delivery";
 import type { ShopCard } from "../data";
+import {
+  CONDITIONS,
+  RARITIES,
+  normalizeCondition,
+  normalizeRarity,
+  type CardCondition,
+  type CardRarity,
+} from "../card-grades";
 
 const imageUrl = z
   .string()
@@ -17,16 +25,9 @@ export const cardSchema = z
     set: z.string().trim().min(1).max(120),
     year: z.number().int().min(1996).max(2100),
     number: z.string().trim().min(1).max(40),
-    rarity: z.enum([
-      "Common",
-      "Uncommon",
-      "Rare",
-      "Rare Holo",
-      "Ultra Rare",
-      "Secret Rare",
-      "Shining Holo",
-    ]),
-    condition: z.enum(["RAW NM", "RAW LP", "PSA 8", "PSA 9", "PSA 10"]),
+    // Older saved values (e.g. "RAW NM", "Rare Holo") are mapped to the current lists.
+    rarity: z.preprocess(normalizeRarity, z.enum(RARITIES)),
+    condition: z.preprocess(normalizeCondition, z.enum(CONDITIONS)),
     type: z.enum([
       "Fire",
       "Water",
@@ -208,6 +209,8 @@ export interface AuditEntry {
 export function fromRow(row: Record<string, any>): CMSCard {
   return {
     ...row.data,
+    condition: normalizeCondition(row.data?.condition) as CardCondition,
+    rarity: normalizeRarity(row.data?.rarity) as CardRarity,
     id: row.id,
     price: row.price_cents / 100,
     publication: row.publication,

@@ -9,13 +9,13 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const { view = "dashboard", hold: holdId, role = "owner" } = await searchParams;
   const now = Date.now();
   const at = (hours: number) => new Date(now + hours * 3_600_000).toISOString();
-  const card: CMSCard = { id: "sample-charizard", name: "Charizard", pokemonId: 6, set: "Base Set", year: 1999, number: "4/102", rarity: "Rare Holo", condition: "PSA 8", type: "Fire", price: 8500, imageUrl: "", backImageUrl: "", additionalImages: [], description: "Example listing for local visual checks", publication: "published", availability: "reserved", featuredOrder: null, updatedAt: at(-100) };
+  const card: CMSCard = { id: "sample-charizard", name: "Charizard", pokemonId: 6, set: "Base Set", year: 1999, number: "4/102", rarity: "Holo Rare", condition: "PSA 8", type: "Fire", price: 8500, imageUrl: "", backImageUrl: "", additionalImages: [], description: "Example listing for local visual checks", publication: "published", availability: "reserved", featuredOrder: null, updatedAt: at(-100) };
   const cards: CMSCard[] = [
     card,
     { ...card, id: "sample-blastoise", name: "Blastoise", number: "2/102", price: 2200, type: "Water" },
-    { ...card, id: "sample-pikachu", name: "Pikachu", number: "58/102", condition: "RAW NM", rarity: "Common", price: 45, availability: "available", type: "Lightning" },
+    { ...card, id: "sample-pikachu", name: "Pikachu", number: "58/102", condition: "NM", rarity: "Common", price: 45, availability: "available", type: "Lightning" },
     { ...card, id: "sample-venusaur", name: "Venusaur", number: "15/102", condition: "PSA 9", price: 1850, publication: "draft", availability: "available", type: "Grass" },
-    { ...card, id: "sample-mewtwo", name: "Mewtwo", number: "10/102", condition: "RAW LP", price: 320, availability: "sold", type: "Psychic" },
+    { ...card, id: "sample-mewtwo", name: "Mewtwo", number: "10/102", condition: "LP", price: 320, availability: "sold", type: "Psychic" },
     { ...card, id: "sample-gengar", name: "Gengar", set: "Fossil", number: "5/62", condition: "PSA 10", price: 1240, availability: "available", type: "Psychic" },
   ];
   const items = (list: CMSCard[]) => list.map((c) => ({ card_id: c.id, name: c.name, price_cents: c.price * 100 }));
