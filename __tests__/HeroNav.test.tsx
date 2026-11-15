@@ -23,11 +23,10 @@ describe("HeroNav", () => {
     expect(accountIndex).toBeGreaterThan(myBagIndex);
   });
 
-  it("links to the About, How holds work and Contact pages", () => {
+  it("links to the About and Contact pages", () => {
     render(<HeroNav />);
     expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
-    expect(screen.getByRole("link", { name: "How holds work" })).toHaveAttribute("href", "/how-holds-work");
-    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
   });
 
   it("shows a shopping bag icon next to the 'My Bag' item", () => {
@@ -68,12 +67,12 @@ describe("HeroNav", () => {
   // Umano nav scale (umano-style-iteration)
   // ---------------------------------------------------------------------------
 
-  it("width-constrains the pill (no w-full on the nav) so it reads as a floating object, not a full-width bar", () => {
+  it("width-constrains the pill to the approved 1080px desktop width", () => {
     const { container } = render(<HeroNav />);
     const nav = screen.getByRole("navigation");
-    // The pill is bounded to a max-w-4xl container — not full-bleed.
+    // The pill is bounded to a max-w-5xl container — not full-bleed.
     expect(nav.className).not.toMatch(/\bw-full\b/);
-    expect(nav.className).toMatch(/\bmax-w-4xl\b/);
+    expect(nav.className).toContain("max-w-[1080px]");
     expect(nav.className).toMatch(/\bmx-auto\b/);
   });
 
@@ -106,29 +105,29 @@ describe("HeroNav", () => {
     expect(nav.className).not.toMatch(/\bpy-5\b/);
   });
 
-  it("spaces the nav items at a 16px gap (gap-4)", () => {
+  it("uses the approved wider desktop nav spacing", () => {
     const { container } = render(<HeroNav />);
     const list = screen.getByRole("navigation").querySelector("ul") as HTMLElement;
-    expect(list.className).toMatch(/\bgap-4\b/);
-    expect(list.className).not.toMatch(/\bgap-6\b/);
+    expect(list.className).toMatch(/\bgap-5\b/);
+    expect(list.className).toContain("lg:gap-6");
   });
 
-  it("styles the nav links as Umano-style pill links (rounded-lg + px-2.5 py-1.5)", () => {
+  it("styles the nav links as Umano-style pill links with the approved spacing", () => {
     const { container } = render(<HeroNav />);
     const shopLink = screen.getByRole("link", { name: /Shop Cards/i });
     // Umano's nav links: 6px 10px padding, 8px border-radius.
     // Tailwind: px-2.5 (10px) py-1.5 (6px) + rounded-lg (8px).
     expect(shopLink.className).toMatch(/\brounded-lg\b/);
-    expect(shopLink.className).toMatch(/\bpx-2\.5\b/);
+    expect(shopLink.className).toMatch(/\bpx-3\b/);
     expect(shopLink.className).toMatch(/\bpy-1\.5\b/);
   });
 
-  it("keeps the 'My Bag' action icon-only, prominent, and touch-sized", () => {
+  it("keeps the 'My Bag' action prominent, touch-sized, and shows the live bag count", () => {
     const { container } = render(<HeroNav />);
     const myBag = screen.getByRole("link", { name: /My Bag/i });
     expect(myBag.className).toMatch(/\bh-11\b/);
-    expect(myBag.className).toMatch(/\bw-11\b/);
-    expect(myBag.textContent).toBe("");
+    expect(myBag.className).toMatch(/\bmin-w-11\b/);
+    expect(myBag.textContent).toContain("0");
     expect(myBag.className).not.toMatch(/\bbg-ink-black\b/);
     expect(myBag.querySelector("svg")).toHaveAttribute("width", "20");
   });

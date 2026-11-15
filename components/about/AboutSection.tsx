@@ -17,8 +17,8 @@ const BRAND_PROMISES = [
     pokemonName: "Wobbuffet",
   },
   {
-    title: "Fast Hold Requests",
-    body: "One tap. Reply within 24 hours.",
+    title: "Fast Secure Checkout",
+    body: "Simple checkout with secure Stripe payment.",
     spriteId: 194, // Wooper
     pokemonName: "Wooper",
   },

@@ -43,8 +43,8 @@ it("shows real request data and scopes every query to the signed-in customer", a
   expect(screen.getByRole("link", { name: /Venusaur/ })).toHaveAttribute("href", "/account/orders/12345678-test");
   expect(screen.getByText("AUD 65.00")).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /Browse cards/ })).toHaveAttribute("href", "/shop");
-  expect(screen.getByText("How a hold becomes an order").closest("summary")).toBeInTheDocument();
-  expect(screen.getByText(/Stripe checkout opens in Orders after confirmation/)).toBeInTheDocument();
+  expect(screen.getByText("How checkout works").closest("summary")).toBeInTheDocument();
+  expect(screen.getByText(/Complete your secure payment through Stripe/)).toBeInTheDocument();
   expect(queries[0].eq).toHaveBeenCalledWith("user_id", user.id);
   queries.slice(1).forEach(result => expect(result.eq).toHaveBeenCalledWith("customer_user_id", user.id));
   expect(queries[1].limit).toHaveBeenCalledWith(4);

@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -101,9 +102,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
     setCardIds((prev) => prev.filter((id) => id !== cardId));
   };
 
-  const clearBag = () => {
+  const clearBag = useCallback(() => {
     setCardIds([]);
-  };
+  }, []);
 
   const hasCard = (cardId: string) => cardIds.includes(cardId);
 

@@ -16,6 +16,23 @@ const migrations = [
   "202611020002_hold_workflow_integrity.sql",
   "202611030001_order_alert_email.sql",
   "202611070001_notification_payload_details.sql",
+  "202611130001_guest_checkout_settings.sql",
+  "202611130002_guest_checkout_orders.sql",
+  "202611130003_guest_checkout_reservation.sql",
+  "202611130004_guest_card_protection.sql",
+  "202611130005_guest_admin_card_safety.sql",
+  "202611130006_guest_stripe_payment_attempts.sql",
+  "202611130007_guest_stripe_payment_workflow.sql",
+  "202611130008_guest_terminal_card_transitions.sql",
+  "202611130009_guest_stripe_webhook.sql",
+  "202611130010_guest_checkout_duration_setting.sql",
+  "202611130011_guest_checkout_reservation_expiry.sql",
+  "202611130012_guest_reconciliation_expiry.sql",
+  "202611130013_guest_payment_deadline.sql",
+  "202611130014_guest_unattached_payment_cleanup.sql",
+  "202611130015_guest_reconciliation_payload.sql",
+  "202611130016_guest_checkout_rate_limit.sql",
+  "202611140017_guest_late_payment_review.sql",
 ];
 await db.exec(`
   create role anon;
@@ -160,7 +177,7 @@ await as("postgres");
 assert.equal((await db.query("select status,payment_status from public.hold_requests where id=$1", [paidAtDeadline])).rows[0].payment_status, "paid");
 assert.equal((await db.query("select status from public.hold_requests where id=$1", [expiredAtDeadline])).rows[0].status, "expired");
 
-// ── Payment integrity guards ─────────────────────────────────────────────
+// -- Payment integrity guards --
 const workflow = (id, status, payment, reference = null) => db.query(
   "select public.cms_set_hold_workflow($1,$2,$3,null,$4,null)", [id, status, payment, reference]);
 
@@ -215,7 +232,7 @@ await db.query("select public.cms_record_stripe_webhook($1,$2,$3,$4,$5,$6,$7)", 
 await as("postgres");
 assert.equal((await db.query("select payment_status from public.hold_requests where id=$1", [shortHold])).rows[0].payment_status, "pending");
 
-// ── Workflow integrity ───────────────────────────────────────────────────
+// -- Workflow integrity --
 const holdState = async (id) => {
   await as("postgres");
   return (await db.query("select status,payment_status,fulfillment_status from public.hold_requests where id=$1", [id])).rows[0];
@@ -310,7 +327,7 @@ const secondBatch = (await db.query("select attempt_id from public.cms_due_strip
 assert.equal(firstBatch.length, 1);
 assert.notDeepEqual(firstBatch, secondBatch, "The next run checks a different overdue attempt");
 
-// ── Order alerts go to the store inbox, not every admin login ────────────
+// -- Order alerts go to the store inbox, not every admin login --
 const staffAlerts = async (id) => {
   await as("postgres");
   return (await db.query("select to_email from public.notification_outbox where hold_id=$1 and kind='staff_request_received' order by to_email", [id])).rows.map((r) => r.to_email);
@@ -325,6 +342,48 @@ await as("postgres");
 await db.query("insert into auth.users(id,email,email_confirmed_at) values($1,'editor@example.test',now())", [editor]);
 await db.query("insert into public.admin_users(user_id,email,role) values($1,'editor@example.test','editor')", [editor]);
 await as("authenticated", editor);
+await as("authenticated", owner);
+const ownerSettingsBefore = (await db.query("select data,updated_at from public.store_settings where id=true")).rows[0];
+await db.query("select public.cms_save_settings($1,$2)", [
+  { ...ownerSettingsBefore.data, guestCheckoutEnabled: true, shippingFeeCents: 1250 },
+  ownerSettingsBefore.updated_at,
+]);
+const ownerSettingsAfter = (await db.query("select data,updated_at from public.store_settings where id=true")).rows[0];
+assert.equal(ownerSettingsAfter.data.guestCheckoutEnabled, true, "Owner can enable Guest Checkout");
+assert.equal(ownerSettingsAfter.data.shippingFeeCents, 1250, "Owner can configure shipping");
+await assert.rejects(
+  db.query("select public.cms_save_settings($1,$2)", [
+    { ...ownerSettingsAfter.data, currency: "" },
+    ownerSettingsAfter.updated_at,
+  ]),
+  /Choose a currency/,
+  "Guest Checkout requires a configured currency",
+);
+await db.query("select public.cms_save_settings($1,$2)", [
+  { ...ownerSettingsAfter.data, guestCheckoutEnabled: false, shippingFeeCents: null },
+  ownerSettingsAfter.updated_at,
+]);
+const guestSettingsReset = (await db.query("select data from public.store_settings where id=true")).rows[0];
+assert.equal(guestSettingsReset.data.guestCheckoutEnabled, false);
+assert.equal(guestSettingsReset.data.shippingFeeCents, null);
+await as("authenticated", editor);
+const guestSettingsRow = (await db.query("select data,updated_at from public.store_settings where id=true")).rows[0];
+await assert.rejects(
+  db.query("select public.cms_save_settings($1,$2)", [
+    { ...guestSettingsRow.data, guestCheckoutEnabled: true },
+    guestSettingsRow.updated_at,
+  ]),
+  /Only an owner/,
+  "Editors cannot enable Guest Checkout",
+);
+await assert.rejects(
+  db.query("select public.cms_save_settings($1,$2)", [
+    { ...guestSettingsRow.data, shippingFeeCents: 1250 },
+    guestSettingsRow.updated_at,
+  ]),
+  /Only an owner/,
+  "Editors cannot change shipping fees",
+);
 assert.equal((await db.query("select public.cms_get_order_alert_email() as email")).rows[0].email, "binderfinders@gmail.com");
 await assert.rejects(db.query("select public.cms_set_order_alert_email('someone@example.test')"), /Only an owner/);
 await as("authenticated", customer);
@@ -340,7 +399,7 @@ await db.query("select public.cms_set_order_alert_email('')");
 await addCard("phase4-card-15");
 assert.deepEqual(await staffAlerts(await submit("phase4-card-15")), ["editor@example.test", "owner@example.test"], "With no store inbox, every active admin is alerted");
 
-// ── Email payload carries the order link, deadline and card details ──────
+// -- Email payload carries the order link, deadline and card details --
 await as("postgres");
 await db.exec("delete from public.hold_rate_limits");
 await addCard("phase4-card-16");
@@ -351,6 +410,880 @@ assert.equal(reservedEmail.holdId, emailHoldId);
 assert.ok(reservedEmail.expiresAt, "The reserved email knows the payment deadline");
 assert.equal(reservedEmail.items[0].set, "Base Set");
 assert.equal(reservedEmail.items[0].number, "4/102");
+
+// Guest Orders foundation security checks
+await as("postgres");
+await addCard("guest-test-card-1");
+await addCard("guest-test-card-2");
+
+const guestOrderKey = crypto.randomUUID();
+
+await as("anon");
+await assert.rejects(
+  db.query("select * from public.guest_orders"),
+  /permission denied/,
+  "Anonymous users cannot read guest orders",
+);
+await assert.rejects(
+  db.query("select * from public.guest_order_items"),
+  /permission denied/,
+  "Anonymous users cannot read guest order items",
+);
+
+await as("authenticated", customer);
+await assert.rejects(
+  db.query("select * from public.guest_orders"),
+  /permission denied/,
+  "Customers cannot read guest orders directly",
+);
+await assert.rejects(
+  db.query("select * from public.guest_order_items"),
+  /permission denied/,
+  "Customers cannot read guest order items directly",
+);
+
+await as("service_role");
+const guestOrder = (await db.query(`
+  insert into public.guest_orders
+    (request_key,name,email,fulfillment_method,currency,
+     subtotal_cents,shipping_fee_cents,total_cents)
+  values ($1,'Guest Test','guest@example.test','pickup','AUD',1250,0,1250)
+  returning id
+`, [guestOrderKey])).rows[0].id;
+
+await assert.rejects(
+  db.query(`
+    insert into public.guest_orders
+      (request_key,name,email,fulfillment_method,currency,
+       subtotal_cents,shipping_fee_cents,total_cents)
+    values ($1,'Duplicate','duplicate@example.test','pickup','AUD',1250,0,1250)
+  `, [guestOrderKey]),
+  /duplicate key/,
+  "Duplicate request keys are rejected",
+);
+
+await assert.rejects(
+  db.query(`
+    insert into public.guest_orders
+      (request_key,name,email,fulfillment_method,currency,
+       subtotal_cents,shipping_fee_cents,total_cents)
+    values ($1,'Invalid','invalid@example.test','pickup','AUD',1250,100,1250)
+  `, [crypto.randomUUID()]),
+  /check constraint/,
+  "Incorrect order totals are rejected",
+);
+
+await db.query(`
+  insert into public.guest_order_items(order_id,card_id,name,price_cents)
+  values ($1,'guest-test-card-1','Test card',1250)
+`, [guestOrder]);
+
+await assert.rejects(
+  db.query(`
+    insert into public.guest_order_items(order_id,card_id,name,price_cents)
+    values ($1,'missing-guest-card','Missing card',1250)
+  `, [guestOrder]),
+  /foreign key/,
+  "Order items must reference existing cards",
+);
+
+await as("postgres");
+await assert.rejects(
+  db.query(`
+    update public.cards
+    set guest_reserved_by=$1
+    where id='guest-test-card-1'
+  `, [guestOrder]),
+  /check constraint/,
+  "Guest reservations require reserved availability",
+);
+
+await db.query(`
+  update public.cards
+  set availability='reserved',guest_reserved_by=$1
+  where id='guest-test-card-1'
+`, [guestOrder]);
+
+await as("postgres");
+const existingHold = await acceptedHold("guest-test-card-2");
+
+await as("postgres");
+await assert.rejects(
+  db.query(`
+    update public.cards
+    set guest_reserved_by=$1
+    where id='guest-test-card-2'
+  `, [guestOrder]),
+  /check constraint/,
+  "A card cannot be reserved by Hold and Guest simultaneously",
+);
+
+await as("postgres");
+const guestReserved = (await db.query(`
+  select availability,guest_reserved_by
+  from public.cards
+  where id='guest-test-card-1'
+`)).rows[0];
+
+assert.equal(guestReserved.availability, "reserved");
+assert.equal(guestReserved.guest_reserved_by, guestOrder);
+
+console.log("Guest Orders foundation checks passed.");
+
+// Guest Checkout reservation RPC tests
+await addCard("guest-rpc-card-1");
+await addCard("guest-rpc-card-2");
+
+const guestRpcRequest = {
+  requestKey: crypto.randomUUID(),
+  name: "Guest Customer",
+  email: "guest-rpc@example.test",
+  fulfillmentMethod: "pickup",
+  cardIds: ["guest-rpc-card-1"],
+};
+
+await as("anon");
+await assert.rejects(
+  db.query("select public.cms_begin_guest_checkout($1)", [guestRpcRequest]),
+  /permission denied/,
+  "Anonymous users cannot execute the reservation RPC",
+);
+
+await as("authenticated", customer);
+await assert.rejects(
+  db.query("select public.cms_begin_guest_checkout($1)", [guestRpcRequest]),
+  /permission denied/,
+  "Authenticated customers cannot execute the reservation RPC directly",
+);
+
+await as("service_role");
+await assert.rejects(
+  db.query("select public.cms_begin_guest_checkout($1)", [guestRpcRequest]),
+  /Guest Checkout is currently unavailable/,
+  "Disabled Guest Checkout rejects reservations",
+);
+
+await as("authenticated", owner);
+const rpcSettingsBefore = (await db.query(
+  "select data,updated_at from public.store_settings where id=true"
+)).rows[0];
+
+await db.query(
+  "select public.cms_save_settings($1,$2)",
+  [
+    {
+      ...rpcSettingsBefore.data,
+      guestCheckoutEnabled: true,
+      shippingFeeCents: 250,
+    },
+    rpcSettingsBefore.updated_at,
+  ],
+);
+
+await as("service_role");
+const rpcFirst = (await db.query(
+  "select public.cms_begin_guest_checkout($1) as result",
+  [guestRpcRequest],
+)).rows[0].result;
+
+assert.equal(rpcFirst.existing, false);
+assert.equal(rpcFirst.status, "reserved");
+assert.equal(rpcFirst.currency, "AUD");
+assert.equal(rpcFirst.subtotalCents, 1250);
+assert.equal(rpcFirst.shippingFeeCents, 0);
+assert.equal(rpcFirst.totalCents, 1250);
+
+const rpcRetry = (await db.query(
+  "select public.cms_begin_guest_checkout($1) as result",
+  [guestRpcRequest],
+)).rows[0].result;
+
+assert.equal(rpcRetry.existing, true);
+assert.equal(rpcRetry.orderId, rpcFirst.orderId);
+assert.equal(rpcRetry.totalCents, 1250);
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [{ ...guestRpcRequest, email: "different@example.test" }],
+  ),
+  /already used/,
+  "A request key cannot be reused with different customer details",
+);
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [{
+      ...guestRpcRequest,
+      requestKey: crypto.randomUUID(),
+    }],
+  ),
+  /no longer available/,
+  "Another checkout cannot reserve an already reserved card",
+);
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [{
+      ...guestRpcRequest,
+      requestKey: crypto.randomUUID(),
+      cardIds: ["guest-rpc-card-2", "guest-rpc-card-2"],
+    }],
+  ),
+  /unique cards/,
+  "Duplicate card IDs are rejected",
+);
+
+const rpcShipping = (await db.query(
+  "select public.cms_begin_guest_checkout($1) as result",
+  [{
+    requestKey: crypto.randomUUID(),
+    name: "Shipping Customer",
+    email: "shipping@example.test",
+    fulfillmentMethod: "shipping",
+    shippingAddress: {
+      line1: "123 Test Street",
+      city: "Sydney",
+      postalCode: "2000",
+      country: "Australia",
+    },
+    cardIds: ["guest-rpc-card-2"],
+  }],
+)).rows[0].result;
+
+assert.equal(rpcShipping.subtotalCents, 1250);
+assert.equal(rpcShipping.shippingFeeCents, 250);
+assert.equal(rpcShipping.totalCents, 1500);
+
+await as("postgres");
+const rpcReservedCards = (await db.query(`
+  select id,availability,guest_reserved_by,reserved_by
+  from public.cards
+  where id in ('guest-rpc-card-1','guest-rpc-card-2')
+  order by id
+`)).rows;
+
+assert.equal(rpcReservedCards.length, 2);
+
+for (const card of rpcReservedCards) {
+  assert.equal(card.availability, "reserved");
+  assert.ok(card.guest_reserved_by);
+  assert.equal(card.reserved_by, null);
+}
+
+assert.equal(rpcReservedCards[0].guest_reserved_by, rpcFirst.orderId);
+assert.equal(rpcReservedCards[1].guest_reserved_by, rpcShipping.orderId);
+
+await as("authenticated", owner);
+const rpcSettingsAfter = (await db.query(
+  "select data,updated_at from public.store_settings where id=true"
+)).rows[0];
+
+await db.query(
+  "select public.cms_save_settings($1,$2)",
+  [
+    {
+      ...rpcSettingsAfter.data,
+      guestCheckoutEnabled: false,
+      shippingFeeCents: null,
+    },
+    rpcSettingsAfter.updated_at,
+  ],
+);
+
+console.log("Guest Checkout reservation RPC checks passed.");
+
+// Guest Checkout rollback safety tests
+await addCard("guest-rollback-card-1");
+await addCard("guest-rollback-card-2");
+
+await as("authenticated", owner);
+const rollbackSettingsBefore = (await db.query(
+  "select data,updated_at from public.store_settings where id=true"
+)).rows[0];
+
+await db.query(
+  "select public.cms_save_settings($1,$2)",
+  [{
+    ...rollbackSettingsBefore.data,
+    guestCheckoutEnabled: true,
+    shippingFeeCents: null,
+  }, rollbackSettingsBefore.updated_at],
+);
+
+const rollbackRequest = (cardIds, overrides = {}) => ({
+  requestKey: crypto.randomUUID(),
+  name: "Rollback Customer",
+  email: "rollback@example.test",
+  fulfillmentMethod: "pickup",
+  cardIds,
+  ...overrides,
+});
+
+await as("service_role");
+
+const rollbackMixedKey = crypto.randomUUID();
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [rollbackRequest(
+      ["guest-rollback-card-1", "guest-rpc-card-1"],
+      { requestKey: rollbackMixedKey },
+    )],
+  ),
+  /no longer available/,
+  "Mixed available and reserved cards must fail together",
+);
+
+await as("postgres");
+
+const mixedOrderCount = (await db.query(
+  "select count(*)::int as count from public.guest_orders where request_key=$1",
+  [rollbackMixedKey],
+)).rows[0].count;
+
+assert.equal(mixedOrderCount, 0, "Failed cart creates no guest order");
+
+const rollbackCardAfterFailure = (await db.query(`
+  select availability,guest_reserved_by
+  from public.cards
+  where id='guest-rollback-card-1'
+`)).rows[0];
+
+assert.equal(rollbackCardAfterFailure.availability, "available");
+assert.equal(rollbackCardAfterFailure.guest_reserved_by, null);
+
+await as("service_role");
+
+const missingShippingKey = crypto.randomUUID();
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [rollbackRequest(["guest-rollback-card-1"], {
+      requestKey: missingShippingKey,
+      fulfillmentMethod: "shipping",
+      shippingAddress: {
+        line1: "123 Test Street",
+        city: "Sydney",
+        postalCode: "2000",
+        country: "Australia",
+      },
+    })],
+  ),
+  /Shipping is not configured/,
+  "Shipping cannot proceed without configured fees",
+);
+
+const duplicateCardKey = crypto.randomUUID();
+
+await assert.rejects(
+  db.query(
+    "select public.cms_begin_guest_checkout($1)",
+    [rollbackRequest(
+      ["guest-rollback-card-1", "guest-rollback-card-1"],
+      { requestKey: duplicateCardKey },
+    )],
+  ),
+  /unique cards/,
+  "Duplicate cards cannot create reservations",
+);
+
+await as("postgres");
+
+const failedOrders = (await db.query(
+  "select count(*)::int as count from public.guest_orders where request_key=any($1::uuid[])",
+  [[missingShippingKey, duplicateCardKey]],
+)).rows[0].count;
+
+assert.equal(failedOrders, 0, "Failed requests create no orders");
+
+const rollbackCardFinal = (await db.query(`
+  select availability,guest_reserved_by
+  from public.cards
+  where id='guest-rollback-card-1'
+`)).rows[0];
+
+assert.equal(rollbackCardFinal.availability, "available");
+assert.equal(rollbackCardFinal.guest_reserved_by, null);
+
+await as("authenticated", owner);
+const rollbackSettingsAfter = (await db.query(
+  "select data,updated_at from public.store_settings where id=true"
+)).rows[0];
+
+await db.query(
+  "select public.cms_save_settings($1,$2)",
+  [{
+    ...rollbackSettingsAfter.data,
+    guestCheckoutEnabled: false,
+    shippingFeeCents: null,
+  }, rollbackSettingsAfter.updated_at],
+);
+
+console.log("Guest Checkout rollback safety checks passed.");
+
+// Guest Card Protection tests
+await as("postgres");
+
+const protectedCard = (await db.query(`
+  select id,price_cents,publication,availability,
+         reserved_by,guest_reserved_by
+  from public.cards
+  where id='guest-rpc-card-1'
+`)).rows[0];
+
+assert.ok(protectedCard.guest_reserved_by);
+
+const protectedUpdate = async (sql) => {
+  await assert.rejects(
+    db.query(sql),
+    /active Guest Checkout reservation/,
+  );
+};
+
+await protectedUpdate(`
+  update public.cards
+  set price_cents=9999
+  where id='guest-rpc-card-1'
+`);
+
+await protectedUpdate(`
+  update public.cards
+  set publication='archived'
+  where id='guest-rpc-card-1'
+`);
+
+await protectedUpdate(`
+  update public.cards
+  set availability='available'
+  where id='guest-rpc-card-1'
+`);
+
+await protectedUpdate(`
+  update public.cards
+  set guest_reserved_by=null
+  where id='guest-rpc-card-1'
+`);
+
+await protectedUpdate(`
+  update public.cards
+  set reserved_by='11111111-1111-4111-8111-111111111111'
+  where id='guest-rpc-card-1'
+`);
+
+const protectedCardAfter = (await db.query(`
+  select price_cents,publication,availability,
+         reserved_by,guest_reserved_by
+  from public.cards
+  where id='guest-rpc-card-1'
+`)).rows[0];
+
+assert.equal(protectedCardAfter.price_cents, protectedCard.price_cents);
+assert.equal(protectedCardAfter.publication, protectedCard.publication);
+assert.equal(protectedCardAfter.availability, "reserved");
+assert.equal(protectedCardAfter.reserved_by, null);
+assert.equal(
+  protectedCardAfter.guest_reserved_by,
+  protectedCard.guest_reserved_by,
+);
+
+// Unreserved cards must remain editable through the admin RPC.
+await addCard("guest-protection-unreserved");
+
+await as("authenticated", owner);
+const editableCard = (await db.query(`
+  select updated_at
+  from public.cards
+  where id='guest-protection-unreserved'
+`)).rows[0];
+
+await db.query(
+  "select public.cms_save_card($1,$2)",
+  [{
+    id: "guest-protection-unreserved",
+    name: "Editable Test Card",
+    pokemonId: 6,
+    set: "Base Set",
+    year: 1999,
+    number: "4/102",
+    imageUrl: "/test.jpg",
+    price: 20,
+    publication: "published",
+    availability: "available",
+    featuredOrder: null,
+  }, editableCard.updated_at],
+);
+
+await as("postgres");
+
+const editedCard = (await db.query(`
+  select price_cents,availability
+  from public.cards
+  where id='guest-protection-unreserved'
+`)).rows[0];
+
+assert.equal(editedCard.price_cents, 2000);
+assert.equal(editedCard.availability, "available");
+
+console.log("Guest Card Protection checks passed.");
+
+// Guest Admin Card Safety tests
+const adminCardPayload = (id, overrides = {}) => ({
+  id,
+  name: id,
+  pokemonId: 6,
+  set: "Base Set",
+  year: 1999,
+  number: "4/102",
+  imageUrl: "/test.jpg",
+  price: 12.5,
+  publication: "published",
+  availability: "reserved",
+  featuredOrder: null,
+  ...overrides,
+});
+
+await as("authenticated", owner);
+
+const guestAdminCard = (await db.query(`
+  select updated_at
+  from public.cards
+  where id='guest-rpc-card-1'
+`)).rows[0];
+
+for (const [description, changes] of [
+  ["price", { price: 99 }],
+  ["publication", { publication: "archived" }],
+  ["availability", { availability: "available" }],
+]) {
+  await assert.rejects(
+    db.query(
+      "select public.cms_save_card($1,$2)",
+      [
+        adminCardPayload("guest-rpc-card-1", changes),
+        guestAdminCard.updated_at,
+      ],
+    ),
+    /active Guest Checkout reservation/,
+    `Admin cannot change Guest-reserved card ${description}`,
+  );
+}
+
+await as("postgres");
+
+const guestAdminAfter = (await db.query(`
+  select price_cents,publication,availability,guest_reserved_by
+  from public.cards
+  where id='guest-rpc-card-1'
+`)).rows[0];
+
+assert.equal(guestAdminAfter.price_cents, 1250);
+assert.equal(guestAdminAfter.publication, "published");
+assert.equal(guestAdminAfter.availability, "reserved");
+assert.equal(guestAdminAfter.guest_reserved_by, rpcFirst.orderId);
+
+// Existing Hold protection must remain functional.
+await addCard("guest-admin-hold-card");
+const adminSafetyHoldId = await acceptedHold("guest-admin-hold-card");
+
+await as("authenticated", owner);
+
+const holdAdminCard = (await db.query(`
+  select updated_at
+  from public.cards
+  where id='guest-admin-hold-card'
+`)).rows[0];
+
+await assert.rejects(
+  db.query(
+    "select public.cms_save_card($1,$2)",
+    [
+      adminCardPayload("guest-admin-hold-card", {
+        availability: "available",
+      }),
+      holdAdminCard.updated_at,
+    ],
+  ),
+  /accepted hold request/,
+  "Existing Hold reservation protection remains functional",
+);
+
+await as("postgres");
+
+const holdAdminAfter = (await db.query(`
+  select availability,reserved_by,guest_reserved_by
+  from public.cards
+  where id='guest-admin-hold-card'
+`)).rows[0];
+
+assert.equal(holdAdminAfter.availability, "reserved");
+assert.equal(holdAdminAfter.reserved_by, adminSafetyHoldId);
+assert.equal(holdAdminAfter.guest_reserved_by, null);
+
+console.log("Guest Admin Card Safety checks passed.");
+
+// Guest late-payment review regression
+await as("postgres");
+await addCard("guest-late-payment-card");
+await as("postgres");
+
+const latePaymentOrderId = (await db.query(`
+  insert into public.guest_orders (
+    request_key,
+    name,
+    email,
+    fulfillment_method,
+    currency,
+    subtotal_cents,
+    shipping_fee_cents,
+    total_cents,
+    status,
+    expires_at
+  )
+  values (
+    $1,
+    'Late Payment Customer',
+    'late-payment@example.test',
+    'pickup',
+    'AUD',
+    1250,
+    0,
+    1250,
+    'expired',
+    clock_timestamp() - interval '1 hour'
+  )
+  returning id
+`, [crypto.randomUUID()])).rows[0].id;
+
+await db.query(`
+  insert into public.guest_order_items (
+    order_id,
+    card_id,
+    name,
+    price_cents
+  )
+  values ($1,'guest-late-payment-card','Late Payment Test Card',1250)
+`, [latePaymentOrderId]);
+
+const latePaymentAttemptId = (await db.query(`
+  insert into public.guest_payment_attempts (
+    order_id,
+    idempotency_key,
+    checkout_session_id,
+    amount_cents,
+    currency,
+    status
+  )
+  values ($1,$2,'cs_test_guest_late_payment',1250,'aud','expired')
+  returning id
+`, [latePaymentOrderId, crypto.randomUUID()])).rows[0].id;
+
+await as("service_role");
+
+assert.equal(
+  (await db.query(
+    "select public.cms_record_guest_stripe_webhook($1,$2,$3,$4,$5,$6,$7) as ok",
+    [
+      "evt_guest_late_payment_success",
+      "checkout.session.completed",
+      latePaymentAttemptId,
+      "cs_test_guest_late_payment",
+      "pi_test_guest_late_payment",
+      "success",
+      null,
+    ],
+  )).rows[0].ok,
+  true,
+  "Late successful Guest payment is acknowledged for manual review",
+);
+
+await as("postgres");
+
+const latePaymentOrder = (await db.query(`
+  select status,paid_at
+  from public.guest_orders
+  where id=$1
+`, [latePaymentOrderId])).rows[0];
+
+assert.equal(latePaymentOrder.status, "payment_review");
+assert.ok(latePaymentOrder.paid_at);
+
+const latePaymentAttempt = (await db.query(`
+  select status,payment_intent_id,failure_reason
+  from public.guest_payment_attempts
+  where id=$1
+`, [latePaymentAttemptId])).rows[0];
+
+assert.equal(latePaymentAttempt.status, "paid");
+assert.equal(
+  latePaymentAttempt.payment_intent_id,
+  "pi_test_guest_late_payment",
+);
+assert.match(
+  latePaymentAttempt.failure_reason,
+  /manual review required/,
+);
+
+const latePaymentCard = (await db.query(`
+  select availability,reserved_by,guest_reserved_by
+  from public.cards
+  where id='guest-late-payment-card'
+`)).rows[0];
+
+assert.equal(
+  latePaymentCard.availability,
+  "available",
+  "Late payment must not reclaim released inventory",
+);
+assert.equal(latePaymentCard.reserved_by, null);
+assert.equal(latePaymentCard.guest_reserved_by, null);
+
+console.log("Guest Late Payment Review checks passed.");
+
+// Guest Checkout rate-limit integrity tests
+await as("postgres");
+await db.exec("delete from public.guest_checkout_rate_limits");
+
+const guestRateLimit = async (requestKey, ipHash, emailHash) => {
+  const result = await db.query(
+    "select public.cms_check_guest_checkout_rate_limit($1,$2,$3) as allowed",
+    [requestKey, ipHash, emailHash],
+  );
+  return result.rows[0].allowed;
+};
+
+const rateIpA = "a".repeat(64);
+const rateIpB = "b".repeat(64);
+const rateEmailA = "c".repeat(64);
+const rateEmailB = "d".repeat(64);
+
+await as("service_role");
+
+// Same request key + same identity is idempotent.
+const idempotentKey = crypto.randomUUID();
+assert.equal(
+  await guestRateLimit(idempotentKey, rateIpA, rateEmailA),
+  true,
+);
+assert.equal(
+  await guestRateLimit(idempotentKey, rateIpA, rateEmailA),
+  true,
+);
+
+const idempotentRows = (await db.query(
+  "select count(*)::int as count from public.guest_checkout_rate_limits where request_key=$1",
+  [idempotentKey],
+)).rows[0].count;
+
+assert.equal(
+  idempotentRows,
+  1,
+  "Exact Guest Checkout retry consumes only one rate-limit row",
+);
+
+// A reused request key cannot be rebound to another identity.
+await assert.rejects(
+  guestRateLimit(idempotentKey, rateIpB, rateEmailA),
+  /request key was already used/,
+  "Guest Checkout request key cannot move to another IP",
+);
+
+await assert.rejects(
+  guestRateLimit(idempotentKey, rateIpA, rateEmailB),
+  /request key was already used/,
+  "Guest Checkout request key cannot move to another email",
+);
+
+// Email bucket allows four attempts in 15 minutes and rejects the fifth.
+const emailLimitHash = "e".repeat(64);
+for (let i = 0; i < 4; i += 1) {
+  assert.equal(
+    await guestRateLimit(
+      crypto.randomUUID(),
+      String(i + 1).repeat(64).slice(0, 64),
+      emailLimitHash,
+    ),
+    true,
+  );
+}
+
+assert.equal(
+  await guestRateLimit(
+    crypto.randomUUID(),
+    "f".repeat(64),
+    emailLimitHash,
+  ),
+  false,
+  "Guest Checkout email bucket rejects attempt five",
+);
+
+// IP bucket allows eight attempts in 15 minutes and rejects the ninth.
+const ipLimitHash = "9".repeat(64);
+for (let i = 0; i < 8; i += 1) {
+  const emailHash = (i + 1).toString(16).padStart(64, String((i + 2) % 10));
+
+  assert.equal(
+    await guestRateLimit(
+      crypto.randomUUID(),
+      ipLimitHash,
+      emailHash,
+    ),
+    true,
+  );
+}
+
+assert.equal(
+  await guestRateLimit(
+    crypto.randomUUID(),
+    ipLimitHash,
+    "8".repeat(64),
+  ),
+  false,
+  "Guest Checkout IP bucket rejects attempt nine",
+);
+
+// Old anti-abuse rows are pruned when the limiter runs.
+await as("postgres");
+
+const staleRateKey = crypto.randomUUID();
+await db.query(
+  `insert into public.guest_checkout_rate_limits(
+    request_key,
+    ip_hash,
+    email_hash,
+    created_at
+  )
+  values($1,$2,$3,clock_timestamp() - interval '25 hours')`,
+  [staleRateKey, "1".repeat(64), "2".repeat(64)],
+);
+
+await as("service_role");
+
+assert.equal(
+  await guestRateLimit(
+    crypto.randomUUID(),
+    "3".repeat(64),
+    "4".repeat(64),
+  ),
+  true,
+);
+
+const staleRows = (await db.query(
+  "select count(*)::int as count from public.guest_checkout_rate_limits where request_key=$1",
+  [staleRateKey],
+)).rows[0].count;
+
+assert.equal(
+  staleRows,
+  0,
+  "Guest Checkout rate-limit rows older than 24 hours are removed",
+);
+
+console.log("Guest Checkout Rate Limit checks passed.");
 
 await db.close();
 console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, and order alert routing.");

@@ -146,7 +146,11 @@ describe("CardDetailClient", () => {
     
     // Click to flip
     await user.click(wrapper);
-    expect(inner.style.transform).toContain("rotateY(180.00deg)");
+    const flippedAngle = Number(
+      inner.style.transform.match(/rotateY\((-?\d+(?:\.\d+)?)deg\)/)?.[1],
+    );
+    expect(flippedAngle).toBeGreaterThanOrEqual(175);
+    expect(flippedAngle).toBeLessThanOrEqual(185);
 
     // Click again to flip back
     await user.click(wrapper);

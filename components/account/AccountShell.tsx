@@ -23,7 +23,7 @@ function SignOutButton() {
 // Each section is a binder divider tab in one of the storefront's colours.
 const navLinks = [
   { href: "/account", label: "Overview", short: "Overview", tone: "yellow", icon: LayoutDashboard },
-  { href: "/account/orders", label: "Orders & holds", short: "Orders", tone: "blue", icon: Package },
+  { href: "/account/orders", label: "Orders", short: "Orders", tone: "blue", icon: Package },
   { href: "/account/profile", label: "Profile & security", short: "Profile", tone: "pink", icon: UserRound },
 ];
 
@@ -51,8 +51,8 @@ export function AccountShell({
             <div className="ac-auth">
               <div className="ac-auth__intro">
                 <span className="ac-px">Collector accounts</span>
-                <p className="ac-auth__title">Your holds, one binder.</p>
-                <p>Sign in to follow your card holds, pay for reserved cards with Stripe and see when they ship.</p>
+                <p className="ac-auth__title">Your orders, one binder.</p>
+                <p>Sign in to view your orders, complete secure Stripe checkout, and see when your cards ship.</p>
                 <div className="ac-auth__sprites" aria-hidden="true">
                   <Image src="/sprites/gen3/54.png" unoptimized alt="" width={180} height={180} />
                   <Image src="/sprites/gen3/202.png" unoptimized alt="" width={200} height={200} />

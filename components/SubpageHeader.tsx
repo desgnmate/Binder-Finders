@@ -63,7 +63,6 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           </Link>
           {[
             { label: "About", href: "/about" },
-            { label: "How holds work", href: "/how-holds-work" },
             { label: "Contact", href: "/contact" },
           ].map((link) => (
             <Link
@@ -79,9 +78,10 @@ export function SubpageHeader({ backHref = "/", title }: SubpageHeaderProps) {
           <Link
             href="/checkout"
             aria-label={`My Bag (${count} cards)`}
-            className="inline-flex h-11 w-11 items-center justify-center p-2 text-ink-black hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-1.5 px-2 text-ink-black hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
           >
             <ShoppingBag size={20} strokeWidth={2} aria-hidden="true" />
+            <span className="text-sm font-semibold">{count}</span>
           </Link>
 
           <Link

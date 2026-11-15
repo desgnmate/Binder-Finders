@@ -11,7 +11,6 @@ export const SITE_NAV = [
   { label: "Shop cards", href: "/shop" },
   { label: "Pokédex", href: "/pokedex" },
   { label: "About", href: "/about" },
-  { label: "How holds work", href: "/how-holds-work" },
   { label: "Contact", href: "/contact" },
 ] as const;
 

@@ -52,3 +52,69 @@ it("asks Stripe to retry when the event cannot be recorded", async () => {
   mockRpc.mockResolvedValue({ data: null, error: { message: "db down" } });
   expect((await POST(request())).status).toBe(500);
 });
+
+it("routes Guest Checkout events to the Guest Stripe webhook RPC", async () => {
+  mockConstructEvent.mockReturnValue(
+    event("checkout.session.completed", {
+      metadata: {
+        checkout_kind: "guest",
+        guest_order_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        guest_payment_attempt_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      },
+    }),
+  );
+
+  expect((await POST(request())).status).toBe(200);
+
+  expect(mockRpc).toHaveBeenCalledTimes(1);
+  expect(mockRpc).toHaveBeenCalledWith(
+    "cms_record_guest_stripe_webhook",
+    expect.objectContaining({
+      p_event_id: "evt_test_1",
+      p_event_type: "checkout.session.completed",
+      p_attempt_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      p_session_id: "cs_test_1",
+      p_payment_intent_id: "pi_test_1",
+      p_result: "success",
+      p_reason: null,
+    }),
+  );
+});
+
+it("acknowledges malformed Guest metadata without falling through to Hold", async () => {
+  mockConstructEvent.mockReturnValue(
+    event("checkout.session.completed", {
+      metadata: {
+        checkout_kind: "guest",
+        guest_order_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      },
+    }),
+  );
+
+  expect((await POST(request())).status).toBe(200);
+  expect(mockRpc).not.toHaveBeenCalled();
+});
+
+it("asks Stripe to retry when a Guest payment event cannot be recorded", async () => {
+  mockConstructEvent.mockReturnValue(
+    event("checkout.session.completed", {
+      metadata: {
+        checkout_kind: "guest",
+        guest_order_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        guest_payment_attempt_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      },
+    }),
+  );
+
+  mockRpc.mockResolvedValue({
+    data: null,
+    error: { message: "db down" },
+  });
+
+  expect((await POST(request())).status).toBe(500);
+
+  expect(mockRpc).toHaveBeenCalledWith(
+    "cms_record_guest_stripe_webhook",
+    expect.any(Object),
+  );
+});

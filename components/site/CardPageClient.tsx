@@ -70,7 +70,7 @@ export function CardActions({ card }: { card: ShopCard }) {
     <div className="flex flex-wrap gap-2.5">
       {!available ? (
         <span className={`${btnWhite} min-h-[52px] flex-[1_1_200px] !cursor-default !shadow-none opacity-70`}>
-          {card.availability === "sold" ? "Sold" : card.availability === "reserved" ? "On hold" : "Unavailable"}
+          {card.availability === "sold" ? "Sold" : card.availability === "reserved" ? "Reserved" : "Unavailable"}
         </span>
       ) : inBag ? (
         <Link href="/checkout" className={`${btnDark} min-h-[52px] flex-[1_1_200px] text-[17px]`}>

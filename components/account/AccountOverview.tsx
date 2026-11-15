@@ -96,11 +96,11 @@ export function AccountOverview({
             )}
             <dl className="ac-stats" aria-label="Your order summary">
               <div className="ac-stat">
-                <dt className="ac-px">All requests</dt>
+                <dt className="ac-px">All orders</dt>
                 <dd>{counts.total ?? "—"}</dd>
               </div>
               <div className="ac-stat">
-                <dt className="ac-px">Open holds</dt>
+                <dt className="ac-px">Open orders</dt>
                 <dd>{counts.active ?? "—"}</dd>
               </div>
               <div className="ac-stat">
@@ -140,7 +140,7 @@ export function AccountOverview({
                 <p>
                   {nextUp.payment_status === "pending"
                     ? "Your secure checkout is in progress. Open the request to finish paying."
-                    : "The store has reserved your cards. Pay securely to lock them in before the deadline."}
+                    : "The store has reserved your cards. Pay with Stripe to lock them in before the deadline."}
                 </p>
                 <div className="ac-nextup__actions">
                   <Link href={`/account/orders/${nextUp.id}`} className="ac-btn ac-btn--yellow ac-btn--lg ac-btn--on-dark">
@@ -181,7 +181,7 @@ export function AccountOverview({
         <div className="ac-head">
           <div className="ac-head__text">
             <span className="ac-px ac-eyebrow-light">Your binder</span>
-            <h2 id="recent-heading">Recent holds</h2>
+            <h2 id="recent-heading">Recent orders</h2>
           </div>
           <Link href="/account/orders" className="ac-btn ac-btn--yellow ac-btn--on-dark">
             View all <ArrowRight size={16} aria-hidden="true" />
@@ -195,13 +195,13 @@ export function AccountOverview({
           <div className="ac-empty">
             <Image src="/sprites/gen3/25.png" unoptimized alt="" width={96} height={96} aria-hidden="true" />
             <h3>Your next find starts here</h3>
-            <p>Once you request a card hold, you can follow its progress right here.</p>
+            <p>Your recent purchases and order progress will appear here.</p>
             <Link href="/shop" className="ac-btn ac-btn--yellow ac-btn--on-dark">
               Explore the cards <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
         ) : (
-          <ul className="ac-holds" aria-label="Recent holds">
+          <ul className="ac-holds" aria-label="Recent orders">
             {holds.map((hold) => {
               const status = holdStatus(hold.status);
               const payment = paymentStatus(hold.payment_status);
@@ -237,29 +237,29 @@ export function AccountOverview({
           </div>
           <details className="ac-notebook__body ac-guide" open>
             <summary>
-              <span>How a hold becomes an order</span>
+              <span>How checkout works</span>
               <ChevronDown size={20} aria-hidden="true" />
             </summary>
             <ol>
               <li>
                 <span className="ac-num ac-px">01</span>
                 <div>
-                  <strong>Request a hold</strong>
-                  <p>Choose your cards and send the request.</p>
+                  <strong>Choose your cards</strong>
+                  <p>Add the cards you want to your bag.</p>
                 </div>
               </li>
               <li>
                 <span className="ac-num ac-px">02</span>
                 <div>
-                  <strong>Store confirms</strong>
-                  <p>We check availability and reserve the cards.</p>
+                  <strong>Checkout securely</strong>
+                  <p>Your cards are reserved while you complete checkout.</p>
                 </div>
               </li>
               <li>
                 <span className="ac-num ac-px">03</span>
                 <div>
-                  <strong>Pay securely</strong>
-                  <p>Stripe checkout opens in Orders after confirmation.</p>
+                  <strong>Pay with Stripe</strong>
+                  <p>Complete your secure payment through Stripe.</p>
                 </div>
               </li>
             </ol>
@@ -268,7 +268,7 @@ export function AccountOverview({
         <section className="ac-panel ac-panel--yellow ac-help" aria-labelledby="support-heading">
           <Image src="/sprites/gen3/54.png" unoptimized alt="" width={112} height={112} aria-hidden="true" />
           <h2 id="support-heading">Need a closer look?</h2>
-          <p>Ask us about condition, closer scans, or a card on hold.</p>
+          <p>Ask us about card condition, closer scans, or availability.</p>
           <Link href="/#contact" className="ac-btn ac-btn--ink">
             Get in touch <ArrowUpRight size={16} aria-hidden="true" />
           </Link>

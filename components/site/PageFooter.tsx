@@ -13,7 +13,6 @@ export const FOOTER_LINKS = [
   {
     title: "Help",
     links: [
-      { label: "How holds work", href: "/how-holds-work" },
       { label: "Shipping & returns", href: "/shipping-returns" },
       { label: "Contact", href: "/contact" },
     ],
@@ -29,7 +28,6 @@ export const FOOTER_LINKS = [
 ] as const;
 
 const COMPACT_LINKS = [
-  { label: "How holds work", href: "/how-holds-work" },
   { label: "Shipping & returns", href: "/shipping-returns" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
