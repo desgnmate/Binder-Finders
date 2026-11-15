@@ -2,7 +2,7 @@ import { formatDeadline, timeLeft } from "../status";
 
 describe("deadline display", () => {
   it("shows the time of day, not just the date", () => {
-    expect(formatDeadline("2026-11-03T22:00:00Z")).toMatch(/4 Nov 2026.*9:00\s?am/i);
+    expect(formatDeadline("2026-11-03T22:00:00Z")).toMatch(/4 Nov 2026.*9:00\s?am Melbourne time$/i);
   });
 
   it("counts down in the largest whole unit", () => {

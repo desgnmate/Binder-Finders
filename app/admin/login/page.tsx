@@ -1,9 +1,10 @@
 import { AuthForm } from "../../../components/admin/AuthForm";
 import { configured } from "../../../lib/supabase/server";
+import { safeAdminNext } from "../../../lib/admin/safe-next";
 export default async function LoginPage({
   searchParams: query,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const searchParams = await query;
   return (
@@ -15,7 +16,7 @@ export default async function LoginPage({
         </div>
       )}
       {configured() ? (
-        <AuthForm />
+        <AuthForm next={safeAdminNext(searchParams.next)} />
       ) : (
         <div className="cms-auth">
           <div className="cms-auth-box">

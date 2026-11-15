@@ -22,6 +22,11 @@ it("does not show success when email sending fails", async () => {
   expect(await authenticateCustomer("signup", {}, form())).toEqual({ error: expect.stringContaining("Email delivery is currently unavailable") });
   expect(mockSet).not.toHaveBeenCalled();
 });
+it("says so when the email already has an account, because no email is sent", async () => {
+  mockAuth.signUp.mockResolvedValue({ data: { session: null, user: { id: "x", identities: [] } }, error: null });
+  expect(await authenticateCustomer("signup", {}, form())).toEqual({ error: expect.stringContaining("already uses this email") });
+  expect(mockSet).not.toHaveBeenCalled();
+});
 it("rejects weak passwords on the server", async () => {
   expect(await authenticateCustomer("signup", {}, form({ password: "short" }))).toEqual({ error: expect.stringContaining("12") });
   expect(mockAuth.signUp).not.toHaveBeenCalled();

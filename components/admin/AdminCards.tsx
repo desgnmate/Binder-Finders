@@ -1,5 +1,6 @@
 "use client";
 import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { conditionRank, rarityRank } from "../../lib/card-grades";
 import {
   Archive,
   ArrowRight,
@@ -358,7 +359,11 @@ export function AdminCards({
               ? a.price - b.price
               : sort === "price-high"
                 ? b.price - a.price
-                : 0,
+                : sort === "condition"
+                  ? conditionRank(a.condition) - conditionRank(b.condition)
+                  : sort === "rarity"
+                    ? rarityRank(a.rarity) - rarityRank(b.rarity)
+                    : 0,
         )
         .filter(
           (c) =>
@@ -427,6 +432,8 @@ export function AdminCards({
               <option value="name">Name A–Z</option>
               <option value="price-low">Price: low to high</option>
               <option value="price-high">Price: high to low</option>
+              <option value="condition">Condition: best first</option>
+              <option value="rarity">Rarity: highest first</option>
             </select>
           </label>
         </div>

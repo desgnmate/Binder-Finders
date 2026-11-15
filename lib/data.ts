@@ -74,21 +74,8 @@ export type CardType =
   | "Steel"
   | "Fairy";
 
-export type CardRarity =
-  | "Common"
-  | "Uncommon"
-  | "Rare"
-  | "Rare Holo"
-  | "Ultra Rare"
-  | "Secret Rare"
-  | "Shining Holo";
-
-export type CardCondition =
-  | "RAW NM"
-  | "RAW LP"
-  | "PSA 8"
-  | "PSA 9"
-  | "PSA 10";
+export type { CardRarity, CardCondition } from "./card-grades";
+import type { CardRarity, CardCondition } from "./card-grades";
 
 export interface ShopCard {
   id: string;
@@ -157,7 +144,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "4/102",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 9",
     price: 8500,
     type: "Fire",
@@ -173,7 +160,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "2/102",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 8",
     price: 2200,
     type: "Water",
@@ -189,7 +176,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "15/102",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 8",
     price: 1600,
     type: "Grass",
@@ -205,7 +192,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "10/102",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 10",
     price: 3400,
     type: "Psychic",
@@ -223,7 +210,7 @@ export const SHOP_CARDS: ShopCard[] = [
     year: 1999,
     number: "58/102",
     rarity: "Common",
-    condition: "RAW NM",
+    condition: "NM",
     price: 45,
     type: "Lightning",
     imageUrl: tcgCardImage("base1", "58"),
@@ -238,8 +225,8 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "14/102",
-    rarity: "Rare Holo",
-    condition: "RAW NM",
+    rarity: "Holo Rare",
+    condition: "NM",
     price: 220,
     type: "Lightning",
     imageUrl: tcgCardImage("base1", "14"),
@@ -255,7 +242,7 @@ export const SHOP_CARDS: ShopCard[] = [
     year: 1999,
     number: "53/62",
     rarity: "Common",
-    condition: "RAW NM",
+    condition: "NM",
     price: 35,
     type: "Water",
     imageUrl: tcgCardImage("base3", "53"),
@@ -271,7 +258,7 @@ export const SHOP_CARDS: ShopCard[] = [
     year: 1999,
     number: "51/102",
     rarity: "Common",
-    condition: "RAW LP",
+    condition: "LP",
     price: 28,
     type: "Poison",
     imageUrl: tcgCardImage("base1", "51"),
@@ -287,7 +274,7 @@ export const SHOP_CARDS: ShopCard[] = [
     year: 2000,
     number: "82/111",
     rarity: "Common",
-    condition: "RAW NM",
+    condition: "NM",
     price: 30,
     type: "Water",
     imageUrl: tcgCardImage("neo1", "82"),
@@ -302,8 +289,8 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Neo Discovery",
     year: 2001,
     number: "16/75",
-    rarity: "Rare Holo",
-    condition: "RAW NM",
+    rarity: "Holo Rare",
+    condition: "NM",
     price: 380,
     type: "Psychic",
     imageUrl: tcgCardImage("neo2", "16"),
@@ -318,7 +305,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Base Set",
     year: 1999,
     number: "8/102",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 9",
     price: 1450,
     type: "Water",
@@ -335,7 +322,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Team Rocket",
     year: 2000,
     number: "4/82",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 9",
     price: 3200,
     type: "Fire",
@@ -351,7 +338,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Team Rocket",
     year: 2000,
     number: "2/82",
-    rarity: "Rare Holo",
+    rarity: "Holo Rare",
     condition: "PSA 8",
     price: 1450,
     type: "Water",
@@ -367,8 +354,8 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Team Rocket",
     year: 2000,
     number: "10/82",
-    rarity: "Rare Holo",
-    condition: "RAW LP",
+    rarity: "Holo Rare",
+    condition: "LP",
     price: 280,
     type: "Grass",
     imageUrl: tcgCardImage("base5", "10"),
@@ -384,7 +371,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Neo Revelation",
     year: 2001,
     number: "66/64",
-    rarity: "Shining Holo",
+    rarity: "Holo Rare",
     condition: "PSA 10",
     price: 2100,
     type: "Water",
@@ -400,7 +387,7 @@ export const SHOP_CARDS: ShopCard[] = [
     set: "Neo Revelation",
     year: 2001,
     number: "65/64",
-    rarity: "Shining Holo",
+    rarity: "Holo Rare",
     condition: "PSA 10",
     price: 4200,
     type: "Water",
@@ -515,39 +502,39 @@ export interface PokedexDetails {
 /** A Gen-3-forward Pokédex tile list (Hoenn-heavy, with a few nostalgic Gen 1-2).
  * All details are official values from the National Pokédex / base stats. */
 export const POKEDEX_TILES: PokedexTile[] = [
-  { name: "Bulbasaur",  id: 1,   accentColor: "#85D4FF", startingPrice: 45,   startingCondition: "RAW NM", types: ["Grass", "Poison"], bgColor: "#D4F4DD",
+  { name: "Bulbasaur",  id: 1,   accentColor: "#85D4FF", startingPrice: 45,   startingCondition: "NM", types: ["Grass", "Poison"], bgColor: "#D4F4DD",
     details: { category: "Seed Pokémon", height: "0.7 m", weight: "6.9 kg", baseStatTotal: 318, hp: 45, attack: 49, defense: 49, spAtk: 65, spDef: 65, speed: 45, ability: "Overgrow", generation: "Gen I" } },
-  { name: "Ivysaur",    id: 2,   accentColor: "#85D4FF", startingPrice: 35,   startingCondition: "RAW NM", types: ["Grass", "Poison"], bgColor: "#D4F4DD",
+  { name: "Ivysaur",    id: 2,   accentColor: "#85D4FF", startingPrice: 35,   startingCondition: "NM", types: ["Grass", "Poison"], bgColor: "#D4F4DD",
     details: { category: "Seed Pokémon", height: "1.0 m", weight: "13.0 kg", baseStatTotal: 405, hp: 60, attack: 62, defense: 63, spAtk: 80, spDef: 80, speed: 60, ability: "Overgrow", generation: "Gen I" } },
   { name: "Venusaur",   id: 3,   accentColor: "#85D4FF", startingPrice: 1600, startingCondition: "PSA 8",  types: ["Grass", "Poison"], bgColor: "#D4F4DD",
     details: { category: "Seed Pokémon", height: "2.0 m", weight: "100.0 kg", baseStatTotal: 525, hp: 80, attack: 82, defense: 83, spAtk: 100, spDef: 100, speed: 80, ability: "Overgrow", generation: "Gen I" } },
-  { name: "Charmander", id: 4,   accentColor: "#FEDD25", startingPrice: 65,   startingCondition: "RAW NM", types: ["Fire"],            bgColor: "#FFE0CC",
+  { name: "Charmander", id: 4,   accentColor: "#FEDD25", startingPrice: 65,   startingCondition: "NM", types: ["Fire"],            bgColor: "#FFE0CC",
     details: { category: "Lizard Pokémon", height: "0.6 m", weight: "8.5 kg", baseStatTotal: 309, hp: 39, attack: 52, defense: 43, spAtk: 60, spDef: 50, speed: 65, ability: "Blaze", generation: "Gen I" } },
-  { name: "Charmeleon", id: 5,   accentColor: "#FEDD25", startingPrice: 85,   startingCondition: "RAW NM", types: ["Fire"],            bgColor: "#FFE0CC",
+  { name: "Charmeleon", id: 5,   accentColor: "#FEDD25", startingPrice: 85,   startingCondition: "NM", types: ["Fire"],            bgColor: "#FFE0CC",
     details: { category: "Flame Pokémon", height: "1.1 m", weight: "19.0 kg", baseStatTotal: 405, hp: 58, attack: 64, defense: 58, spAtk: 80, spDef: 65, speed: 80, ability: "Blaze", generation: "Gen I" } },
   { name: "Charizard",  id: 6,   accentColor: "#FEDD25", startingPrice: 8500, startingCondition: "PSA 9",  types: ["Fire", "Flying"],  bgColor: "#FFE0CC",
     details: { category: "Flame Pokémon", height: "1.7 m", weight: "90.5 kg", baseStatTotal: 534, hp: 78, attack: 84, defense: 78, spAtk: 109, spDef: 85, speed: 100, ability: "Blaze", generation: "Gen I" } },
-  { name: "Squirtle",   id: 7,   accentColor: "#3194EE", startingPrice: 55,   startingCondition: "RAW NM", types: ["Water"],           bgColor: "#D6EAFF",
+  { name: "Squirtle",   id: 7,   accentColor: "#3194EE", startingPrice: 55,   startingCondition: "NM", types: ["Water"],           bgColor: "#D6EAFF",
     details: { category: "Tiny Turtle Pokémon", height: "0.5 m", weight: "9.0 kg", baseStatTotal: 314, hp: 44, attack: 48, defense: 65, spAtk: 50, spDef: 64, speed: 43, ability: "Torrent", generation: "Gen I" } },
-  { name: "Wartortle",  id: 8,   accentColor: "#3194EE", startingPrice: 40,   startingCondition: "RAW NM", types: ["Water"],           bgColor: "#D6EAFF",
+  { name: "Wartortle",  id: 8,   accentColor: "#3194EE", startingPrice: 40,   startingCondition: "NM", types: ["Water"],           bgColor: "#D6EAFF",
     details: { category: "Turtle Pokémon", height: "1.0 m", weight: "22.5 kg", baseStatTotal: 405, hp: 59, attack: 63, defense: 80, spAtk: 65, spDef: 80, speed: 58, ability: "Torrent", generation: "Gen I" } },
   { name: "Blastoise",  id: 9,   accentColor: "#3194EE", startingPrice: 2200, startingCondition: "PSA 8",  types: ["Water"],           bgColor: "#D6EAFF",
     details: { category: "Shellfish Pokémon", height: "1.6 m", weight: "85.5 kg", baseStatTotal: 530, hp: 79, attack: 83, defense: 100, spAtk: 85, spDef: 105, speed: 78, ability: "Torrent", generation: "Gen I" } },
-  { name: "Pikachu",    id: 25,  accentColor: "#FEDD25", startingPrice: 45,   startingCondition: "RAW NM", types: ["Lightning"],       bgColor: "#FFF3B8",
+  { name: "Pikachu",    id: 25,  accentColor: "#FEDD25", startingPrice: 45,   startingCondition: "NM", types: ["Lightning"],       bgColor: "#FFF3B8",
     details: { category: "Mouse Pokémon", height: "0.4 m", weight: "6.0 kg", baseStatTotal: 320, hp: 35, attack: 55, defense: 40, spAtk: 50, spDef: 50, speed: 90, ability: "Static", generation: "Gen I" } },
-  { name: "Raichu",     id: 26,  accentColor: "#FEDD25", startingPrice: 220,  startingCondition: "RAW NM", types: ["Lightning"],       bgColor: "#FFF3B8",
+  { name: "Raichu",     id: 26,  accentColor: "#FEDD25", startingPrice: 220,  startingCondition: "NM", types: ["Lightning"],       bgColor: "#FFF3B8",
     details: { category: "Mouse Pokémon", height: "0.8 m", weight: "30.0 kg", baseStatTotal: 485, hp: 60, attack: 90, defense: 55, spAtk: 90, spDef: 80, speed: 110, ability: "Static", generation: "Gen I" } },
-  { name: "Psyduck",    id: 54,  accentColor: "#3194EE", startingPrice: 35,   startingCondition: "RAW NM", types: ["Water"],           bgColor: "#D6EAFF",
+  { name: "Psyduck",    id: 54,  accentColor: "#3194EE", startingPrice: 35,   startingCondition: "NM", types: ["Water"],           bgColor: "#D6EAFF",
     details: { category: "Duck Pokémon", height: "0.8 m", weight: "19.6 kg", baseStatTotal: 320, hp: 50, attack: 52, defense: 48, spAtk: 65, spDef: 50, speed: 55, ability: "Damp", generation: "Gen I" } },
-  { name: "Koffing",    id: 109, accentColor: "#FFD6E0", startingPrice: 28,   startingCondition: "RAW LP", types: ["Poison"],          bgColor: "#F5D7FF",
+  { name: "Koffing",    id: 109, accentColor: "#FFD6E0", startingPrice: 28,   startingCondition: "LP", types: ["Poison"],          bgColor: "#F5D7FF",
     details: { category: "Poison Gas Pokémon", height: "0.6 m", weight: "1.0 kg", baseStatTotal: 340, hp: 40, attack: 65, defense: 95, spAtk: 60, spDef: 45, speed: 35, ability: "Levitate", generation: "Gen I" } },
-  { name: "Magikarp",   id: 129, accentColor: "#3194EE", startingPrice: 80,   startingCondition: "RAW NM", types: ["Water"],           bgColor: "#D6EAFF",
+  { name: "Magikarp",   id: 129, accentColor: "#3194EE", startingPrice: 80,   startingCondition: "NM", types: ["Water"],           bgColor: "#D6EAFF",
     details: { category: "Fish Pokémon", height: "0.9 m", weight: "10.0 kg", baseStatTotal: 200, hp: 20, attack: 10, defense: 55, spAtk: 15, spDef: 20, speed: 80, ability: "Swift Swim", generation: "Gen I" } },
   { name: "Mewtwo",     id: 150, accentColor: "#FFD6E7", startingPrice: 3400, startingCondition: "PSA 10", types: ["Psychic"],         bgColor: "#F0E0FF",
     details: { category: "Genetic Pokémon", height: "2.0 m", weight: "122.0 kg", baseStatTotal: 680, hp: 106, attack: 110, defense: 90, spAtk: 154, spDef: 90, speed: 130, ability: "Pressure", generation: "Gen I" } },
-  { name: "Wooper",     id: 194, accentColor: "#3194EE", startingPrice: 30,   startingCondition: "RAW NM", types: ["Water", "Ground"], bgColor: "#D6EAFF",
+  { name: "Wooper",     id: 194, accentColor: "#3194EE", startingPrice: 30,   startingCondition: "NM", types: ["Water", "Ground"], bgColor: "#D6EAFF",
     details: { category: "Water Fish Pokémon", height: "0.4 m", weight: "8.5 kg", baseStatTotal: 310, hp: 55, attack: 45, defense: 45, spAtk: 25, spDef: 25, speed: 15, ability: "Damp", generation: "Gen II" } },
-  { name: "Wobbuffet",  id: 202, accentColor: "#3194EE", startingPrice: 38,   startingCondition: "RAW NM", types: ["Psychic"],         bgColor: "#F0E0FF",
+  { name: "Wobbuffet",  id: 202, accentColor: "#3194EE", startingPrice: 38,   startingCondition: "NM", types: ["Psychic"],         bgColor: "#F0E0FF",
     details: { category: "Patient Pokémon", height: "1.3 m", weight: "28.5 kg", baseStatTotal: 405, hp: 190, attack: 33, defense: 58, spAtk: 33, spDef: 58, speed: 33, ability: "Shadow Tag", generation: "Gen II" } },
 ];
 

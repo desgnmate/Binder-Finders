@@ -141,7 +141,7 @@ export default async function CheckoutPage({
   }
 
   return (
-    <PageShell compactFooter>
+<PageShell>
       <CheckoutMartClient
         initialCardId={params.card}
         customer={customer}

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { sessionClient } from "../../lib/supabase/server";
 import { z } from "zod";
+import { closeOpenCheckouts } from "../../lib/stripe-reconciliation";
 export async function saveCustomerProfile(form: FormData) {
   const name = String(form.get("name") || "").trim();
   if (!name || name.length > 120) return { error: "Enter a name of 1–120 characters." };
@@ -30,6 +31,17 @@ export async function cancelCustomerHold(_previous: { error?: string; success?: 
   const db = await sessionClient();
   const { data: { user } } = await db.auth.getUser();
   if (!user?.email_confirmed_at) return { error: "Please sign in with a verified email." };
+  // Row security only returns the customer's own holds, so this also checks ownership
+  // before any open Stripe checkout is closed on their behalf.
+  const { data: own } = await db.from("hold_requests").select("id,payment_status").eq("id", id).eq("customer_user_id", user.id).maybeSingle();
+  if (!own) return { error: "This request could not be found." };
+  if (own.payment_status === "pending") {
+    try {
+      await closeOpenCheckouts(id, "customer");
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : "This request could not be cancelled. Please refresh and try again." };
+    }
+  }
   const { error } = await db.rpc("cms_cancel_customer_hold", { p_id: id });
   if (error) {
     return { error: error.message.includes("can no longer") || error.message.includes("Paid") || error.message.includes("Payment is in progress")

@@ -32,7 +32,10 @@ const migrations = [
   "202611130014_guest_unattached_payment_cleanup.sql",
   "202611130015_guest_reconciliation_payload.sql",
   "202611130016_guest_checkout_rate_limit.sql",
+  "202611140001_hold_delete_and_delivery.sql",
+  "202611140002_order_qa_fixes.sql",
   "202611140017_guest_late_payment_review.sql",
+
 ];
 await db.exec(`
   create role anon;
@@ -410,6 +413,7 @@ assert.equal(reservedEmail.holdId, emailHoldId);
 assert.ok(reservedEmail.expiresAt, "The reserved email knows the payment deadline");
 assert.equal(reservedEmail.items[0].set, "Base Set");
 assert.equal(reservedEmail.items[0].number, "4/102");
+
 
 // Guest Orders foundation security checks
 await as("postgres");
@@ -1285,5 +1289,90 @@ assert.equal(
 
 console.log("Guest Checkout Rate Limit checks passed.");
 
+// ── Holds record a delivery address ───────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-17");
+await as("service_role");
+const postal = { method: "post", recipient: " Ash Ketchum ", phone: "0400 000 000", line1: "1 Pallet St", line2: "", suburb: "Fitzroy", state: "vic", postcode: "3065" };
+const postHoldId = (await db.query("select public.cms_submit_hold($1,$2,$3) as id", [{
+  name: "Test customer", email: "customer@example.test", note: "", cardIds: ["phase4-card-17"], prices: { "phase4-card-17": 1250 }, requestKey: crypto.randomUUID(), delivery: postal,
+}, "phase4-test-ip-2", customer])).rows[0].id;
+await as("postgres");
+const saved = (await db.query("select delivery from public.hold_requests where id=$1", [postHoldId])).rows[0].delivery;
+assert.equal(saved.recipient, "Ash Ketchum");
+assert.equal(saved.state, "VIC");
+assert.equal(saved.country, "Australia");
+await as("service_role");
+await assert.rejects(
+  db.query("select public.cms_submit_hold($1,$2,$3)", [{
+    name: "Test customer", email: "customer@example.test", note: "", cardIds: ["phase4-card-1"], prices: {}, requestKey: crypto.randomUUID(), delivery: { ...postal, postcode: "30" },
+  }, "phase4-test-ip-3", customer]),
+  /Check your delivery address/,
+);
+
+// ── The store can delete requests that never became a sale ────────────────
+await as("authenticated", owner);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [emailHoldId]), /Cancel it before deleting/);
+await db.query("select public.cms_transition_hold($1,'rejected')", [postHoldId]);
+// The decline email is still queued, so the request can't be deleted yet.
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /still being sent/);
+await as("postgres");
+await db.query("update public.notification_outbox set status='sent', sent_at=now() where hold_id=$1", [postHoldId]);
+await as("authenticated", customer);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /Administrator access required/);
+await as("authenticated", owner);
+await db.query("select public.cms_delete_hold($1)", [postHoldId]);
+await as("postgres");
+assert.equal((await db.query("select count(*)::int as n from public.hold_requests where id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.hold_request_items where request_id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.hold_status_history where hold_id=$1", [postHoldId])).rows[0].n, 0);
+assert.equal((await db.query("select count(*)::int as n from public.audit_log where table_name='hold_requests' and record_id=$1 and new_data is null", [postHoldId])).rows[0].n, 1);
+const paidHold = (await db.query("select id from public.hold_requests where payment_status='paid' limit 1")).rows[0];
+assert.ok(paidHold, "An earlier check leaves a paid hold to test against");
+await as("authenticated", owner);
+await assert.rejects(db.query("select public.cms_delete_hold($1)", [paidHold.id]), /kept for your records|Cancel it before deleting/);
+
+// ── Deadline notes use Melbourne time ─────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-18");
+const extendId = await acceptedHold("phase4-card-18");
+await as("authenticated", owner);
+const newDeadline = new Date(Date.now() + 3 * 86_400_000);
+newDeadline.setUTCMinutes(30, 0, 0);
+await db.query("select public.cms_set_hold_deadline($1,$2)", [extendId, newDeadline.toISOString()]);
+await as("postgres");
+const extendNote = (await db.query("select note from public.hold_status_history where hold_id=$1 and note like 'Deadline%' order by id desc limit 1", [extendId])).rows[0].note;
+const melbourne = Object.fromEntries(new Intl.DateTimeFormat("en-AU", { timeZone: "Australia/Melbourne", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(newDeadline).map((p) => [p.type, p.value]));
+assert.equal(extendNote, `Deadline extended to ${melbourne.day} ${melbourne.month} ${melbourne.year}, ${melbourne.hour}:${melbourne.minute} ${melbourne.dayPeriod.toUpperCase()} Melbourne time`);
+
+// ── Status emails know what changed ───────────────────────────────────────
+await as("postgres");
+await db.exec("delete from public.hold_rate_limits");
+await addCard("phase4-card-19");
+const mailHoldId = await acceptedHold("phase4-card-19");
+const latestMail = async () => (await db.query("select payload from public.notification_outbox where hold_id=$1 and kind='customer_status_changed' order by id desc limit 1", [mailHoldId])).rows[0].payload;
+const mailCount = async () => (await db.query("select count(*)::int as n from public.notification_outbox where hold_id=$1 and kind='customer_status_changed'", [mailHoldId])).rows[0].n;
+await as("postgres");
+const beforeNote = await mailCount();
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,null,null,null,null,$2)", [mailHoldId, "Packing tomorrow"]);
+await as("postgres");
+assert.equal(await mailCount(), beforeNote, "A note on an unpaid hold doesn't re-send the reserved email");
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,null,'paid',null,'manual',null)", [mailHoldId]);
+await db.query("select public.cms_set_hold_workflow($1,null,'refunded',null,null,null)", [mailHoldId]);
+await as("postgres");
+assert.equal((await latestMail()).refundedNow, true);
+await as("authenticated", owner);
+await db.query("select public.cms_set_hold_workflow($1,'cancelled',null,null,null,null)", [mailHoldId]);
+await as("postgres");
+const closing = await latestMail();
+assert.equal(closing.status, "cancelled");
+assert.equal(closing.statusChanged, true);
+assert.equal(closing.refundedNow, false);
+
+
 await db.close();
-console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, and order alert routing.");
+console.log("Phase 4 payment checks passed: payment flow, webhook safety, deadline reconciliation, and inventory protection during active Checkout, payment integrity guards, workflow integrity, order alert routing, delivery addresses, hold deletion and status email changes.");

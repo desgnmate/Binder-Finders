@@ -9,6 +9,7 @@ import { useCatalog } from "../CatalogProvider";
 import { isCardAvailable } from "../../lib/data";
 import { useRouter } from "next/navigation";
 import { TYPE_COLORS, box, btn, btnDark, btnWhite, chip, headline, input, px, wrap } from "../site/ui";
+import { AU_STATES, addressLines, deliverySchema, type Delivery as DeliveryDetails } from "../../lib/delivery";
 
 const DELIVERY = {
   post: { label: "Tracked post", detail: "Australia-wide with tracking. We confirm postage when we accept your hold." },
@@ -18,11 +19,20 @@ type Delivery = keyof typeof DELIVERY;
 
 const LEGACY_HOLD_CHECKOUT_ENABLED = false;
 
-/** The note the store sees: the delivery choice first, then anything the customer wrote. */
-export function holdNote(delivery: Delivery, note: string) {
+/**
+ * The note the store sees: the delivery choice (and address) first, then
+ * anything the customer wrote. The address is also saved on its own; it's in
+ * the note too so the store's new-request email shows it.
+ */
+export function holdNote(delivery: Delivery, note: string, details?: DeliveryDetails | null) {
   const extra = note.trim();
-  return `Delivery: ${DELIVERY[delivery].label}${extra ? `\n\n${extra}` : ""}`;
+  const address = details?.method === "post" ? addressLines(details) : [];
+  const phone = details?.phone ? [`Phone: ${details.phone}`] : [];
+  const header = [`Delivery: ${DELIVERY[delivery].label}`, ...address, ...phone].join("\n");
+  return `${header}${extra ? `\n\n${extra}` : ""}`;
 }
+
+const EMPTY_ADDRESS = { recipient: "", phone: "", line1: "", line2: "", suburb: "", state: "", postcode: "" };
 
 /**
  * Bag and hold request. Customers review their cards, add their details and
@@ -60,6 +70,9 @@ export function CheckoutMartClient({
   const [addressCountry, setAddressCountry] = useState("Australia");
   const [pickupNote, setPickupNote] = useState("");
   const [delivery, setDelivery] = useState<Delivery>("post");
+  const [address, setAddress] = useState(EMPTY_ADDRESS);
+  const setAddressField = (key: keyof typeof EMPTY_ADDRESS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setAddress((current) => ({ ...current, [key]: e.target.value }));
   const [agreed, setAgreed] = useState(false);
   const [sent, setSent] = useState<{ items: typeof items; total: number; delivery: Delivery } | null>(null);
   const seededRef = useRef(false);
@@ -88,30 +101,21 @@ export function CheckoutMartClient({
     setContactEmail(customer.email);
   }, [hydrated, customer]);
 
-  // Retries reuse the same keys only for the exact same checkout request.
-  // Any bag, contact, delivery, or address change starts a new idempotent flow.
-  const note = holdNote(delivery, pickupNote);
-
-  const guestShippingComplete =
-    delivery === "pickup" ||
-    (
-      !!addressLine1.trim() &&
-      !!addressCity.trim() &&
-      !!addressPostalCode.trim() &&
-      !!addressCountry.trim()
-    );
+  // A retry reuses the request/payment keys only for the exact same checkout.
+  // Any bag, contact, delivery or address change starts a new idempotent flow.
+  const deliveryCheck = deliverySchema.safeParse(
+    delivery === "post"
+      ? { method: "post", ...address, recipient: address.recipient.trim() || contactName }
+      : { method: "pickup", phone: address.phone },
+  );
+  const deliveryDetails = deliveryCheck.success ? deliveryCheck.data : null;
+  const note = holdNote(delivery, pickupNote, deliveryDetails);
 
   const requestSignature = JSON.stringify([
     items.map((c) => c.id),
     contactName,
     contactEmail,
     note,
-    addressLine1,
-    addressLine2,
-    addressCity,
-    addressState,
-    addressPostalCode,
-    addressCountry,
   ]);
 
   useEffect(() => {
@@ -163,8 +167,9 @@ export function CheckoutMartClient({
     canContinue &&
     !!contactName.trim() &&
     !!contactEmail.trim() &&
-    (!isGuest || guestShippingComplete) &&
+    !!deliveryDetails &&
     agreed;
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,20 +197,16 @@ export function CheckoutMartClient({
             fulfillmentMethod:
               delivery === "pickup" ? "pickup" : "shipping",
             shippingAddress:
-              delivery === "pickup"
-                ? null
-                : {
-                    line1: addressLine1,
-                    ...(addressLine2.trim()
-                      ? { line2: addressLine2 }
-                      : {}),
-                    city: addressCity,
-                    ...(addressState.trim()
-                      ? { state: addressState }
-                      : {}),
-                    postalCode: addressPostalCode,
-                    country: addressCountry,
-                  },
+              deliveryDetails?.method === "post"
+                ? {
+                    line1: deliveryDetails.line1,
+                    ...(deliveryDetails.line2 ? { line2: deliveryDetails.line2 } : {}),
+                    city: deliveryDetails.suburb,
+                    state: deliveryDetails.state,
+                    postalCode: deliveryDetails.postcode,
+                    country: "Australia",
+                  }
+                : null,
             cardIds: items.map((c) => c.id),
             requestKey: requestKey.current,
             paymentKey: paymentKey.current,
@@ -268,6 +269,7 @@ export function CheckoutMartClient({
           name: contactName,
           email: contactEmail,
           note,
+          delivery: deliveryDetails,
           cardIds: items.map((c) => c.id),
           prices: Object.fromEntries(
             items.map((c) => [c.id, Math.round(c.price * 100)]),
@@ -484,94 +486,65 @@ export function CheckoutMartClient({
                         ))}
                       </fieldset>
 
-                      {isGuest && delivery === "post" && (
-                        <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
-                          <legend className="p-0 text-[15px] font-semibold">
-                            Shipping address
-                          </legend>
-
-                          <label className="flex flex-col gap-1.5 text-[15px] font-semibold">
-                            Address line 1
-                            <input
-                              type="text"
-                              required
-                              autoComplete="address-line1"
-                              maxLength={200}
-                              value={addressLine1}
-                              onChange={(e) => setAddressLine1(e.target.value)}
-                              className={input}
-                            />
-                          </label>
-
-                          <label className="flex flex-col gap-1.5 text-[15px] font-semibold">
-                            Address line 2
-                            <input
-                              type="text"
-                              autoComplete="address-line2"
-                              maxLength={200}
-                              value={addressLine2}
-                              onChange={(e) => setAddressLine2(e.target.value)}
-                              className={input}
-                            />
-                          </label>
-
+                      {delivery === "post" ? (
+                        <fieldset data-checkout-address className="m-0 flex flex-col gap-3 border-0 p-0">
+                          <legend className="mb-2 p-0 text-[15px] font-semibold">Where should we post them?</legend>
                           <div className="flex flex-wrap gap-3.5">
-                            <label className="flex flex-[1_1_220px] flex-col gap-1.5 text-[15px] font-semibold">
-                              City
-                              <input
-                                type="text"
-                                required
-                                autoComplete="address-level2"
-                                maxLength={120}
-                                value={addressCity}
-                                onChange={(e) => setAddressCity(e.target.value)}
-                                className={input}
-                              />
+                            <label className="flex flex-[1_1_240px] flex-col gap-1.5 text-[15px] font-semibold">
+                              <span>
+                                Recipient <span className="text-[13px] font-normal">Leave blank if it&apos;s you</span>
+                              </span>
+                              <input type="text" autoComplete="shipping name" maxLength={120} value={address.recipient} placeholder={contactName} onChange={setAddressField("recipient")} className={input} />
                             </label>
-
-                            <label className="flex flex-[1_1_180px] flex-col gap-1.5 text-[15px] font-semibold">
-                              State / Region
-                              <input
-                                type="text"
-                                autoComplete="address-level1"
-                                maxLength={120}
-                                value={addressState}
-                                onChange={(e) => setAddressState(e.target.value)}
-                                className={input}
-                              />
+                            <label className="flex flex-[1_1_240px] flex-col gap-1.5 text-[15px] font-semibold">
+                              <span>
+                                Phone <span className="text-[13px] font-normal">Optional, for the courier</span>
+                              </span>
+                              <input type="tel" autoComplete="shipping tel" maxLength={40} value={address.phone} onChange={setAddressField("phone")} className={input} />
                             </label>
                           </div>
-
+                          <label className="flex flex-col gap-1.5 text-[15px] font-semibold">
+                            Street address
+                            <input type="text" required autoComplete="shipping address-line1" maxLength={200} value={address.line1} onChange={setAddressField("line1")} className={input} />
+                          </label>
+                          <label className="flex flex-col gap-1.5 text-[15px] font-semibold">
+                            <span>
+                              Apartment, unit or PO box <span className="text-[13px] font-normal">Optional</span>
+                            </span>
+                            <input type="text" autoComplete="shipping address-line2" maxLength={200} value={address.line2} onChange={setAddressField("line2")} className={input} />
+                          </label>
                           <div className="flex flex-wrap gap-3.5">
-                            <label className="flex flex-[1_1_180px] flex-col gap-1.5 text-[15px] font-semibold">
+                            <label className="flex flex-[2_1_200px] flex-col gap-1.5 text-[15px] font-semibold">
+                              Suburb
+                              <input type="text" required autoComplete="shipping address-level2" maxLength={100} value={address.suburb} onChange={setAddressField("suburb")} className={input} />
+                            </label>
+                            <label className="flex flex-[1_1_110px] flex-col gap-1.5 text-[15px] font-semibold">
+                              State
+                              <select required autoComplete="shipping address-level1" value={address.state} onChange={setAddressField("state")} className={input}>
+                                <option value="">Choose</option>
+                                {AU_STATES.map((state) => (
+                                  <option key={state} value={state}>
+                                    {state}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="flex flex-[1_1_110px] flex-col gap-1.5 text-[15px] font-semibold">
                               Postcode
-                              <input
-                                type="text"
-                                required
-                                autoComplete="postal-code"
-                                maxLength={30}
-                                value={addressPostalCode}
-                                onChange={(e) => setAddressPostalCode(e.target.value)}
-                                className={input}
-                              />
-                            </label>
-
-                            <label className="flex flex-[1_1_220px] flex-col gap-1.5 text-[15px] font-semibold">
-                              Country
-                              <input
-                                type="text"
-                                required
-                                autoComplete="country-name"
-                                maxLength={100}
-                                value={addressCountry}
-                                onChange={(e) => setAddressCountry(e.target.value)}
-                                className={input}
-                              />
+                              <input type="text" required inputMode="numeric" pattern="[0-9]{4}" autoComplete="shipping postal-code" maxLength={4} value={address.postcode} onChange={setAddressField("postcode")} className={input} />
                             </label>
                           </div>
+                          <span className="text-[13px]">We post within Australia only.</span>
                         </fieldset>
+                      ) : (
+                        <label className="flex flex-col gap-1.5 text-[15px] font-semibold">
+                          <span>
+                            Phone <span className="text-[13px] font-normal">Optional, to arrange the pickup</span>
+                          </span>
+                          <input type="tel" autoComplete="tel" maxLength={40} value={address.phone} onChange={setAddressField("phone")} className={input} />
+                        </label>
                       )}
-{legacyHoldCheckout && (
+
                       <label htmlFor="checkout-pickup" className="flex flex-col gap-1.5 text-[15px] font-semibold">
                         <span>
                           Note for the store{" "}
@@ -580,13 +553,12 @@ export function CheckoutMartClient({
                         <textarea
                           id="checkout-pickup"
                           value={pickupNote}
-                          maxLength={1800}
+                          maxLength={1200}
                           onChange={(e) => setPickupNote(e.target.value)}
                           rows={3}
                           className={`${input} min-h-[96px] resize-y py-3`}
                         />
                       </label>
-                    )}
                       <label className="flex items-start gap-2.5 text-sm leading-normal">
                         <input
                           type="checkbox"
@@ -683,11 +655,19 @@ export function CheckoutMartClient({
                         {busy ? "Opening secure payment…" : "Pay securely with Stripe"}
                       </button>
                     )}
-                    {!agreed && canContinue && (
+                    {canContinue && !deliveryDetails && (
+                      <span className="text-center text-[13px]">
+                        {delivery === "post"
+                          ? "Add your delivery address to continue."
+                          : "Check your phone number."}
+                      </span>
+                    )}
+                    {canContinue && deliveryDetails && !agreed && (
                       <span className="text-center text-[13px]">
                         Tick the terms box to continue.
                       </span>
                     )}
+
                     <div className="flex flex-col gap-2 rounded-[14px] border-2 border-ink-black bg-white p-3.5 text-sm leading-normal">
                       <b>What happens next</b>
                       <span>
@@ -871,7 +851,7 @@ function ConfirmationPanel({
           ))}
         </ol>
         <div className="flex flex-wrap gap-3">
-          <Link href="/account/orders" className={`${btnDark} min-h-[52px]`}>Track this request</Link>
+          <Link href={reference ? `/account/orders/${reference}` : "/account/orders"} className={`${btnDark} min-h-[52px]`}>Track this request</Link>
           <Link href="/shop" className={`${btnWhite} min-h-[52px]`}>Keep browsing</Link>
         </div>
         <p className="m-0 text-sm">

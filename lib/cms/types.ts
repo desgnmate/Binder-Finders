@@ -1,5 +1,14 @@
 import { z } from "zod";
+import type { HoldDelivery } from "../delivery";
 import type { ShopCard } from "../data";
+import {
+  CONDITIONS,
+  RARITIES,
+  normalizeCondition,
+  normalizeRarity,
+  type CardCondition,
+  type CardRarity,
+} from "../card-grades";
 
 const imageUrl = z
   .string()
@@ -16,16 +25,9 @@ export const cardSchema = z
     set: z.string().trim().min(1).max(120),
     year: z.number().int().min(1996).max(2100),
     number: z.string().trim().min(1).max(40),
-    rarity: z.enum([
-      "Common",
-      "Uncommon",
-      "Rare",
-      "Rare Holo",
-      "Ultra Rare",
-      "Secret Rare",
-      "Shining Holo",
-    ]),
-    condition: z.enum(["RAW NM", "RAW LP", "PSA 8", "PSA 9", "PSA 10"]),
+    // Older saved values (e.g. "RAW NM", "Rare Holo") are mapped to the current lists.
+    rarity: z.preprocess(normalizeRarity, z.enum(RARITIES)),
+    condition: z.preprocess(normalizeCondition, z.enum(CONDITIONS)),
     type: z.enum([
       "Fire",
       "Water",
@@ -128,6 +130,8 @@ export const settingsSchema = z
     guestCheckoutDurationMinutes: z.number().int().min(60).max(1440).default(60),
     shippingFeeCents: z.number().int().min(0).max(1000000000).nullable().default(null),
     content: contentSchema,
+    /** Pokémon shown in the Pokédex (National Dex #1–386). Unset uses the built-in list. */
+    pokedexIds: z.array(z.number().int().min(1).max(386)).max(386).optional(),
   })
   .refine((v) => (!v.holdsEnabled && !v.guestCheckoutEnabled) || v.currency !== "", {
     message: "Choose the store currency before enabling holds or guest checkout",
@@ -184,6 +188,8 @@ export interface Hold {
     | "picked_up"
     | "cancelled";
   fulfillment_note?: string | null;
+  /** Where the cards go. Missing on holds made before addresses were collected. */
+  delivery?: HoldDelivery | null;
   approved_at?: string | null;
   expires_at?: string | null;
   created_at: string;
@@ -209,6 +215,8 @@ export interface AuditEntry {
 export function fromRow(row: Record<string, any>): CMSCard {
   return {
     ...row.data,
+    condition: normalizeCondition(row.data?.condition) as CardCondition,
+    rarity: normalizeRarity(row.data?.rarity) as CardRarity,
     id: row.id,
     price: row.price_cents / 100,
     publication: row.publication,

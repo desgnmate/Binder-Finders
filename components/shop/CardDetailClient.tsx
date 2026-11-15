@@ -220,9 +220,8 @@ export function CardDetailClient({
     setAdded(true);
   };
 
-  const isSpecialRare = card
-    ? ["Ultra Rare", "Secret Rare", "Shining Holo"].includes(card.rarity)
-    : false;
+  // Holo cards get the moving foil shine in the close-up view.
+  const isSpecialRare = card?.rarity === "Holo Rare";
 
   const handleCardClick = () => {
     setIsFlipped(!isFlipped);

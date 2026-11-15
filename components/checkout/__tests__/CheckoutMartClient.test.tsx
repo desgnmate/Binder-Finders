@@ -47,6 +47,13 @@ afterEach(() => {
   localStorage.clear();
 });
 
+async function fillAddress(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText(/street address/i), "1 Pallet St");
+  await user.type(screen.getByLabelText(/suburb/i), "Fitzroy");
+  await user.selectOptions(screen.getByLabelText(/^state/i), "VIC");
+  await user.type(screen.getByLabelText(/postcode/i), "3065");
+}
+
 describe("CheckoutMartClient", () => {
   it.each(['', 'AUD', 'PHP'])('uses only the configured currency (%s) for totals and items', currency => {
     mockCurrency = currency;
@@ -274,6 +281,37 @@ describe("CheckoutMartClient", () => {
     expect(
       screen.getByRole("button", { name: /pay securely with stripe/i }),
     ).toBeEnabled();
+  });
+
+  it("needs a delivery address before a posted hold can be sent", async () => {
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    await user.type(screen.getByLabelText(/name/i), "Ash");
+    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
+    expect(screen.getByRole("button", { name: /pay securely with stripe/i })).toBeDisabled();
+    expect(screen.getByText(/add your delivery address/i)).toBeInTheDocument();
+    await fillAddress(user);
+    expect(screen.getByRole("button", { name: /pay securely with stripe/i })).toBeEnabled();
+  });
+
+  it("sends the shipping address to Guest Checkout", async () => {
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
+    await fillAddress(user);
+    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
+    await user.click(screen.getByRole("button", { name: /pay securely with stripe/i }));
+    expect(global.fetch).toHaveBeenCalledWith("/api/guest-checkout", expect.any(Object));
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.fulfillmentMethod).toBe("shipping");
+    expect(body.shippingAddress).toMatchObject({
+      line1: "1 Pallet St",
+      city: "Fitzroy",
+      state: "VIC",
+      postalCode: "3065",
+      country: "Australia",
+    });
+
   });
 
   it("writes a delivery-only note when the customer adds nothing", () => {

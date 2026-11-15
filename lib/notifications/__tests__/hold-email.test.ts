@@ -32,6 +32,10 @@ describe("hold notification emails", () => {
     [{ status: "cancelled" }, "cancelled"],
     [{ status: "expired" }, "expired"],
     [{ status: "cancelled", paymentStatus: "refunded" }, "refunded"],
+    [{ status: "accepted", paymentStatus: "refunded", statusChanged: false, refundedNow: true }, "refunded"],
+    [{ status: "cancelled", paymentStatus: "refunded", statusChanged: true, refundedNow: false }, "cancelled"],
+    [{ status: "expired", paymentStatus: "refunded", statusChanged: true, refundedNow: false }, "expired"],
+    [{ status: "cancelled", paymentStatus: "refunded", statusChanged: true, refundedNow: true }, "refunded"],
   ] as const)("picks the design for %j", (state, variant) => {
     expect(holdEmailVariant("customer_status_changed", { ...payload, ...state })).toBe(variant);
   });

@@ -677,3 +677,26 @@ html:has(.cms)::-webkit-scrollbar-thumb:hover, .cms ::-webkit-scrollbar-thumb:ho
 }
 /* Row menus must not be clipped by the table's scroll box. */
 .cms-cards-panel .cms-scroll { overflow: visible; }
+
+/* Pokédex picker ----------------------------------------------------------- */
+.cms-pokedex-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.cms .cms-pokedex-bulk { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; border: 0; }
+.cms .cms-pokedex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin: 0; padding: 0; border: 0; }
+.cms-pokedex-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 132px; padding: 10px 6px; border: 2px solid transparent; border-radius: 16px; background: var(--soft); text-align: center; opacity: 0.55; }
+.cms-pokedex-tile:hover:not(:disabled) { background: #f0f1f4; opacity: 0.85; }
+.cms-pokedex-tile[aria-pressed="true"] { border-color: var(--ink); background: var(--yellow-soft); opacity: 1; }
+.cms-pokedex-tile:disabled { cursor: not-allowed; }
+.cms-pokedex-tile img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; }
+.cms-pokedex-tile strong { font-size: 13px; line-height: 1.2; overflow-wrap: anywhere; }
+.cms-pokedex-tile small { color: var(--muted); font-size: 11px; }
+.cms-pokedex-check { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--yellow); }
+.cms-pokemon-preview { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.cms-pokemon-preview img { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
+
+/* Hold delivery and delete ------------------------------------------------- */
+.cms-delivery { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.cms-delivery > div { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
+.cms-delivery address { display: flex; flex-direction: column; font-style: normal; line-height: 1.5; }
+.cms-delivery small { color: var(--muted); }
+.cms-hold-delete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px dashed var(--line); border-radius: 16px; }
+.cms-hold-delete p { flex: 1 1 240px; margin: 0; font-size: 13px; }

@@ -21,20 +21,27 @@ import {
   paymentStatus,
   shortId,
 } from "../../../../components/account/status";
+import { addressLines, type HoldDelivery } from "../../../../lib/delivery";
 
 type Step = { label: string; done: boolean };
 
 // The five stops on the game-screen progress track.
-function progressSteps(status: string, payment: string, fulfilment: string): Step[] {
+function progressSteps(status: string, payment: string, fulfilment: string, pickup: boolean): Step[] {
   const packed = ["ready", "shipped", "delivered", "picked_up"].includes(fulfilment);
   const sent = ["shipped", "delivered", "picked_up"].includes(fulfilment);
   return [
     { label: "Requested", done: true },
     { label: "Reserved", done: ["accepted", "completed"].includes(status) },
     { label: "Paid", done: payment === "paid" },
-    { label: "Packed", done: packed },
-    { label: fulfilment === "picked_up" ? "Picked up" : "Shipped", done: sent },
+    { label: pickup ? "Ready" : "Packed", done: packed },
+    { label: pickup ? "Picked up" : "Shipped", done: sent },
   ];
+}
+
+/** Older holds have no saved delivery; their note starts with the choice. */
+function isPickup(delivery: HoldDelivery | null | undefined, note: string | null | undefined) {
+  if (delivery) return delivery.method === "pickup";
+  return (note || "").startsWith("Delivery: Pick up");
 }
 
 export default async function CustomerOrderDetail({
@@ -56,7 +63,7 @@ export default async function CustomerOrderDetail({
   const { data, error } = await db
     .from("hold_requests")
     .select(
-      "id,status,currency,payment_status,payment_failure_reason,fulfillment_status,fulfillment_note,expires_at,created_at,hold_request_items(card_id,name,price_cents),hold_status_history(id,from_status,to_status,actor_kind,note,created_at)",
+      "id,status,currency,note,delivery,payment_status,payment_failure_reason,fulfillment_status,fulfillment_note,expires_at,created_at,hold_request_items(card_id,name,price_cents),hold_status_history(id,from_status,to_status,actor_kind,note,created_at)",
     )
     .eq("id", id)
     .eq("customer_user_id", user.id)
@@ -71,10 +78,13 @@ export default async function CustomerOrderDetail({
     (sum: number, item: { price_cents: number }) => sum + item.price_cents,
     0,
   );
+  // An open Stripe checkout is closed first when the customer cancels.
   const canCancel =
     ["pending", "accepted"].includes(data.status) &&
     !["paid", "refunded"].includes(data.payment_status || "unpaid") &&
-    !(data.status === "accepted" && data.payment_status === "pending");
+    query.payment !== "success";
+  const delivery = data.delivery as HoldDelivery | null;
+  const pickup = isPickup(delivery, data.note);
   const msLeft = data.expires_at ? new Date(data.expires_at).getTime() - Date.now() : 0;
   const canPay =
     data.status === "accepted" &&
@@ -92,7 +102,7 @@ export default async function CustomerOrderDetail({
   const fulfilment = fulfilmentStatus(data.fulfillment_status);
   const closed = isClosedHold(data.status);
   const showTrack = !closed && data.payment_status !== "refunded";
-  const steps = progressSteps(data.status, data.payment_status || "unpaid", data.fulfillment_status || "not_ready");
+  const steps = progressSteps(data.status, data.payment_status || "unpaid", data.fulfillment_status || "not_ready", pickup);
   const current = steps.findIndex((step) => !step.done);
   const showDeadline =
     data.status === "accepted" &&
@@ -117,13 +127,15 @@ export default async function CustomerOrderDetail({
     // Back from Stripe: the pay button is hidden while the webhook lands.
     nextLine = "We're waiting for Stripe to confirm your payment. Refresh this page in a minute.";
   } else if (data.status === "accepted" && data.payment_status === "pending") {
-    nextLine = "Checkout is in progress. You can reopen it below; cancellation is available after it finishes or expires.";
+    nextLine = "Checkout is in progress. You can reopen it below to finish paying.";
   } else if (canPay && data.expires_at) {
     nextLine = <>Next: pay before <strong>{formatDeadline(data.expires_at)}</strong> and we&apos;ll pack your cards.</>;
   } else if (data.payment_status === "paid" && current === 3) {
     nextLine = "Payment received. We're packing your cards next.";
   } else if (current === 4) {
-    nextLine = "Your cards are packed and nearly on their way.";
+    nextLine = pickup
+      ? "Your cards are ready. We'll email you to arrange the pickup."
+      : "Your cards are packed and nearly on their way.";
   } else if (current === -1) {
     nextLine = "All done. Enjoy your cards!";
   }
@@ -136,7 +148,7 @@ export default async function CustomerOrderDetail({
         <span aria-current="page">Request {shortId(data.id)}</span>
       </nav>
 
-      {query.payment === "success" && (
+      {query.payment === "success" && data.payment_status === "pending" && (
         <div className="ac-banner ac-banner--success" role="status">
           <span className="ac-banner__icon" aria-hidden="true">
             <Check size={18} strokeWidth={3} />
@@ -275,6 +287,23 @@ export default async function CustomerOrderDetail({
             <p className="ac-note">
               <strong>Fulfilment note:</strong> {data.fulfillment_note}
             </p>
+          )}
+          <div className="ac-pay__row">
+            <span>Delivery</span>
+            <span>{pickup ? "Pick up in Melbourne" : "Tracked post"}</span>
+          </div>
+          {delivery?.method === "post" ? (
+            <address className="ac-note ac-address" data-order-address>
+              {addressLines(delivery).map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+              {delivery.phone && <span>Phone {delivery.phone}</span>}
+            </address>
+          ) : (
+            !pickup &&
+            !closed && (
+              <p className="ac-note">We&apos;ll confirm your delivery address with you by email.</p>
+            )
           )}
           {canCancel && (
             <>

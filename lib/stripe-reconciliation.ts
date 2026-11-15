@@ -89,7 +89,7 @@ export async function reconcileDueStripeAttempts(db: Db) {
  * Before the store cancels or rejects a hold, close any Checkout the customer
  * left open so the cancellation is not blocked for up to a day.
  */
-export async function closeOpenCheckouts(holdId: string) {
+export async function closeOpenCheckouts(holdId: string, by: "store" | "customer" = "store") {
   const db = serviceClient();
   const { data, error } = await db
     .from("payment_attempts")
@@ -106,11 +106,21 @@ export async function closeOpenCheckouts(holdId: string) {
       db,
       stripe,
       { attempt_id: row.id, session_id: row.checkout_session_id },
-      "Checkout closed because the store cancelled this hold",
+      by === "customer"
+        ? "Checkout closed because you cancelled this hold"
+        : "Checkout closed because the store cancelled this hold",
     );
     if (outcome === "paid")
-      throw new Error("The customer has just paid for this hold. Refresh the request before changing it.");
+      throw new Error(
+        by === "customer"
+          ? "Your payment has just gone through, so this hold can no longer be cancelled. Refresh the page."
+          : "The customer has just paid for this hold. Refresh the request before changing it.",
+      );
     if (outcome === "pending")
-      throw new Error("Stripe is still confirming the customer's payment. Try again in a few minutes.");
+      throw new Error(
+        by === "customer"
+          ? "Stripe is still confirming your payment. Try again in a few minutes."
+          : "Stripe is still confirming the customer's payment. Try again in a few minutes.",
+      );
   }
 }

@@ -41,6 +41,10 @@ export async function authenticateCustomer(mode: string, _previous: AuthState, f
       if (!name || name.length > 120) return { error: "Enter your name (up to 120 characters)." };
       const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: withNext(callback, next), data: { name } } });
       if (error) return { error: emailError(error) };
+      // Supabase answers a sign-up for an existing email with an empty user and
+      // sends nothing, so say so instead of waiting for an email that won't come.
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0)
+        return { error: "An account already uses this email. Sign in instead, or reset your password if you've forgotten it." };
       const jar = await cookies();
       jar.set("customer-pending-email", email, { httpOnly: true, sameSite: "lax", secure: callback.startsWith("https:"), path: "/account", maxAge: 1800 });
       destination = data.session && data.user?.email_confirmed_at ? next : withNext("/account/verify", next);

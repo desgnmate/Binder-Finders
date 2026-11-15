@@ -29,7 +29,7 @@ export function PolicyLayout({
   aside?: ReactNode;
 }) {
   return (
-    <PageShell compactFooter>
+    <PageShell>
       <section className="pb-8 pt-14">
         <div data-motion="hero" className={`${wrap} flex flex-col gap-[18px]`}>
           <nav aria-label="Policies" className="flex flex-wrap gap-2.5">

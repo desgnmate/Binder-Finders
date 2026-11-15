@@ -460,3 +460,4 @@
   .ac-loading span { animation: none; }
 }
 .ac-panel--blue .ac-head .ac-chip { background: #fff; }
+.ac-address { display: flex; flex-direction: column; font-style: normal; line-height: 1.5; }

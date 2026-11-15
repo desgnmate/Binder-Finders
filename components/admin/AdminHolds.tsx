@@ -1,9 +1,11 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { Inbox, Layers, Search } from "lucide-react";
+import { Copy, Inbox, Layers, MapPin, Search, Trash2 } from "lucide-react";
+import { addressLines } from "../../lib/delivery";
 import type { Hold } from "../../lib/cms/types";
 import {
+  updateQuery,
   awaitingPayment,
   holdLabel,
   holdRef,
@@ -53,6 +55,72 @@ function initialWorkflow(hold: Hold): Workflow {
   };
 }
 const completedFulfillment = ["ready", "shipped", "delivered", "picked_up"];
+/** Mirrors cms_delete_hold: sales and anything that took a payment are kept. */
+export function canDeleteHold(hold: Hold) {
+  return (
+    ["pending", "rejected", "cancelled", "expired"].includes(hold.status) &&
+    !["pending", "paid", "refunded"].includes(hold.payment_status || "unpaid")
+  );
+}
+
+/**
+ * The customer's own words. Checkout puts the delivery choice and address at
+ * the top of the note; when the address is saved separately, the Delivery
+ * panel shows it, so it isn't repeated here.
+ */
+export function customerMessage(hold: Hold) {
+  const note = hold.note || "";
+  if (!hold.delivery || !note.startsWith("Delivery:")) return note;
+  const split = note.indexOf("\n\n");
+  return split === -1 ? "" : note.slice(split + 2).trim();
+}
+
+function DeliveryPanel({ hold }: { hold: Hold }) {
+  const [copied, setCopied] = useState(false);
+  const delivery = hold.delivery;
+  const lines = delivery?.method === "post" ? addressLines(delivery) : [];
+  return (
+    <div className="cms-panel cms-stack" data-hold-delivery>
+      <h3>Delivery</h3>
+      {delivery?.method === "post" ? (
+        <div className="cms-delivery">
+          <MapPin size={18} aria-hidden="true" />
+          <div>
+            <strong>Tracked post</strong>
+            <address>
+              {lines.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </address>
+            {delivery.phone && <small>Phone {delivery.phone}</small>}
+          </div>
+          <button
+            type="button"
+            className="cms-btn"
+            onClick={() => {
+              void navigator.clipboard?.writeText(lines.join("\n")).then(() => setCopied(true));
+            }}
+          >
+            <Copy size={14} aria-hidden="true" /> {copied ? "Copied" : "Copy address"}
+          </button>
+        </div>
+      ) : delivery?.method === "pickup" ? (
+        <div className="cms-delivery">
+          <MapPin size={18} aria-hidden="true" />
+          <div>
+            <strong>Pick up in Melbourne</strong>
+            <small>Arrange a time with {hold.name} by email{delivery.phone ? ` or on ${delivery.phone}` : ""}.</small>
+          </div>
+        </div>
+      ) : (
+        <p className="cms-muted">
+          No address on file. This request was made before checkout asked for one, so check the customer&apos;s
+          message or email them.
+        </p>
+      )}
+    </div>
+  );
+}
 // Mirrors cms_set_hold_workflow: only an accepted hold takes payment and
 // delivery changes; completed and cancelled ones may only become refunded.
 function workflowOptions(hold: Hold) {
@@ -293,6 +361,7 @@ export function AdminHolds({
   busy,
   onSave,
   onTransition,
+  onDelete,
   onDirtyChange,
 }: {
   holds: Hold[];
@@ -300,6 +369,7 @@ export function AdminHolds({
   busy: boolean;
   onSave: (hold: Hold, values: Record<string, string>) => Promise<boolean>;
   onTransition: (hold: Hold, status: string) => void;
+  onDelete?: (hold: Hold) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -327,7 +397,11 @@ export function AdminHolds({
       ),
     [holds, filter, search],
   );
-  const pageHolds = visible.slice(page * 10, page * 10 + 10);
+  // After the last request on a page is accepted, declined or deleted, step
+  // back to the last page that still has requests instead of showing nothing.
+  const lastPage = Math.max(0, Math.ceil(visible.length / 10) - 1);
+  const currentPage = Math.min(page, lastPage);
+  const pageHolds = visible.slice(currentPage * 10, currentPage * 10 + 10);
   // Keep the selected editor mounted while searching. Filtering never discards edits.
   const hold = holds.find((h) => h.id === selected);
   const history = [...(hold?.hold_status_history || [])].sort(
@@ -358,6 +432,9 @@ export function AdminHolds({
       return;
     setDirty(false);
     setSelected(id);
+    // Keep the address bar on this request, so a later link to the request
+    // that was open before (e.g. from a notification) still switches to it.
+    updateQuery({ hold: id });
     // On narrow screens (no laptop zoom) the detail sits below the list; bring it into view.
     if (window.matchMedia?.("(max-width: 960px)").matches)
       requestAnimationFrame(() =>
@@ -469,18 +546,18 @@ export function AdminHolds({
           <div className="cms-request-pagination">
             <button
               className="cms-btn"
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
             >
               Previous
             </button>
             <span>
-              {page + 1} / {Math.ceil(visible.length / 10)}
+              {currentPage + 1} / {Math.ceil(visible.length / 10)}
             </span>
             <button
               className="cms-btn"
-              disabled={(page + 1) * 10 >= visible.length}
-              onClick={() => setPage(page + 1)}
+              disabled={(currentPage + 1) * 10 >= visible.length}
+              onClick={() => setPage(currentPage + 1)}
             >
               Next
             </button>
@@ -548,13 +625,14 @@ export function AdminHolds({
                   </li>
                 ))}
               </ul>
-              {hold.note && (
+              {customerMessage(hold) && (
                 <div className="cms-customer-note">
                   <strong>Message from customer</strong>
-                  <p>{hold.note}</p>
+                  <p>{customerMessage(hold)}</p>
                 </div>
               )}
             </div>
+            <DeliveryPanel key={`delivery-${hold.id}`} hold={hold} />
             {["accepted", "completed", "cancelled"].includes(hold.status) && (
               <WorkflowEditor
                 key={hold.id}
@@ -584,6 +662,22 @@ export function AdminHolds({
                     Accept &amp; reserve
                   </button>
                 </div>
+              </div>
+            )}
+            {onDelete && canDeleteHold(hold) && (
+              <div className="cms-hold-delete">
+                <p className="cms-muted">
+                  Don&apos;t need this request? Delete it to clear it from your list. Sales and paid requests are
+                  always kept.
+                </p>
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="cms-btn cms-btn-danger"
+                  onClick={() => onDelete(hold)}
+                >
+                  <Trash2 size={14} aria-hidden="true" /> Delete request
+                </button>
               </div>
             )}
           </section>

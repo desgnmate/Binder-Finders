@@ -41,7 +41,7 @@ const card = {
   year: 2003,
   number: "TEST",
   rarity: "Common",
-  condition: "RAW NM",
+  condition: "NM",
   type: "Grass",
   price: 12.34,
   imageUrl: "/images/logo.png",

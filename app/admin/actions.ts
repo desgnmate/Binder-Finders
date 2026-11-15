@@ -85,6 +85,23 @@ export async function saveOrderAlertEmail(email: string) {
     return { ok: false, error: message(e) };
   }
 }
+/** Permanently removes a request that never became a sale (spam, tests, declined or cancelled). */
+export async function deleteHold(id: string) {
+  try {
+    const { db } = await requireAdmin();
+    z.string().uuid().parse(id);
+    const { error } = await db.rpc("cms_delete_hold", { p_id: id });
+    if (error) {
+      if (/function .*cms_delete_hold|schema cache/i.test(error.message))
+        throw new Error("Deleting requests needs the latest database update. Ask your developer to apply it.");
+      throw new Error(error.message);
+    }
+    refresh();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: message(e) };
+  }
+}
 export async function transitionHold(id: string, status: string) {
   // Retained for older clients, with the same validation as the current editor.
   return updateHoldWorkflow(id, { status });
