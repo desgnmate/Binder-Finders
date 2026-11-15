@@ -132,7 +132,6 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
           <nav aria-label="Store information" className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3 md:justify-start">
             {[
               { label: "About", href: "/about" },
-              { label: "How holds work", href: "/how-holds-work" },
               { label: "Shipping & returns", href: "/shipping-returns" },
               { label: "Contact", href: "/contact" },
               { label: "Privacy", href: "/privacy" },

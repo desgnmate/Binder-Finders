@@ -1,5 +1,6 @@
 import { serviceClient } from "../../../../lib/supabase/server";
 import { reconcileDueStripeAttempts } from "../../../../lib/stripe-reconciliation";
+import { reconcileDueGuestStripeAttempts } from "../../../../lib/guest-stripe-reconciliation";
 import {
   renderHoldNotification,
   type HoldNotificationKind,
@@ -26,17 +27,52 @@ async function processNotifications(request: Request) {
   try {
     paymentReconciliation = await reconcileDueStripeAttempts(db);
   } catch {
-    return Response.json({ error: "Payment reconciliation is unavailable" }, { status: 503 });
+    return Response.json(
+      { error: "Payment reconciliation is unavailable" },
+      { status: 503 },
+    );
   }
-  const { data: expired, error: expiryError } = await db.rpc("cms_expire_unpaid_holds", {
-    p_limit: 50,
-  });
+
+  let guestPaymentReconciliation: { reconciled: number; errors: number };
+  try {
+    guestPaymentReconciliation = await reconcileDueGuestStripeAttempts();
+  } catch {
+    return Response.json(
+      { error: "Guest payment reconciliation is unavailable" },
+      { status: 503 },
+    );
+  }
+
+  const { data: expired, error: expiryError } = await db.rpc(
+    "cms_expire_unpaid_holds",
+    { p_limit: 50 },
+  );
   if (expiryError) {
-    return Response.json({ error: "Hold expiry processing is unavailable" }, { status: 503 });
+    return Response.json(
+      { error: "Hold expiry processing is unavailable" },
+      { status: 503 },
+    );
+  }
+
+  const { data: guestExpired, error: guestExpiryError } = await db.rpc(
+    "cms_expire_unpaid_guest_orders",
+    { p_limit: 50 },
+  );
+  if (guestExpiryError) {
+    return Response.json(
+      { error: "Guest Checkout expiry processing is unavailable" },
+      { status: 503 },
+    );
   }
   if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
     return Response.json(
-      { error: "Transactional email delivery is not configured", expired: expired || 0, paymentReconciliation },
+      {
+        error: "Transactional email delivery is not configured",
+        expired: expired || 0,
+        guestExpired: guestExpired || 0,
+        paymentReconciliation,
+        guestPaymentReconciliation,
+      },
       { status: 503 },
     );
   }
@@ -125,8 +161,25 @@ async function processNotifications(request: Request) {
   }
 
   return Response.json(
-    { expired: expired || 0, paymentReconciliation, claimed: (data || []).length, sent, failed, acknowledgementFailed },
-    { status: failed || acknowledgementFailed || paymentReconciliation.errors ? 503 : 200 },
+    {
+      expired: expired || 0,
+      guestExpired: guestExpired || 0,
+      paymentReconciliation,
+      guestPaymentReconciliation,
+      claimed: (data || []).length,
+      sent,
+      failed,
+      acknowledgementFailed,
+    },
+    {
+      status:
+        failed ||
+        acknowledgementFailed ||
+        paymentReconciliation.errors ||
+        guestPaymentReconciliation.errors
+          ? 503
+          : 200,
+    },
   );
 }
 

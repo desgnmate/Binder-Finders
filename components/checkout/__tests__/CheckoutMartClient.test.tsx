@@ -6,7 +6,7 @@ import { SHOP_CARDS } from "../../../lib/data";
 const mockPush = jest.fn();
 jest.mock('next/navigation',()=>({useRouter:()=>({refresh:jest.fn(),push:mockPush})}));
 let mockCurrency = 'AUD';
-jest.mock('../../CatalogProvider',()=>({useCatalog:()=>({cards:require('../../../lib/data').SHOP_CARDS,settings:{...require('../../../lib/cms/types').defaultSettings,holdsEnabled:true,currency:mockCurrency}})}));
+jest.mock('../../CatalogProvider',()=>({useCatalog:()=>({cards:require('../../../lib/data').SHOP_CARDS,settings:{...require('../../../lib/cms/types').defaultSettings,holdsEnabled:true,guestCheckoutEnabled:true,currency:mockCurrency}})}));
 
 /**
  * CheckoutMartClient — bag-driven, responsive, functional checkout.
@@ -116,79 +116,171 @@ describe("CheckoutMartClient", () => {
     expect(screen.getByLabelText(/email|e-mail/i)).toBeInTheDocument();
   });
 
-  it("shows a Request Hold button", () => {
+  it("shows the Stripe checkout button for signed-in customers too", () => {
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     expect(
-      screen.getByRole("button", { name: /request hold|submit|place hold/i }),
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /request hold/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it("shows a confirmation after submitting Request Hold with valid contact info", async () => {
+  it("uses Guest Checkout for a signed-in customer", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: "paid",
+        orderId: "guest-order-1",
+        sessionId: "cs_test_123",
+      }),
+    });
+
     const user = userEvent.setup();
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
 
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
     expect(screen.getByLabelText(/email/i)).toHaveAttribute("readonly");
-    await fillAddress(user);
-    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
-    await user.click(screen.getByRole("button", { name: /request hold/i }));
 
-    expect(await screen.findByRole("heading", { name: /hold received/i })).toBeInTheDocument();
-  });
+    await user.click(
+      screen.getByRole("radio", { name: /pick up in melbourne/i }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /terms of sale/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    );
 
-  it("prevents submission when contact fields are empty", async () => {
-    const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/guest-checkout",
+      expect.objectContaining({ method: "POST" }),
+    );
 
-    await user.click(screen.getByRole("button", { name: /request hold/i }));
+    expect(
+      (global.fetch as jest.Mock).mock.calls.some(
+        ([url]) => url === "/api/holds",
+      ),
+    ).toBe(false);
 
-    expect(screen.queryByRole("heading", { name: /hold received/i })).not.toBeInTheDocument();
-  });
-
-  it('keeps the bag when the server rejects a request',async()=>{
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ok:false,json:async()=>({error:'A card price changed. Refresh your bag.'})});
-    const user=userEvent.setup();renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}/>);
-    await user.type(screen.getByLabelText(/name/i),'Ash');
-    await fillAddress(user);
-    await user.click(screen.getByRole('checkbox',{name:/terms of sale/i}));
-    await user.click(screen.getByRole('button',{name:/request hold/i}));
-    expect(await screen.findByRole('alert')).toHaveTextContent('price changed');
-    expect(screen.getByText('Charizard')).toBeInTheDocument();
-    expect(JSON.parse(localStorage.getItem('binderfinders:bag:v1')||'[]')).toContain('charizard-base1');
-  });
-
-  it('sends signed-out customers to login without clearing the bag', async () => {
-    const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={null} />);
-    const signIn = screen.getByRole('button', { name: /sign in to request/i });
-    expect(signIn).toBeEnabled();
-    await user.click(signIn);
-    expect(mockPush).toHaveBeenCalledWith('/account/login?next=%2Fcheckout');
-    expect(global.fetch).not.toHaveBeenCalled();
-    expect(JSON.parse(localStorage.getItem('binderfinders:bag:v1') || '[]')).toContain('charizard-base1');
-  });
-
-  it("sends the delivery choice to the store with the customer's note", async () => {
-    const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
-    await user.type(screen.getByLabelText(/name/i), "Ash");
-    await user.click(screen.getByRole("radio", { name: /pick up in melbourne/i }));
-    await user.type(screen.getByLabelText(/note for the store/i), "Corner photos please");
-    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
-    await user.click(screen.getByRole("button", { name: /request hold/i }));
-    await screen.findByRole("heading", { name: /hold received/i });
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-    expect(body.note).toBe("Delivery: Pick up in Melbourne\n\nCorner photos please");
+    expect(body).toEqual(
+      expect.objectContaining({
+        name: "Ash Ketchum",
+        email: "ash@example.com",
+        fulfillmentMethod: "pickup",
+        shippingAddress: null,
+        cardIds: ["charizard-base1"],
+      }),
+    );
+
+    expect(mockPush).toHaveBeenCalledWith(
+      "/checkout?payment=success&guest_order=guest-order-1&session_id=cs_test_123",
+    );
   });
 
-  it("needs the terms box ticked before a hold can be sent", async () => {
+  it("prevents checkout while required details are incomplete", () => {
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+
+    expect(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    ).toBeDisabled();
+  });
+
+  it("keeps the bag when Guest Checkout rejects the request", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        error: "A card price changed. Refresh your bag.",
+      }),
+    });
+
     const user = userEvent.setup();
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+
     await user.type(screen.getByLabelText(/name/i), "Ash");
-    await fillAddress(user);
-    expect(screen.getByRole("button", { name: /request hold/i })).toBeDisabled();
-    await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
-    expect(screen.getByRole("button", { name: /request hold/i })).toBeEnabled();
+    await user.click(
+      screen.getByRole("radio", { name: /pick up in melbourne/i }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /terms of sale/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("price changed");
+    expect(screen.getByText("Charizard")).toBeInTheDocument();
+    expect(
+      JSON.parse(localStorage.getItem("binderfinders:bag:v1") || "[]"),
+    ).toContain("charizard-base1");
+  });
+
+  it("allows signed-out customers to use Guest Checkout without clearing the bag", () => {
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={null} />);
+
+    expect(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /sign in to request/i }),
+    ).not.toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(
+      JSON.parse(localStorage.getItem("binderfinders:bag:v1") || "[]"),
+    ).toContain("charizard-base1");
+  });
+
+  it("uses pickup fulfillment without requiring a shipping address", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: "paid",
+        orderId: "guest-order-2",
+        sessionId: "cs_test_456",
+      }),
+    });
+
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+
+    await user.type(screen.getByLabelText(/name/i), "Ash");
+    await user.click(
+      screen.getByRole("radio", { name: /pick up in melbourne/i }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /terms of sale/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    );
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.fulfillmentMethod).toBe("pickup");
+    expect(body.shippingAddress).toBeNull();
+  });
+
+  it("needs the terms box ticked before Stripe checkout can start", async () => {
+    const user = userEvent.setup();
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+
+    await user.type(screen.getByLabelText(/name/i), "Ash");
+    await user.click(
+      screen.getByRole("radio", { name: /pick up in melbourne/i }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    ).toBeDisabled();
+
+    await user.click(
+      screen.getByRole("checkbox", { name: /terms of sale/i }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: /pay securely with stripe/i }),
+    ).toBeEnabled();
   });
 
   it("needs a delivery address before a posted hold can be sent", async () => {
@@ -196,30 +288,30 @@ describe("CheckoutMartClient", () => {
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     await user.type(screen.getByLabelText(/name/i), "Ash");
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
-    expect(screen.getByRole("button", { name: /request hold/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /pay securely with stripe/i })).toBeDisabled();
     expect(screen.getByText(/add your delivery address/i)).toBeInTheDocument();
     await fillAddress(user);
-    expect(screen.getByRole("button", { name: /request hold/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /pay securely with stripe/i })).toBeEnabled();
   });
 
-  it("sends the delivery address with the hold", async () => {
+  it("sends the shipping address to Guest Checkout", async () => {
     const user = userEvent.setup();
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
     await fillAddress(user);
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
-    await user.click(screen.getByRole("button", { name: /request hold/i }));
-    await screen.findByRole("heading", { name: /hold received/i });
+    await user.click(screen.getByRole("button", { name: /pay securely with stripe/i }));
+    expect(global.fetch).toHaveBeenCalledWith("/api/guest-checkout", expect.any(Object));
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-    expect(body.delivery).toMatchObject({
-      method: "post",
-      recipient: "Ash Ketchum",
+    expect(body.fulfillmentMethod).toBe("shipping");
+    expect(body.shippingAddress).toMatchObject({
       line1: "1 Pallet St",
-      suburb: "Fitzroy",
+      city: "Fitzroy",
       state: "VIC",
-      postcode: "3065",
+      postalCode: "3065",
+      country: "Australia",
     });
-    expect(body.note).toBe("Delivery: Tracked post\nAsh Ketchum\n1 Pallet St\nFitzroy VIC 3065\nAustralia");
+
   });
 
   it("writes a delivery-only note when the customer adds nothing", () => {

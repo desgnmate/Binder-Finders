@@ -1,4 +1,4 @@
-import type Stripe from "stripe";
+﻿import type Stripe from "stripe";
 import { stripeClient } from "../../../../lib/stripe";
 import { serviceClient } from "../../../../lib/supabase/server";
 
@@ -9,43 +9,132 @@ function sessionData(event: Stripe.Event) {
   return event.data.object as Stripe.Checkout.Session;
 }
 
+function paymentIntentId(session: Stripe.Checkout.Session) {
+  if (typeof session.payment_intent === "string") return session.payment_intent;
+  return session.payment_intent?.id ?? null;
+}
+
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   const signature = request.headers.get("stripe-signature");
+
   if (!secret)
-    return Response.json({ error: "Webhook is not configured" }, { status: 503 });
+    return Response.json(
+      { error: "Webhook is not configured" },
+      { status: 503 },
+    );
+
   if (!signature)
-    return Response.json({ error: "Missing webhook signature" }, { status: 400 });
+    return Response.json(
+      { error: "Missing webhook signature" },
+      { status: 400 },
+    );
 
   let event: Stripe.Event;
+
   try {
-    event = stripeClient().webhooks.constructEvent(await request.text(), signature, secret);
+    event = stripeClient().webhooks.constructEvent(
+      await request.text(),
+      signature,
+      secret,
+    );
   } catch (error) {
-    if (error instanceof Error && error.message.includes("Stripe payments are not configured"))
-      return Response.json({ error: "Webhook is not configured" }, { status: 503 });
-    return Response.json({ error: "Invalid webhook signature" }, { status: 400 });
+    if (
+      error instanceof Error &&
+      error.message.includes("Stripe payments are not configured")
+    ) {
+      return Response.json(
+        { error: "Webhook is not configured" },
+        { status: 503 },
+      );
+    }
+
+    return Response.json(
+      { error: "Invalid webhook signature" },
+      { status: 400 },
+    );
   }
 
   let session: Stripe.Checkout.Session | null = null;
   let result: "success" | "pending" | "failed" | "expired" | null = null;
   let reason: string | null = null;
-  if (["checkout.session.completed", "checkout.session.async_payment_succeeded", "checkout.session.async_payment_failed", "checkout.session.expired"].includes(event.type)) {
+
+  if (
+    [
+      "checkout.session.completed",
+      "checkout.session.async_payment_succeeded",
+      "checkout.session.async_payment_failed",
+      "checkout.session.expired",
+    ].includes(event.type)
+  ) {
     session = sessionData(event);
-    result = event.type === "checkout.session.async_payment_failed"
-      ? "failed"
-      : event.type === "checkout.session.expired"
-        ? "expired"
-        : event.type === "checkout.session.completed" && session.payment_status !== "paid"
-          ? "pending"
-          : "success";
-    reason = result === "expired" ? "Stripe checkout session expired" : result === "failed" ? "Stripe payment failed" : null;
+
+    result =
+      event.type === "checkout.session.async_payment_failed"
+        ? "failed"
+        : event.type === "checkout.session.expired"
+          ? "expired"
+          : event.type === "checkout.session.completed" &&
+              session.payment_status !== "paid"
+            ? "pending"
+            : "success";
+
+    reason =
+      result === "expired"
+        ? "Stripe checkout session expired"
+        : result === "failed"
+          ? "Stripe payment failed"
+          : null;
   }
 
-  if (!session || !result) return Response.json({ received: true });
+  if (!session || !result) {
+    return Response.json({ received: true });
+  }
+
+  const db = serviceClient();
+  const paymentIntent = paymentIntentId(session);
+
+  if (session.metadata?.checkout_kind === "guest") {
+    const guestAttemptId = session.metadata?.guest_payment_attempt_id;
+
+    // Explicit Guest metadata must never fall through into the Hold workflow.
+    // Malformed/unrelated events are acknowledged rather than retried forever.
+    if (!guestAttemptId) {
+      return Response.json({ received: true });
+    }
+
+    const { error } = await db.rpc(
+      "cms_record_guest_stripe_webhook",
+      {
+        p_event_id: event.id,
+        p_event_type: event.type,
+        p_attempt_id: guestAttemptId,
+        p_session_id: session.id,
+        p_payment_intent_id: paymentIntent,
+        p_result: result,
+        p_reason: reason,
+      },
+    );
+
+    if (error) {
+      return Response.json(
+        { error: "Guest payment event could not be recorded" },
+        { status: 500 },
+      );
+    }
+
+    return Response.json({ received: true });
+  }
+
+  // Existing Hold Checkout sessions do not have checkout_kind metadata.
+  // Keep their original metadata contract and RPC unchanged.
   const attemptId = session.metadata?.payment_attempt_id;
-  if (!attemptId) return Response.json({ received: true });
-  const paymentIntent = typeof session.payment_intent === "string" ? session.payment_intent : null;
-  const { error } = await serviceClient().rpc("cms_record_stripe_webhook", {
+
+  if (!attemptId) {
+    return Response.json({ received: true });
+  }
+
+  const { error } = await db.rpc("cms_record_stripe_webhook", {
     p_event_id: event.id,
     p_event_type: event.type,
     p_attempt_id: attemptId,
@@ -54,6 +143,13 @@ export async function POST(request: Request) {
     p_result: result,
     p_reason: reason,
   });
-  if (error) return Response.json({ error: "Payment event could not be recorded" }, { status: 500 });
+
+  if (error) {
+    return Response.json(
+      { error: "Payment event could not be recorded" },
+      { status: 500 },
+    );
+  }
+
   return Response.json({ received: true });
 }

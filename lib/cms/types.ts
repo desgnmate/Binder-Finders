@@ -126,12 +126,15 @@ export const settingsSchema = z
     ]),
     holdsEnabled: z.boolean(),
     holdDurationHours: z.number().int().min(1).max(720).default(48),
+    guestCheckoutEnabled: z.boolean().default(false),
+    guestCheckoutDurationMinutes: z.number().int().min(60).max(1440).default(60),
+    shippingFeeCents: z.number().int().min(0).max(1000000000).nullable().default(null),
     content: contentSchema,
     /** Pokémon shown in the Pokédex (National Dex #1–386). Unset uses the built-in list. */
     pokedexIds: z.array(z.number().int().min(1).max(386)).max(386).optional(),
   })
-  .refine((v) => !v.holdsEnabled || v.currency !== "", {
-    message: "Choose the store currency before enabling holds",
+  .refine((v) => (!v.holdsEnabled && !v.guestCheckoutEnabled) || v.currency !== "", {
+    message: "Choose the store currency before enabling holds or guest checkout",
     path: ["currency"],
   });
 export type StoreSettings = z.infer<typeof settingsSchema>;
@@ -139,6 +142,9 @@ export const defaultSettings: StoreSettings = {
   currency: "",
   holdsEnabled: false,
   holdDurationHours: 48,
+  guestCheckoutEnabled: false,
+  guestCheckoutDurationMinutes: 60,
+  shippingFeeCents: null,
   content: defaultContent,
 };
 export interface Collection {

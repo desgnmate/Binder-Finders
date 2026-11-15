@@ -52,6 +52,75 @@ describe("CMS listing safeguards", () => {
       }).success,
     ).toBe(true);
   });
+  it("requires a store currency before enabling guest checkout", () => {
+    expect(
+      settingsSchema.safeParse({
+        ...defaultSettings,
+        guestCheckoutEnabled: true,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      settingsSchema.safeParse({
+        ...defaultSettings,
+        guestCheckoutEnabled: true,
+        currency: "AUD",
+      }).success,
+    ).toBe(true);
+  });
+  it("defaults legacy store settings to disabled guest checkout and unconfigured shipping", () => {
+    const { guestCheckoutEnabled, shippingFeeCents, ...legacy } = defaultSettings;
+    const parsed = settingsSchema.parse(legacy);
+    expect(parsed.guestCheckoutEnabled).toBe(false);
+    expect(parsed.shippingFeeCents).toBeNull();
+  });
+
+  it("defaults legacy store settings to a 60 minute guest checkout duration", () => {
+    const { guestCheckoutDurationMinutes, ...legacy } = defaultSettings;
+    const parsed = settingsSchema.parse(legacy);
+    expect(parsed.guestCheckoutDurationMinutes).toBe(60);
+  });
+
+  it.each([0, 59, 1441, 12.5, Infinity, NaN])(
+    "rejects invalid guest checkout duration minutes: %s",
+    (guestCheckoutDurationMinutes) => {
+      expect(
+        settingsSchema.safeParse({
+          ...defaultSettings,
+          guestCheckoutDurationMinutes,
+        }).success,
+      ).toBe(false);
+    },
+  );
+
+  it.each([60, 90, 1440])(
+    "accepts valid guest checkout duration minutes: %s",
+    (guestCheckoutDurationMinutes) => {
+      const parsed = settingsSchema.parse({
+        ...defaultSettings,
+        guestCheckoutDurationMinutes,
+      });
+      expect(parsed.guestCheckoutDurationMinutes).toBe(
+        guestCheckoutDurationMinutes,
+      );
+    },
+  );
+
+  it.each([-1, 12.5, 1000000001, Infinity, NaN])(
+    "rejects invalid guest shipping fee cents: %s",
+    (shippingFeeCents) => {
+      expect(
+        settingsSchema.safeParse({ ...defaultSettings, shippingFeeCents }).success,
+      ).toBe(false);
+    },
+  );
+
+  it("accepts explicitly configured free or paid shipping", () => {
+    for (const shippingFeeCents of [0, 1250]) {
+      const parsed = settingsSchema.parse({ ...defaultSettings, shippingFeeCents });
+      expect(parsed.shippingFeeCents).toBe(shippingFeeCents);
+    }
+  });
   it("takes price and availability from authoritative columns, not JSON", () => {
     const converted = fromRow({
       id: "test",

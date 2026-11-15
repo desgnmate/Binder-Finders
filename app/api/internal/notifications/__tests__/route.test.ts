@@ -26,6 +26,7 @@ beforeEach(() => {
   global.fetch = mockFetch;
   mockRpc.mockImplementation(async (name) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_expire_unpaid_guest_orders") return { data: 0, error: null };
     if (name === "cms_claim_notification_outbox") return { data: [row], error: null };
     return { data: true, error: null };
   });
@@ -39,14 +40,15 @@ it("rejects unauthorized calls without claiming or sending", async () => {
 it("leaves queue untouched when mail is not configured", async () => {
   delete process.env.RESEND_API_KEY;
   expect((await GET(request())).status).toBe(503);
-  expect(mockRpc).toHaveBeenCalledTimes(1);
+  expect(mockRpc).toHaveBeenCalledTimes(2);
   expect(mockRpc).toHaveBeenCalledWith("cms_expire_unpaid_holds", { p_limit: 50 });
+  expect(mockRpc).toHaveBeenCalledWith("cms_expire_unpaid_guest_orders", { p_limit: 50 });
   expect(mockFetch).not.toHaveBeenCalled();
 });
 it("uses a stable provider key, frozen body, timeout and fenced acknowledgement", async () => {
   const response = await GET(request());
   expect(response.status).toBe(200);
-  expect(await response.json()).toEqual({ expired: 0, paymentReconciliation: { reconciled: 0, errors: 0 }, claimed: 1, sent: 1, failed: 0, acknowledgementFailed: 0 });
+  expect(await response.json()).toEqual({ expired: 0, guestExpired: 0, paymentReconciliation: { reconciled: 0, errors: 0 }, guestPaymentReconciliation: { reconciled: 0, errors: 0 }, claimed: 1, sent: 1, failed: 0, acknowledgementFailed: 0 });
   expect(mockFetch).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({
     body: JSON.stringify(body), signal: expect.any(AbortSignal), headers: expect.objectContaining({ "Idempotency-Key": "binderfinders-notification-42" }),
   }));
@@ -55,12 +57,13 @@ it("uses a stable provider key, frozen body, timeout and fenced acknowledgement"
 it.each([{ error: { message: "db failed" } }, { data: false, error: null }])("does not claim success when acknowledgement fails: %j", async (finish) => {
   mockRpc.mockImplementation(async (name) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_expire_unpaid_guest_orders") return { data: 0, error: null };
     return name === "cms_claim_notification_outbox" ? { data: [row], error: null } : finish;
   });
   const response = await GET(request());
   expect(response.status).toBe(503);
-  expect(await response.json()).toEqual({ expired: 0, paymentReconciliation: { reconciled: 0, errors: 0 }, claimed: 1, sent: 0, failed: 0, acknowledgementFailed: 1 });
-  expect(mockRpc).toHaveBeenCalledTimes(3);
+  expect(await response.json()).toEqual({ expired: 0, guestExpired: 0, paymentReconciliation: { reconciled: 0, errors: 0 }, guestPaymentReconciliation: { reconciled: 0, errors: 0 }, claimed: 1, sent: 0, failed: 0, acknowledgementFailed: 1 });
+  expect(mockRpc).toHaveBeenCalledTimes(4);
 });
 it("records provider errors without reporting delivery success", async () => {
   mockFetch.mockResolvedValue({ ok: false, status: 429 });
@@ -83,6 +86,7 @@ it("refuses to send without a lease", async () => {
 it("freezes a newly rendered email before sending", async () => {
   mockRpc.mockImplementation(async (name) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_expire_unpaid_guest_orders") return { data: 0, error: null };
     if (name === "cms_claim_notification_outbox") return { data: [{ ...row, delivery_body: null, payload: { reference: "ABC", name: "Buyer", email: "buyer@example.test", status: "pending", currency: "AUD", totalCents: 1000, items: [] } }], error: null };
     if (name === "cms_prepare_notification") return { data: body, error: null };
     return { data: true, error: null };
@@ -95,6 +99,7 @@ it("sets reply-to: customers reply to the store, store alerts reply to the custo
   const pending = { reference: "ABC", name: "Buyer", email: "buyer@example.test", status: "pending", currency: "AUD", totalCents: 1000, items: [] };
   mockRpc.mockImplementation(async (name, args) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_expire_unpaid_guest_orders") return { data: 0, error: null };
     if (name === "cms_claim_notification_outbox") return { data: [
       { ...row, id: 1, delivery_body: null, kind: "customer_request_received", payload: pending },
       { ...row, id: 2, delivery_body: null, kind: "staff_request_received", to_email: "store@example.test", payload: pending },
@@ -110,6 +115,7 @@ it("sends without reply-to when the store inbox cannot be read", async () => {
   mockStoreInbox.mockRejectedValue(new Error("relation does not exist"));
   mockRpc.mockImplementation(async (name, args) => {
     if (name === "cms_expire_unpaid_holds") return { data: 0, error: null };
+    if (name === "cms_expire_unpaid_guest_orders") return { data: 0, error: null };
     if (name === "cms_claim_notification_outbox") return { data: [{ ...row, delivery_body: null, payload: { reference: "ABC", name: "Buyer", email: "buyer@example.test", status: "pending", currency: "AUD", totalCents: 1000, items: [] } }], error: null };
     if (name === "cms_prepare_notification") return { data: args.p_body, error: null };
     return { data: true, error: null };

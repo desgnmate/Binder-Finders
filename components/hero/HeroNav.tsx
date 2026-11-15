@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ShoppingBag, UserRound, Menu, X } from "lucide-react";
 import Link from "next/link";
+import { BagContext } from "../bag/BagContext";
 
 const NAV_ITEMS = [
   { label: "Shop Cards", href: "/#binder" },
   { label: "Pokedex", href: "/pokedex" },
   { label: "About", href: "/about" },
-  { label: "How holds work", href: "/how-holds-work" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -25,6 +25,7 @@ const NAV_ITEMS = [
  */
 export function HeroNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const count = useContext(BagContext)?.count ?? 0;
 
   return (
     <div
@@ -35,9 +36,9 @@ export function HeroNav() {
         aria-label="Primary"
         data-nav-pill="true"
         data-nav-type-scale="umano"
-        className="mx-auto flex-1 max-w-4xl rounded-3xl bg-white px-4 py-2 md:pl-6 md:pr-2.5 md:py-2 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
+        className="mx-auto flex-1 max-w-[1080px] rounded-3xl bg-white px-4 py-2 md:px-9 md:py-2 md:rounded-full border-2 border-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.01]"
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-6">
           <Link
             href="/"
             className="flex shrink-0 items-center transition-opacity hover:opacity-85"
@@ -50,12 +51,12 @@ export function HeroNav() {
           </Link>
 
           <div className="flex items-center gap-3 md:gap-5">
-            <ul className="hidden md:flex items-center gap-4 font-body text-[15px] font-semibold text-ink-black">
+            <ul className="hidden md:flex items-center gap-5 lg:gap-6 font-body text-[15px] font-semibold text-ink-black">
               {NAV_ITEMS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="whitespace-nowrap rounded-lg px-2.5 py-1.5 transition-all duration-200 hover:bg-brand-pink hover:text-ink-black hover:-translate-y-0.5 inline-block active:scale-95"
+                    className="whitespace-nowrap rounded-lg px-3 py-1.5 transition-all duration-200 hover:bg-brand-pink hover:text-ink-black hover:-translate-y-0.5 inline-block active:scale-95"
                   >
                     {item.label}
                   </Link>
@@ -65,10 +66,11 @@ export function HeroNav() {
 
             <Link
               href="/checkout"
-              aria-label="My Bag"
-              className="flex h-11 w-11 items-center justify-center p-2 text-ink-black transition-all duration-200 hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
+              aria-label={`My Bag, ${count} ${count === 1 ? "card" : "cards"}`}
+              className="flex h-11 min-w-11 items-center justify-center gap-1.5 px-2 text-ink-black transition-all duration-200 hover:text-brand-blue hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
             >
               <ShoppingBag size={20} strokeWidth={2} aria-hidden="true" />
+              <span className="text-sm font-semibold">{count}</span>
             </Link>
 
             <Link

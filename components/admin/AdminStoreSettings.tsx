@@ -297,6 +297,70 @@ export function AdminSettingsForm({
           </label>
         </SettingsSection>
         <SettingsSection
+          title="Guest Checkout"
+          description="Let customers reserve available cards and pay without creating an account."
+        >
+          <label className="cms-switch cms-wide">
+            <span>
+              Enable guest checkout
+              <small>
+                Customers can reserve available cards and continue to secure Stripe checkout.
+              </small>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={draft.guestCheckoutEnabled}
+              onChange={(e) =>
+                onChange({
+                  ...draft,
+                  guestCheckoutEnabled: e.target.checked,
+                })
+              }
+            />
+          </label>
+
+          <label className="cms-field">
+            Guest reservation duration (minutes)
+            <input
+              type="number"
+              min={60}
+              max={1440}
+              value={draft.guestCheckoutDurationMinutes}
+              onChange={(e) =>
+                onChange({
+                  ...draft,
+                  guestCheckoutDurationMinutes: Number(e.target.value),
+                })
+              }
+            />
+            <small>
+              Reserved cards are held for this long while the customer completes checkout.
+            </small>
+          </label>
+
+          <label className="cms-field">
+            Shipping fee (cents)
+            <input
+              type="number"
+              min={0}
+              max={1000000000}
+              value={draft.shippingFeeCents ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...draft,
+                  shippingFeeCents:
+                    e.target.value === "" ? null : Number(e.target.value),
+                })
+              }
+            />
+            <small>
+              Leave blank until shipping is configured. Use 0 for free shipping.
+            </small>
+          </label>
+        </SettingsSection>
+
+        <SettingsSection
           title="Payments"
           description="Online card payment for accepted requests."
         >
