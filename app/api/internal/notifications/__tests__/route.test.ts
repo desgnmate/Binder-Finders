@@ -32,6 +32,12 @@ beforeEach(() => {
   });
 });
 afterAll(() => { global.fetch = originalFetch; process.env = originalEnv; });
+it("rejects a wrong or partial secret", async () => {
+  for (const authorization of ["Bearer test-onl", "Bearer test-only-extra", "test-only", "Bearer "]) {
+    const response = await GET(new Request("https://local.test/api/internal/notifications", { headers: { authorization } }));
+    expect(response.status).toBe(401);
+  }
+});
 it("rejects unauthorized calls without claiming or sending", async () => {
   expect((await GET(request(false))).status).toBe(401);
   expect(mockRpc).not.toHaveBeenCalled();
