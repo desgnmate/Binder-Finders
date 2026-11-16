@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { pokemonImage } from "../../lib/cms/pokemon";
 import { useState } from "react";
 import { Check, ShoppingBag } from "lucide-react";
 import { useBag } from "../bag/BagContext";
@@ -34,7 +35,7 @@ export function CardScans({ card, faceColor }: { card: ShopCard & { additionalIm
             className="flex aspect-[63/88] w-full max-w-[300px] items-center justify-center rounded-[14px] border-[3px] border-white"
             style={{ background: faceColor }}
           >
-            <img src={`/sprites/gen3/${card.pokemonId}.png`} alt="" className="w-[62%] [image-rendering:pixelated]" />
+            <img src={pokemonImage(card.pokemonId)} alt="" className="w-[62%] [image-rendering:pixelated]" />
           </div>
         )}
       </div>

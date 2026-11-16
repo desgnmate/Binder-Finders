@@ -10,8 +10,15 @@ describe("pokemonImage", () => {
     }
   });
 
-  it("falls back to PokeAPI for Pokémon introduced after Gen III", () => {
-    expect(pokemonImage(387)).toBe("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/387.png");
+  it("serves a local Gen IV (Platinum) sprite for every Sinnoh Pokémon", () => {
+    for (let id = 387; id <= 493; id += 1) {
+      expect(pokemonImage(id)).toBe(`/sprites/gen4/${id}.png`);
+      expect(existsSync(path.join(process.cwd(), "public", "sprites", "gen4", `${id}.png`))).toBe(true);
+    }
+  });
+
+  it("falls back to PokeAPI for Pokémon introduced after Gen IV", () => {
+    expect(pokemonImage(494)).toBe("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/494.png");
     expect(pokemonImage(0)).toContain("raw.githubusercontent.com");
   });
 });

@@ -1,14 +1,15 @@
-import { DEFAULT_POKEDEX_IDS, catalogPokemon, gen3Pokemon, pokemonName } from "../pokemon";
+import { DEFAULT_POKEDEX_IDS, catalogPokemon, pokemonImage, pokemonName, spritePokemon } from "../pokemon";
 import type { ShopCard } from "../../data";
 
 const card = (pokemonId: number) => ({ pokemonId }) as ShopCard;
 
 describe("Pokédex list", () => {
-  it("offers every Gen III Pokémon to choose from", () => {
-    const all = gen3Pokemon();
-    expect(all).toHaveLength(386);
+  it("offers every Gen I–IV Pokémon to choose from", () => {
+    const all = spritePokemon();
+    expect(all).toHaveLength(493);
     expect(all[0]).toMatchObject({ id: 1, name: "Bulbasaur" });
     expect(all[385]).toMatchObject({ id: 386, name: "Deoxys" });
+    expect(all[492]).toMatchObject({ id: 493, name: "Arceus" });
   });
 
   it("uses the built-in list until the store chooses its own", () => {
@@ -28,5 +29,12 @@ describe("Pokédex list", () => {
   it("names Pokémon by number", () => {
     expect(pokemonName(6)).toBe("Charizard");
     expect(pokemonName(9999)).toBe("");
+  });
+
+  it("uses Emerald sprites to #386, Platinum sprites to #493, then PokeAPI", () => {
+    expect(pokemonImage(386)).toBe("/sprites/gen3/386.png");
+    expect(pokemonImage(387)).toBe("/sprites/gen4/387.png");
+    expect(pokemonImage(493)).toBe("/sprites/gen4/493.png");
+    expect(pokemonImage(494)).toMatch(/^https:\/\/raw\.githubusercontent\.com\//);
   });
 });

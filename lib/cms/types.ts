@@ -130,8 +130,8 @@ export const settingsSchema = z
     guestCheckoutDurationMinutes: z.number().int().min(60).max(1440).default(60),
     shippingFeeCents: z.number().int().min(0).max(1000000000).nullable().default(null),
     content: contentSchema,
-    /** Pokémon shown in the Pokédex (National Dex #1–386). Unset uses the built-in list. */
-    pokedexIds: z.array(z.number().int().min(1).max(386)).max(386).optional(),
+    /** Pokémon shown in the Pokédex (National Dex #1–493). Unset uses the built-in list. */
+    pokedexIds: z.array(z.number().int().min(1).max(493)).max(493).optional(),
   })
   .refine((v) => (!v.holdsEnabled && !v.guestCheckoutEnabled) || v.currency !== "", {
     message: "Choose the store currency before enabling holds or guest checkout",
