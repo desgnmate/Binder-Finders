@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import {
@@ -15,28 +15,71 @@ import { useCatalog } from "../CatalogProvider";
 import { catalogPokemon, pokemonImage as gen3Sprite, type PokemonTile as PokedexTile } from "../../lib/cms/pokemon";
 
 
+/** Tiles per page, so visitors don't scroll through hundreds of Pokémon. */
+export const POKEDEX_PAGE_SIZE = 15;
+const GENERATIONS = ["Gen I", "Gen II", "Gen III", "Gen IV"] as const;
+
+/**
+ * Page buttons to show: the first and last page and the ones around the
+ * current page, with null for a gap ("…"). 33 pages fit on one line this way.
+ */
+export function pageList(current: number, count: number): (number | null)[] {
+  const wanted = new Set([0, count - 1, current - 1, current, current + 1].filter((p) => p >= 0 && p < count));
+  const sorted = [...wanted].sort((a, b) => a - b);
+  const result: (number | null)[] = [];
+  sorted.forEach((page, i) => {
+    if (i > 0 && page - sorted[i - 1] > 1) result.push(page - sorted[i - 1] === 2 ? page - 1 : null);
+    result.push(page);
+  });
+  return result;
+}
+
 export function PokedexPageClient() {
   const {cards,settings}=useCatalog();
   const POKEDEX_TILES=useMemo(()=>catalogPokemon(cards,settings.pokedexIds),[cards,settings.pokedexIds]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [generation, setGeneration] = useState<string>("all");
+  const [page, setPage] = useState(0);
   const [selectedId, setSelectedId] = useState<number>(POKEDEX_TILES[0].id);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return POKEDEX_TILES;
     const qNum = q.replace(/^#?0*/, "");
     return POKEDEX_TILES.filter((tile) => {
+      if (generation !== "all" && tile.details.generation !== generation) return false;
+      if (!q) return true;
       if (tile.name.toLowerCase().includes(q)) return true;
       if (String(tile.id) === qNum) return true;
       if (String(tile.id).padStart(3, "0") === q) return true;
       return false;
     });
-  }, [searchTerm,POKEDEX_TILES]);
+  }, [searchTerm,generation,POKEDEX_TILES]);
+
+  // Only offer generations the store's Pokédex actually has.
+  const generations = GENERATIONS.filter((gen) => POKEDEX_TILES.some((tile) => tile.details.generation === gen));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / POKEDEX_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pageTiles = filtered.slice(currentPage * POKEDEX_PAGE_SIZE, (currentPage + 1) * POKEDEX_PAGE_SIZE);
 
   const selected =
     filtered.find((tile) => tile.id === selectedId) ??
     filtered[0] ??
     POKEDEX_TILES[0];
+
+  function goToPage(next: number) {
+    const target = Math.max(0, Math.min(next, pageCount - 1));
+    setPage(target);
+    // Show the first Pokémon of the new page in the detail screen.
+    const first = filtered[target * POKEDEX_PAGE_SIZE];
+    if (first) setSelectedId(first.id);
+    // On phones the grid sits below the detail screen; keep it in view.
+    const grid = gridRef.current;
+    if (grid && grid.getBoundingClientRect().top < 0) {
+      const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      grid.scrollIntoView?.({ behavior: still ? "auto" : "smooth", block: "start" });
+    }
+  }
 
   return (
     <main data-pokedex-page data-pokedex-preview="true" className="pokeball-cursor relative min-h-screen bg-[#7b39ed] text-ink-black overflow-x-hidden">
@@ -75,11 +118,32 @@ export function PokedexPageClient() {
                   <input
                     id="pokedex-page-search"
                     value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
+                    onChange={(event) => {
+                      setSearchTerm(event.target.value);
+                      setPage(0);
+                    }}
                     placeholder="Name or number"
                     className="w-full rounded-[14px] border-2 border-ink-black bg-cream py-2.5 pl-9 pr-3 font-body text-sm font-bold outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/20"
                   />
                 </div>
+                {generations.length > 1 && (
+                  <div role="group" aria-label="Filter by generation" className="mt-3 flex flex-wrap gap-1.5">
+                    {["all", ...generations].map((gen) => (
+                      <button
+                        key={gen}
+                        type="button"
+                        aria-pressed={generation === gen}
+                        onClick={() => {
+                          setGeneration(gen);
+                          setPage(0);
+                        }}
+                        className="rounded-full border-2 border-ink-black bg-cream px-3 py-1.5 font-body text-xs font-bold text-ink-black hover:bg-pastel-yellow aria-pressed:bg-ink-black aria-pressed:text-brand-yellow"
+                      >
+                        {gen === "all" ? "All" : gen}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {filtered.length > 0 && <>
@@ -90,25 +154,71 @@ export function PokedexPageClient() {
               </>}
             </aside>
 
-            <div className="rounded-[22px] border-[3px] border-ink-black bg-[#242424] p-1.5 sm:p-2.5 shadow-[inset_0_0_0_3px_rgba(255,255,255,0.08)] md:p-4">
+            <div ref={gridRef} className="scroll-mt-4 rounded-[22px] border-[3px] border-ink-black bg-[#242424] p-1.5 sm:p-2.5 shadow-[inset_0_0_0_3px_rgba(255,255,255,0.08)] md:p-4">
               <div
                 data-pokedex-screen-overlay="true"
                 className="gameboy-screen gameboy-screen--clear rounded-[16px] border-[3px] border-ink-black bg-[#0a120a] p-1.5 sm:p-2.5 md:p-3"
               >
                 {filtered.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {filtered.map((tile) => (
-                      <PokedexDeviceTile
-                        key={tile.id}
-                        tile={tile}
-                        active={tile.id === selected.id}
-                        onSelect={() => setSelectedId(tile.id)}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                      {pageTiles.map((tile) => (
+                        <PokedexDeviceTile
+                          key={tile.id}
+                          tile={tile}
+                          active={tile.id === selected.id}
+                          onSelect={() => setSelectedId(tile.id)}
+                        />
+                      ))}
+                    </div>
+                    {pageCount > 1 && (
+                      <nav aria-label="Pokédex pages" className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t-2 border-dashed border-white/15 pt-3">
+                        <button
+                          type="button"
+                          onClick={() => goToPage(currentPage - 1)}
+                          disabled={currentPage === 0}
+                          className="rounded-full border-2 border-white/80 px-3 py-2 font-retro text-[9px] text-white hover:border-brand-yellow hover:text-brand-yellow disabled:opacity-30 disabled:hover:border-white/80 disabled:hover:text-white"
+                        >
+                          ◀ Prev
+                        </button>
+                        <ol className="order-first flex w-full flex-wrap items-center justify-center gap-1.5 sm:order-none sm:w-auto">
+                          {pageList(currentPage, pageCount).map((index, position) =>
+                            index === null ? (
+                              <li key={`gap-${position}`} aria-hidden="true" className="px-0.5 font-retro text-[9px] text-white/50">
+                                …
+                              </li>
+                            ) : (
+                            <li key={index}>
+                              <button
+                                type="button"
+                                onClick={() => goToPage(index)}
+                                aria-label={`Page ${index + 1}`}
+                                aria-current={index === currentPage ? "page" : undefined}
+                                className="h-8 min-w-8 rounded-lg border-2 border-white/30 px-1.5 font-retro text-[9px] text-white hover:border-brand-yellow aria-[current=page]:border-brand-yellow aria-[current=page]:bg-brand-yellow aria-[current=page]:text-ink-black"
+                              >
+                                {index + 1}
+                              </button>
+                            </li>
+                            ),
+                          )}
+                        </ol>
+                        <button
+                          type="button"
+                          onClick={() => goToPage(currentPage + 1)}
+                          disabled={currentPage >= pageCount - 1}
+                          className="rounded-full border-2 border-white/80 px-3 py-2 font-retro text-[9px] text-white hover:border-brand-yellow hover:text-brand-yellow disabled:opacity-30 disabled:hover:border-white/80 disabled:hover:text-white"
+                        >
+                          Next ▶
+                        </button>
+                        <p className="w-full text-center font-retro text-[8px] text-white/60">
+                          {currentPage * POKEDEX_PAGE_SIZE + 1}–{Math.min(filtered.length, (currentPage + 1) * POKEDEX_PAGE_SIZE)} of {filtered.length}
+                        </p>
+                      </nav>
+                    )}
+                  </>
                 ) : (
                   <div className="flex min-h-[320px] items-center justify-center text-center font-retro text-[11px] text-white/70">
-                    No Pokémon match &ldquo;{searchTerm}&rdquo;.
+                    {searchTerm.trim() ? <>No Pokémon match &ldquo;{searchTerm}&rdquo;.</> : "No Pokémon in this generation yet."}
                   </div>
                 )}
               </div>
