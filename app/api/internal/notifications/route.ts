@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { serviceClient } from "../../../../lib/supabase/server";
 import { reconcileDueStripeAttempts } from "../../../../lib/stripe-reconciliation";
 import { reconcileDueGuestStripeAttempts } from "../../../../lib/guest-stripe-reconciliation";
@@ -13,9 +14,11 @@ export const maxDuration = 60;
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
-  return Boolean(
-    secret && request.headers.get("authorization") === `Bearer ${secret}`,
-  );
+  if (!secret) return false;
+  // Compare in constant time so response timing can't reveal the secret.
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const given = Buffer.from(request.headers.get("authorization") || "");
+  return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
 async function processNotifications(request: Request) {
