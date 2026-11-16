@@ -70,6 +70,8 @@ export function CheckoutMartClient({
   const [addressCountry, setAddressCountry] = useState("Australia");
   const [pickupNote, setPickupNote] = useState("");
   const [delivery, setDelivery] = useState<Delivery>("post");
+  const [shippingService, setShippingService] = useState<"tracked" | "express">("tracked");
+  const [insuranceSelected, setInsuranceSelected] = useState(false);
   const [address, setAddress] = useState(EMPTY_ADDRESS);
   const setAddressField = (key: keyof typeof EMPTY_ADDRESS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setAddress((current) => ({ ...current, [key]: e.target.value }));
@@ -82,9 +84,13 @@ export function CheckoutMartClient({
   const isGuest = !legacyHoldCheckout;
   const guestShipping =
     isGuest && delivery === "post"
-      ? (settings.shippingFeeCents || 0) / 100
+      ? shippingService === "express" ? 15 : 10
       : 0;
-  const guestTotal = total + guestShipping;
+  const guestInsurance =
+    isGuest && delivery === "post" && insuranceSelected
+      ? Math.ceil(Math.round(total * 100) / 10000) * 2.5
+      : 0;
+  const guestTotal = total + guestShipping + guestInsurance;
 
   useEffect(() => {
     if (!hydrated || seededRef.current) return;
@@ -116,6 +122,8 @@ export function CheckoutMartClient({
     contactName,
     contactEmail,
     note,
+    isGuest ? (delivery === "post" ? shippingService : null) : null,
+    isGuest && delivery === "post" && insuranceSelected,
   ]);
 
   useEffect(() => {
@@ -196,6 +204,10 @@ export function CheckoutMartClient({
             email: contactEmail,
             fulfillmentMethod:
               delivery === "pickup" ? "pickup" : "shipping",
+            shippingService:
+              delivery === "post" ? shippingService : null,
+            insuranceSelected:
+              delivery === "post" && insuranceSelected,
             shippingAddress:
               deliveryDetails?.method === "post"
                 ? {
@@ -486,6 +498,45 @@ export function CheckoutMartClient({
                         ))}
                       </fieldset>
 
+                      {isGuest && delivery === "post" && (
+                        <fieldset className="m-0 flex flex-col gap-3 rounded-2xl border-2 border-ink-black bg-cream p-4">
+                          <legend className="px-1 text-[15px] font-semibold">Shipping service</legend>
+
+                          {([
+                            { value: "tracked", label: "Tracked shipping", price: 10 },
+                            { value: "express", label: "Express shipping", price: 15 },
+                          ] as const).map((option) => (
+                            <label key={option.value} className="flex cursor-pointer items-center gap-3 text-sm">
+                              <input
+                                type="radio"
+                                name="shipping-service"
+                                value={option.value}
+                                checked={shippingService === option.value}
+                                onChange={() => setShippingService(option.value)}
+                                className="h-5 w-5 accent-ink-black"
+                              />
+                              <span className="flex-1 font-semibold">{option.label}</span>
+                              <b>{money(option.price)}</b>
+                            </label>
+                          ))}
+
+                          <label className="flex cursor-pointer items-start gap-3 border-t border-ink-black/20 pt-3 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={insuranceSelected}
+                              onChange={(e) => setInsuranceSelected(e.target.checked)}
+                              className="mt-0.5 h-5 w-5 accent-ink-black"
+                            />
+                            <span>
+                              <b>Add shipping insurance (optional)</b>
+                              <span className="block text-[13px]">
+                                A$2.50 per A$100 of card value, rounded up.
+                                {insuranceSelected && ` Insurance: ${money(guestInsurance)}`}
+                              </span>
+                            </span>
+                          </label>
+                        </fieldset>
+                      )}
                       {delivery === "post" ? (
                         <fieldset data-checkout-address className="m-0 flex flex-col gap-3 border-0 p-0">
                           <legend className="mb-2 p-0 text-[15px] font-semibold">Where should we post them?</legend>
@@ -598,6 +649,12 @@ export function CheckoutMartClient({
                         </b>
                       </div>
 
+                      {isGuest && delivery === "post" && insuranceSelected && (
+                        <div className="flex justify-between gap-3">
+                          <span>Shipping insurance</span>
+                          <b>{money(guestInsurance)}</b>
+                        </div>
+                      )}
                       <div className="flex items-baseline justify-between gap-3 border-t-[3px] border-ink-black pt-3">
                         <span className="font-semibold">
                           {legacyHoldCheckout ? "Cards total" : "Total"}

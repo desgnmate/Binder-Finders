@@ -1,4 +1,4 @@
-﻿/** @jest-environment node */
+/** @jest-environment node */
 
 import { reconcileDueGuestStripeAttempts } from "../guest-stripe-reconciliation";
 
@@ -49,6 +49,8 @@ const attempt = {
   currency: "aud",
   items: [{ name: "Charizard", priceCents: 1500 }],
   shipping_fee_cents: 0,
+  shipping_service: null,
+  insurance_fee_cents: 0,
   expires_at: "2026-11-13T12:00:00.000Z",
 };
 

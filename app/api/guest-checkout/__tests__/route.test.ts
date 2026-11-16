@@ -1,4 +1,4 @@
-﻿/** @jest-environment node */
+/** @jest-environment node */
 
 import { NextRequest } from "next/server";
 import { POST } from "../route";
@@ -92,6 +92,8 @@ beforeEach(() => {
             },
           ],
           shippingFeeCents: 0,
+          shippingService: null,
+          insuranceFeeCents: 0,
           expiresAt: "2026-11-14T12:00:00.000Z",
         },
         error: null,
@@ -128,6 +130,8 @@ function guestRequest() {
         name: "Guest Buyer",
         email: "guest@example.com",
         fulfillmentMethod: "pickup",
+        shippingService: null,
+        insuranceSelected: false,
         shippingAddress: null,
         cardIds: ["card-1"],
         requestKey,
@@ -163,6 +167,8 @@ it("rate-limits Guest Checkout before reserving inventory", async () => {
         name: "Guest Buyer",
         email: "guest@example.com",
         fulfillmentMethod: "pickup",
+        shippingService: null,
+        insuranceSelected: false,
         shippingAddress: null,
         cardIds: ["card-1"],
         requestKey,
@@ -207,6 +213,8 @@ it("closes a below-minimum unattached attempt without creating a Stripe session"
         name: "Guest Buyer",
         email: "guest@example.com",
         fulfillmentMethod: "pickup",
+        shippingService: null,
+        insuranceSelected: false,
         shippingAddress: null,
         cardIds: ["card-1"],
         requestKey,
@@ -360,6 +368,8 @@ it("closes an unattached attempt only after Stripe confirms the session expired"
           amountCents: 250,
           items: [{ name: "Test Card", priceCents: 250 }],
           shippingFeeCents: 0,
+          shippingService: null,
+          insuranceFeeCents: 0,
           expiresAt: "2026-11-14T12:00:00.000Z",
         },
         error: null,
@@ -445,6 +455,8 @@ it("keeps an attach failure recoverable when Stripe terminal state is ambiguous"
           amountCents: 250,
           items: [{ name: "Test Card", priceCents: 250 }],
           shippingFeeCents: 0,
+          shippingService: null,
+          insuranceFeeCents: 0,
           expiresAt: "2026-11-14T12:00:00.000Z",
         },
         error: null,

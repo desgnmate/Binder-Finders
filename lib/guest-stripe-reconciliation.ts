@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 import type Stripe from "stripe";
 import {
   guestStripeIdempotencyKey,
@@ -18,6 +18,8 @@ type GuestAttempt = {
   currency: string;
   items: unknown;
   shipping_fee_cents: number;
+  insurance_fee_cents: number;
+  shipping_service: "tracked" | "express" | null;
   expires_at: string;
 };
 
@@ -63,6 +65,7 @@ function parseItems(value: unknown): GuestItem[] {
 function validateAttempt(attempt: GuestAttempt) {
   const items = parseItems(attempt.items);
   const shippingFeeCents = Number(attempt.shipping_fee_cents);
+  const insuranceFeeCents = Number(attempt.insurance_fee_cents);
   const amountCents = Number(attempt.amount_cents);
   const expiresAt = new Date(attempt.expires_at).getTime();
 
@@ -79,6 +82,8 @@ function validateAttempt(attempt: GuestAttempt) {
   if (
     !Number.isInteger(shippingFeeCents) ||
     shippingFeeCents < 0 ||
+    !Number.isSafeInteger(insuranceFeeCents) ||
+    insuranceFeeCents < 0 ||
     !Number.isInteger(amountCents) ||
     amountCents <= 0 ||
     !Number.isFinite(expiresAt)
@@ -88,7 +93,8 @@ function validateAttempt(attempt: GuestAttempt) {
 
   const expectedAmount =
     items.reduce((sum, item) => sum + item.priceCents, 0) +
-    shippingFeeCents;
+    shippingFeeCents +
+    insuranceFeeCents;
 
   if (expectedAmount !== amountCents) {
     throw new Error("Guest reconciliation amount does not match order");
@@ -97,6 +103,8 @@ function validateAttempt(attempt: GuestAttempt) {
   return {
     items,
     shippingFeeCents,
+    insuranceFeeCents,
+    shippingService: attempt.shipping_service,
     expiresAt,
   };
 }
@@ -228,6 +236,8 @@ async function reconcileAttempt(
       currency: attempt.currency,
       items: validated.items,
       shippingFeeCents: validated.shippingFeeCents,
+      shippingService: validated.shippingService,
+      insuranceFeeCents: validated.insuranceFeeCents,
       expiresAt: attempt.expires_at,
     }),
     {

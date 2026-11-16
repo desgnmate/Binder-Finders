@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 import type Stripe from "stripe";
 import { stripeUnitAmount } from "./cms/payments";
 import { paymentSiteUrl } from "./payment-site-url";
@@ -10,6 +10,8 @@ export type GuestStripePayment = {
   currency: string;
   items: { name: string; priceCents: number }[];
   shippingFeeCents: number;
+  shippingService?: "tracked" | "express" | null;
+  insuranceFeeCents?: number;
   expiresAt: string;
 };
 
@@ -48,11 +50,34 @@ export function guestStripeSessionParams(
           currency,
           payment.shippingFeeCents,
         ),
-        product_data: { name: "Shipping" },
+        product_data: {
+          name:
+            payment.shippingService === "express"
+              ? "Express shipping"
+              : payment.shippingService === "tracked"
+                ? "Tracked shipping"
+                : "Shipping",
+        },
       },
     });
   }
 
+  const insuranceFeeCents = payment.insuranceFeeCents ?? 0;
+
+  if (!Number.isSafeInteger(insuranceFeeCents) || insuranceFeeCents < 0) {
+    throw new Error("Invalid insurance fee");
+  }
+
+  if (insuranceFeeCents > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency,
+        unit_amount: stripeUnitAmount(currency, insuranceFeeCents),
+        product_data: { name: "Shipping insurance" },
+      },
+    });
+  }
   const baseUrl = paymentSiteUrl();
   const orderId = encodeURIComponent(payment.orderId);
 

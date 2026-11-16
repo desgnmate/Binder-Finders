@@ -1,4 +1,4 @@
-﻿import { createHash } from "node:crypto";
+import { createHash } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
@@ -30,6 +30,8 @@ const schema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(254),
   fulfillmentMethod: z.enum(["pickup", "shipping"]),
+  shippingService: z.enum(["tracked", "express"]).nullable(),
+  insuranceSelected: z.boolean(),
   shippingAddress: shippingAddressSchema.nullable().optional(),
   cardIds: z.array(z.string().min(1).max(100)).min(1).max(30),
   requestKey: z.string().uuid(),
@@ -44,6 +46,27 @@ const schema = z.object({
     });
   }
 
+  if (
+    value.fulfillmentMethod === "shipping" &&
+    !value.shippingService
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["shippingService"],
+      message: "Select tracked or express shipping",
+    });
+  }
+
+  if (
+    value.fulfillmentMethod === "pickup" &&
+    (value.shippingService !== null || value.insuranceSelected)
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["shippingService"],
+      message: "Pickup cannot include shipping or insurance",
+    });
+  }
   if (value.fulfillmentMethod === "pickup" && value.shippingAddress) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -72,6 +95,8 @@ type GuestPayment = {
   amountCents?: number;
   items?: { name: string; priceCents: number }[];
   shippingFeeCents?: number;
+  shippingService?: "tracked" | "express" | null;
+  insuranceFeeCents?: number;
   expiresAt?: string;
 };
 
@@ -299,6 +324,8 @@ export async function POST(request: NextRequest) {
           name: payload.name,
           email: payload.email.toLowerCase(),
           fulfillmentMethod: payload.fulfillmentMethod,
+          shippingService: payload.shippingService,
+          insuranceSelected: payload.insuranceSelected,
           shippingAddress:
             payload.fulfillmentMethod === "shipping"
               ? payload.shippingAddress
@@ -441,6 +468,7 @@ export async function POST(request: NextRequest) {
       const items = Array.isArray(payment.items) ? payment.items : [];
       const amountCents = Number(payment.amountCents);
       const shippingFeeCents = Number(payment.shippingFeeCents || 0);
+      const insuranceFeeCents = Number(payment.insuranceFeeCents || 0);
       const currency = String(payment.currency || "").toLowerCase();
       const expiresAt = new Date(String(payment.expiresAt)).getTime();
 
@@ -489,6 +517,8 @@ export async function POST(request: NextRequest) {
             priceCents: Number(item.priceCents),
           })),
           shippingFeeCents,
+          shippingService: payment.shippingService ?? null,
+          insuranceFeeCents,
           expiresAt: String(payment.expiresAt),
         }),
         {
