@@ -11,7 +11,8 @@ import {
   getTypeBadgeColor,
 } from "../../lib/data";
 
-const PREVIEW_CAP = 10;
+// Matches the 15-per-page Pokédex page: three full rows of five on desktop.
+export const PREVIEW_CAP = 15;
 
 export function PokedexSection() {
   const {cards,settings}=useCatalog();

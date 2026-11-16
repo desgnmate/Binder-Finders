@@ -133,3 +133,10 @@ describe("PokedexSection", () => {
     }
   });
 });
+
+describe("home page Pokédex preview", () => {
+  it("shows 15 Pokémon", () => {
+    render(<PokedexSection />);
+    expect(screen.getAllByTestId("pokedex-tile")).toHaveLength(15);
+  });
+});
