@@ -35,6 +35,7 @@ const migrations = [
   "202611140001_hold_delete_and_delivery.sql",
   "202611140002_order_qa_fixes.sql",
   "202611140017_guest_late_payment_review.sql",
+  "20261116041608_guest_shipping_options.sql",
 
 ];
 await db.exec(`
@@ -55,6 +56,36 @@ await db.exec(`
 `);
 for (const file of migrations) await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), "utf8"));
 
+const shippingCases = [
+  [10000, "shipping", "tracked", true, 1000, 250],
+  [10001, "shipping", "tracked", true, 1000, 500],
+  [20000, "shipping", "express", true, 1500, 500],
+  [20001, "shipping", "express", true, 1500, 750],
+  [1250, "shipping", "tracked", false, 1000, 0],
+  [1250, "shipping", "express", false, 1500, 0],
+  [1250, "pickup", null, false, 0, 0],
+];
+
+for (const [subtotal, method, service, insured, shipping, insurance] of shippingCases) {
+  const result = (await db.query(
+    "select public.cms_guest_shipping_quote($1,$2,$3,$4) as quote",
+    [subtotal, method, service, insured],
+  )).rows[0].quote;
+
+  assert.equal(result.shippingFeeCents, shipping);
+  assert.equal(result.insuranceFeeCents, insurance);
+  assert.equal(result.totalCents, subtotal + shipping + insurance);
+}
+
+await assert.rejects(
+  db.query(
+    "select public.cms_guest_shipping_quote($1,$2,$3,$4)",
+    [1250, "pickup", null, true],
+  ),
+  /Pickup cannot include shipping or insurance/,
+);
+
+console.log("Guest shipping and insurance boundary checks passed.");
 const owner = "11111111-1111-4111-8111-111111111111";
 const customer = "33333333-3333-4333-8333-333333333333";
 const otherCustomer = "44444444-4444-4444-8444-444444444444";
@@ -543,6 +574,8 @@ const guestRpcRequest = {
   name: "Guest Customer",
   email: "guest-rpc@example.test",
   fulfillmentMethod: "pickup",
+  shippingService: null,
+  insuranceSelected: false,
   cardIds: ["guest-rpc-card-1"],
 };
 
@@ -647,6 +680,8 @@ const rpcShipping = (await db.query(
     name: "Shipping Customer",
     email: "shipping@example.test",
     fulfillmentMethod: "shipping",
+    shippingService: "tracked",
+    insuranceSelected: true,
     shippingAddress: {
       line1: "123 Test Street",
       city: "Sydney",
@@ -658,8 +693,18 @@ const rpcShipping = (await db.query(
 )).rows[0].result;
 
 assert.equal(rpcShipping.subtotalCents, 1250);
-assert.equal(rpcShipping.shippingFeeCents, 250);
-assert.equal(rpcShipping.totalCents, 1500);
+assert.equal(rpcShipping.shippingFeeCents, 1000);
+assert.equal(rpcShipping.insuranceSelected, true);
+assert.equal(rpcShipping.insuranceFeeCents, 250);
+assert.equal(rpcShipping.totalCents, 2500);
+
+const storedShippingOrder = (await db.query(
+  "select total_cents,insurance_fee_cents from public.guest_orders where id=$1",
+  [rpcShipping.orderId],
+)).rows[0];
+
+assert.equal(Number(storedShippingOrder.insurance_fee_cents), 250);
+assert.equal(Number(storedShippingOrder.total_cents), 2500);
 
 await as("postgres");
 const rpcReservedCards = (await db.query(`
@@ -722,6 +767,8 @@ const rollbackRequest = (cardIds, overrides = {}) => ({
   name: "Rollback Customer",
   email: "rollback@example.test",
   fulfillmentMethod: "pickup",
+  shippingService: null,
+  insuranceSelected: false,
   cardIds,
   ...overrides,
 });
@@ -770,6 +817,8 @@ await assert.rejects(
     [rollbackRequest(["guest-rollback-card-1"], {
       requestKey: missingShippingKey,
       fulfillmentMethod: "shipping",
+      shippingService: "invalid",
+      insuranceSelected: false,
       shippingAddress: {
         line1: "123 Test Street",
         city: "Sydney",
@@ -778,8 +827,8 @@ await assert.rejects(
       },
     })],
   ),
-  /Shipping is not configured/,
-  "Shipping cannot proceed without configured fees",
+  /Select a valid shipping service/,
+  "Invalid shipping services cannot reserve inventory",
 );
 
 const duplicateCardKey = crypto.randomUUID();

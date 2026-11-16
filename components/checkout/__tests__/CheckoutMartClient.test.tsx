@@ -59,7 +59,8 @@ describe("CheckoutMartClient", () => {
     mockCurrency = currency;
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     const expected = currency ? `${currency} 8,500` : '8,500';
-    expect(document.querySelector('[data-checkout-total]')?.textContent?.trim()).toBe(expected);
+    const expectedTotal = currency ? `${currency} 8,510` : '8,510';
+    expect(document.querySelector('[data-checkout-total]')?.textContent?.trim()).toBe(expectedTotal);
     const item = document.querySelector('[data-checkout-item="true"]');
     expect(item?.textContent).toContain(expected);
     expect(item?.textContent).not.toContain('$');
@@ -97,9 +98,74 @@ describe("CheckoutMartClient", () => {
   it("renders a total based on bag contents", () => {
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
     const totalEl = document.querySelector("[data-checkout-total]");
-    expect(totalEl?.textContent).toContain("8,500");
+    expect(totalEl?.textContent).toContain("8,510");
   });
 
+  it("updates the checkout total when Express shipping is selected", async () => {
+    const user = userEvent.setup();
+
+    renderWithBag(
+      <CheckoutMartClient
+        initialCardId="charizard-base1"
+        customer={testCustomer}
+      />,
+    );
+
+    const total = document.querySelector("[data-checkout-total]");
+
+    expect(total?.textContent).toContain("8,510");
+
+    await user.click(screen.getByRole("radio", { name: /Express shipping/i }));
+
+    expect(total?.textContent).toContain("8,515");
+  });
+  it("adds optional insurance using A$2.50 per A$100 bracket", async () => {
+    const user = userEvent.setup();
+
+    renderWithBag(
+      <CheckoutMartClient
+        initialCardId="charizard-base1"
+        customer={testCustomer}
+      />,
+    );
+
+    const total = document.querySelector("[data-checkout-total]");
+
+    expect(total?.textContent).toContain("8,510");
+
+    await user.click(
+      screen.getByRole("checkbox", { name: /Add shipping insurance/i }),
+    );
+
+    expect(total?.textContent).toContain("8,722.5");
+    expect(screen.getByText("Shipping insurance")).toBeInTheDocument();
+  });
+  it("removes shipping and insurance charges for Melbourne pickup", async () => {
+    const user = userEvent.setup();
+
+    renderWithBag(
+      <CheckoutMartClient
+        initialCardId="charizard-base1"
+        customer={testCustomer}
+      />,
+    );
+
+    const total = document.querySelector("[data-checkout-total]");
+
+    await user.click(
+      screen.getByRole("checkbox", { name: /Add shipping insurance/i }),
+    );
+
+    expect(total?.textContent).toContain("8,722.5");
+
+    await user.click(
+      screen.getByRole("radio", { name: /Pick up in Melbourne/i }),
+    );
+
+    expect(total?.textContent).toContain("8,500");
+    expect(screen.queryByRole("checkbox", { name: /Add shipping insurance/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Shipping insurance")).not.toBeInTheDocument();
+  });
   it("allows removing an item from the bag", async () => {
     const user = userEvent.setup();
     renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
