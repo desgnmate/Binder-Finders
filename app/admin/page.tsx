@@ -15,6 +15,7 @@ import {
 import type { AdminRequestTrend } from "../../components/admin/AdminOverview";
 import { AdminConsole } from "../../components/admin/AdminConsole";
 import { stripePaymentsConfigured } from "../../lib/stripe";
+import { LAST_SPRITE_ID } from "../../lib/cms/pokemon";
 export const dynamic = "force-dynamic";
 
 const views = [
@@ -300,7 +301,7 @@ export default async function AdminPage({
       new Set(
         cardRows.data
           .map((row: { data: { pokemonId?: number } }) => Number(row.data?.pokemonId))
-          .filter((id: number) => Number.isInteger(id) && id >= 1 && id <= 386),
+          .filter((id: number) => Number.isInteger(id) && id >= 1 && id <= LAST_SPRITE_ID),
       ),
     );
     pendingHoldCount = pending.count || 0;

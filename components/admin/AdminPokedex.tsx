@@ -2,19 +2,20 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import type { StoreSettings } from "../../lib/cms/types";
-import { DEFAULT_POKEDEX_IDS, gen3Pokemon, pokemonImage } from "../../lib/cms/pokemon";
+import { DEFAULT_POKEDEX_IDS, LAST_SPRITE_ID, pokemonImage, spritePokemon } from "../../lib/cms/pokemon";
 import { FormSaveBar } from "./AdminStoreSettings";
 
-const ALL = gen3Pokemon();
+const ALL = spritePokemon();
 const ALL_IDS = ALL.map((p) => p.id);
 const REGIONS = [
-  ["all", "All", 1, 386],
+  ["all", "All", 1, LAST_SPRITE_ID],
   ["kanto", "Kanto", 1, 151],
   ["johto", "Johto", 152, 251],
   ["hoenn", "Hoenn", 252, 386],
+  ["sinnoh", "Sinnoh", 387, 493],
 ] as const;
 
-/** Choose which of the 386 Gen III Pokémon appear in the storefront Pokédex. */
+/** Choose which of the 493 Gen I–IV Pokémon appear in the storefront Pokédex. */
 export function AdminPokedex({
   draft,
   dirty,
@@ -118,7 +119,7 @@ export function AdminPokedex({
             Hide these {visibleIds.length}
           </button>
           <button type="button" className="cms-btn" onClick={() => setChosen(ALL_IDS)}>
-            Show all 386
+            Show all {ALL.length}
           </button>
           <button type="button" className="cms-btn" onClick={() => setChosen(DEFAULT_POKEDEX_IDS)}>
             Reset to the original {DEFAULT_POKEDEX_IDS.length}

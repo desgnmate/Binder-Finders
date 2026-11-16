@@ -23,9 +23,9 @@ function setup(cardPokemonIds: number[] = []) {
 }
 
 describe("Admin Pokédex picker", () => {
-  it("lists all 386 Gen III Pokémon", () => {
+  it("lists all 493 Gen I–IV Pokémon", () => {
     setup();
-    expect(document.querySelectorAll(".cms-pokedex-tile")).toHaveLength(386);
+    expect(document.querySelectorAll(".cms-pokedex-tile")).toHaveLength(493);
   });
 
   it("adds a Pokémon to the Pokédex", async () => {
@@ -37,8 +37,8 @@ describe("Admin Pokédex picker", () => {
 
   it("can show every Pokémon at once", async () => {
     const { onChange, user } = setup();
-    await user.click(screen.getByRole("button", { name: /show all 386/i }));
-    expect(onChange.mock.calls[0][0].pokedexIds).toHaveLength(386);
+    await user.click(screen.getByRole("button", { name: /show all 493/i }));
+    expect(onChange.mock.calls[0][0].pokedexIds).toHaveLength(493);
   });
 
   it("always shows Pokémon that have a listed card", () => {
@@ -46,5 +46,16 @@ describe("Admin Pokédex picker", () => {
     const skitty = screen.getByRole("button", { name: /skitty/i });
     expect(skitty).toBeDisabled();
     expect(skitty).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("Sinnoh in the Pokédex picker", () => {
+  it("filters to the Gen IV Pokémon", async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole("button", { name: "Sinnoh" }));
+    const tiles = document.querySelectorAll(".cms-pokedex-tile");
+    expect(tiles).toHaveLength(107);
+    expect(tiles[0]).toHaveTextContent("Turtwig");
+    expect(tiles[0].querySelector("img")).toHaveAttribute("src", "/sprites/gen4/387.png");
   });
 });

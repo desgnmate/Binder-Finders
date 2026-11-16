@@ -9,10 +9,10 @@ export interface PokemonTile {
 /** The Pokémon the Pokédex shows when the store hasn't chosen its own list. */
 export const DEFAULT_POKEDEX_IDS = POKEDEX_TILES.map((p) => p.id);
 
-/** Every Pokémon with a Gen III sprite, for the admin picker. */
-export function gen3Pokemon() {
+/** Every Pokémon with a bundled sprite (Gen I–IV), for the admin picker. */
+export function spritePokemon() {
   return reference
-    .filter((p) => p.id >= 1 && p.id <= GEN3_LAST_ID)
+    .filter((p) => p.id >= 1 && p.id <= LAST_SPRITE_ID)
     .map((p) => ({ id: p.id, name: p.name, types: p.types }));
 }
 
@@ -45,13 +45,17 @@ export function catalogPokemon(cards: ShopCard[], chosen: number[] = DEFAULT_POK
       ];
     });
 }
-// Gen III games cover National Pokédex #1–386; public/sprites/gen3 holds an
-// Emerald sprite for each. Later Pokémon have no Gen III sprite.
+// Bundled pixel sprites: public/sprites/gen3 holds an Emerald sprite for
+// National Pokédex #1–386, and public/sprites/gen4 a Platinum sprite for the
+// Sinnoh Pokémon #387–493 (PokeAPI sprites, scaled 2x). Later Pokémon fall
+// back to PokeAPI's default sprite.
 const GEN3_LAST_ID = 386;
+export const LAST_SPRITE_ID = 493;
 export function pokemonImage(id: number) {
-  return Number.isInteger(id) && id >= 1 && id <= GEN3_LAST_ID
-    ? `/sprites/gen3/${id}.png`
-    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  if (!Number.isInteger(id) || id < 1) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  if (id <= GEN3_LAST_ID) return `/sprites/gen3/${id}.png`;
+  if (id <= LAST_SPRITE_ID) return `/sprites/gen4/${id}.png`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 }
 
 /** The Pokémon's English name, or "" for an unknown number. */
