@@ -515,6 +515,9 @@ export function CardDetailClient({
                       </div>
                     </div>
                   </div>
+
+                  {/* Keep both desktop card columns equal-height for alignment. */}
+                  <div className="mt-2 h-[15px]" aria-hidden="true" />
                 </div>
 
                 <div className="hidden lg:flex flex-col items-center justify-start min-w-0">
