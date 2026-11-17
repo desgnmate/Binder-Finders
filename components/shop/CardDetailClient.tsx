@@ -372,7 +372,7 @@ export function CardDetailClient({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                 {/* Left Column: Clean borderless, backgroundless layout */}
-                <div className="lg:col-span-5 flex flex-col items-center justify-center relative min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
+                <div className="lg:hidden lg:col-span-5 flex flex-col items-center justify-center relative min-h-[300px] sm:min-h-[400px] lg:min-h-[500px]">
                   <div className="mb-3 flex flex-wrap justify-center gap-2">
                     <button type="button" aria-pressed={scanMode} onClick={() => setScanMode(!scanMode)} className="rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">{scanMode ? "Animated view" : "Enlarge image"}</button>
                     <button type="button" onClick={handleCardClick} className="rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">{isFlipped ? "Show front" : card.backImageUrl ? "Show back" : "Show reference back"}</button>
@@ -438,8 +438,42 @@ export function CardDetailClient({
                   {!!card.additionalImages?.length&&<details className="mt-4"><summary className="cursor-pointer text-sm font-semibold">Additional photos ({card.additionalImages.length})</summary><div className="mt-3 space-y-4">{card.additionalImages.map((src,index)=><CardImageViewer key={src} src={src} alt={`${card.name} additional photo ${index+1}`}/>)}</div></details>}
                 </div>
 
+                {/* Desktop only: show front and back side-by-side */}
+                <div className="hidden lg:flex flex-col items-center justify-center min-w-0">
+                  <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
+                    Front
+                  </span>
+                  <div className="w-full max-w-[300px]">
+                    <img
+                      src={card.imageUrl}
+                      alt={`${card.name} front`}
+                      className="block h-auto w-full rounded-[20px]"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                </div>
+
+                <div className="hidden lg:flex flex-col items-center justify-center min-w-0">
+                  <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
+                    Back
+                  </span>
+                  <div className="w-full max-w-[300px]">
+                    <img
+                      src={card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg"}
+                      alt={`${card.name} ${card.backImageUrl ? "back" : "reference back"}`}
+                      className="block h-auto w-full rounded-[20px]"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  {!card.backImageUrl && (
+                    <p className="mt-2 max-w-[260px] text-center text-[10px] text-ink-black/50">
+                      Reference back image — not a scan of this individual card.
+                    </p>
+                  )}
+                </div>
+
                 {/* Right Column: Clean details panel */}
-                <div className="lg:col-span-7 rounded-[24px] border-4 border-ink-black bg-brand-yellow p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] sm:shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[300px] sm:min-h-[450px] lg:min-h-[500px]">
+                <div className="rounded-[24px] border-4 border-ink-black bg-brand-yellow p-4 sm:p-6 md:p-8 lg:p-10 flex flex-col justify-between relative shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] sm:shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] min-h-[300px] sm:min-h-[450px] lg:min-h-[500px]">
                   <div className="relative z-10 flex flex-col h-full justify-between gap-4 sm:gap-6">
 
                     {/* Header Badges & Price Row */}

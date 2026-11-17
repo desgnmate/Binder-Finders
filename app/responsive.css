@@ -122,3 +122,20 @@
 }
 
 }
+
+@media (min-width: 1024px) {
+  .card-inspect-dialog {
+    width: min(1460px, calc(100vw - 32px));
+  }
+
+  .card-inspect-dialog > div > .grid {
+    grid-template-columns: minmax(220px, 0.8fr) minmax(220px, 0.8fr) minmax(430px, 1.4fr);
+    gap: clamp(18px, 1.7vw, 30px);
+    align-items: center;
+  }
+
+  .card-inspect-dialog > div > .grid > div:last-child {
+    min-height: 0;
+    padding: clamp(18px, 2vw, 30px);
+  }
+}
