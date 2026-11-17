@@ -53,6 +53,14 @@ export function CardDetailClient({
   const [tilt, setTilt] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [shinePos, setShinePos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
+
+  // Desktop inspection cards use isolated hover states so only the card
+  // under the pointer tilts and shines.
+  const [desktopFrontTilt, setDesktopFrontTilt] = useState({ x: 0, y: 0 });
+  const [desktopFrontShine, setDesktopFrontShine] = useState({ x: 50, y: 50 });
+  const [desktopBackTilt, setDesktopBackTilt] = useState({ x: 0, y: 0 });
+  const [desktopBackShine, setDesktopBackShine] = useState({ x: 50, y: 50 });
+
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const animRef = useRef(0);
@@ -207,6 +215,38 @@ export function CardDetailClient({
   };
   const handleMouseLeave = () => {
     setIsHovered(false);
+  };
+
+  const handleDesktopCardMove = (
+    e: React.MouseEvent<HTMLDivElement>,
+    setCardTilt: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+    setCardShine: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+  ) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const cursorX = e.clientX - rect.left;
+    const cursorY = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    setCardTilt({
+      x: -((cursorY - centerY) / centerY) * MAX_TILT_DEG,
+      y: ((cursorX - centerX) / centerX) * MAX_TILT_DEG,
+    });
+
+    setCardShine({
+      x: 100 - (cursorX / rect.width) * 100,
+      y: 100 - (cursorY / rect.height) * 100,
+    });
+  };
+
+  const resetDesktopCard = (
+    setCardTilt: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+    setCardShine: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+  ) => {
+    setCardTilt({ x: 0, y: 0 });
+    setCardShine({ x: 50, y: 50 });
   };
   const handleRemove = () => {
     if (!card) return;
@@ -382,15 +422,17 @@ export function CardDetailClient({
                   ) : (
                   <div
                     className="magnetic-card-wrapper mx-auto w-full max-w-[260px] xs:max-w-[320px] sm:max-w-[360px] md:max-w-[420px] focus:outline-none z-10 cursor-pointer"
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={handleMouseLeave}
+                    onMouseMove={(e) => handleDesktopCardMove(e, setDesktopFrontTilt, setDesktopFrontShine)}
+                    onMouseLeave={() => resetDesktopCard(setDesktopFrontTilt, setDesktopFrontShine)}
                     onClick={handleCardClick}
                   >
                     <div
                       data-magnetic-card-inner="true"
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
-                      style={{ transform, transition }}
+                      style={{
+                        transform: `rotateX(${desktopFrontTilt.x}deg) rotateY(${desktopFrontTilt.y}deg)`,
+                        transition,
+                      }}
                     >
                       {/* Front Face */}
                       <div className="magnetic-card-face magnetic-card-face--front">
@@ -446,13 +488,15 @@ export function CardDetailClient({
 
                   <div
                     className="magnetic-card-wrapper w-full max-w-[300px]"
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={handleMouseLeave}
+                    onMouseMove={(e) => handleDesktopCardMove(e, setDesktopBackTilt, setDesktopBackShine)}
+                    onMouseLeave={() => resetDesktopCard(setDesktopBackTilt, setDesktopBackShine)}
                   >
                     <div
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
-                      style={{ transform, transition }}
+                      style={{
+                        transform: `rotateX(${desktopBackTilt.x}deg) rotateY(${desktopBackTilt.y}deg)`,
+                        transition,
+                      }}
                     >
                       <div className="magnetic-card-face magnetic-card-face--front">
                         <img
@@ -462,7 +506,10 @@ export function CardDetailClient({
                         />
                         <div
                           className={`magnetic-card-shine rounded-[20px] ${isSpecialRare ? "animate-holographic" : ""}`}
-                          style={{ background: shineBg, opacity: 1 }}
+                          style={{
+                            background: `radial-gradient(circle at ${desktopFrontShine.x}% ${desktopFrontShine.y}%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.18) 22%, transparent 52%)`,
+                            opacity: 1,
+                          }}
                           aria-hidden="true"
                         />
                       </div>
@@ -493,7 +540,10 @@ export function CardDetailClient({
                         />
                         <div
                           className="magnetic-card-shine rounded-[20px]"
-                          style={{ background: shineBg, opacity: 1 }}
+                          style={{
+                            background: `radial-gradient(circle at ${desktopBackShine.x}% ${desktopBackShine.y}%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.16) 22%, transparent 52%)`,
+                            opacity: 1,
+                          }}
                           aria-hidden="true"
                         />
                       </div>
