@@ -47,6 +47,23 @@ export function CardDetailClient({
   const [added, setAdded] = useState(false);
   const [columns, setColumns] = useState<GridColumns>(4);
   const [scanMode, setScanMode] = useState(false);
+  const [desktopZoomSide, setDesktopZoomSide] = useState<"front" | "back" | null>(null);
+  const [desktopZoomEntered, setDesktopZoomEntered] = useState(false);
+  const [desktopZoomClosing, setDesktopZoomClosing] = useState(false);
+  const [desktopZoomOrigin, setDesktopZoomOrigin] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const [desktopZoomMotion, setDesktopZoomMotion] = useState({
+    x: 0,
+    y: 0,
+    scale: 1,
+  });
+
+  const desktopZoomTargetRef = useRef<HTMLDivElement>(null);
   const openedHere = useRef(false);
 
   // 3D tilt state — auto-animated gentle figure-8, overridden by mouse hover
@@ -81,6 +98,11 @@ export function CardDetailClient({
     setAdded(false);
     setIsFlipped(false);
     setScanMode(false);
+    setDesktopZoomSide(null);
+    setDesktopZoomEntered(false);
+    setDesktopZoomClosing(false);
+    setDesktopZoomOrigin(null);
+    setDesktopZoomMotion({ x: 0, y: 0, scale: 1 });
   }, [card?.id]);
 
   const closeInspection = () => {
@@ -196,6 +218,64 @@ export function CardDetailClient({
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
   }, [isHovered, card, scanMode]);
+
+  useEffect(() => {
+    if (!desktopZoomSide) {
+      setDesktopZoomEntered(false);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setDesktopZoomEntered(true));
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [desktopZoomSide]);
+
+  const openDesktopZoom = (
+    side: "front" | "back",
+    element: HTMLDivElement
+  ) => {
+    const rect = element.getBoundingClientRect();
+
+    const targetHeight = Math.min(window.innerHeight * 0.82, 900);
+    const targetWidth = targetHeight * (5 / 7);
+
+    const sourceCenterX = rect.left + rect.width / 2;
+    const sourceCenterY = rect.top + rect.height / 2;
+    const targetCenterX = window.innerWidth / 2;
+    const targetCenterY = window.innerHeight / 2;
+
+    setDesktopZoomClosing(false);
+    setDesktopZoomEntered(false);
+    setDesktopZoomOrigin({
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+    });
+
+    setDesktopZoomMotion({
+      x: sourceCenterX - targetCenterX,
+      y: sourceCenterY - targetCenterY,
+      scale: rect.width / targetWidth,
+    });
+
+    setDesktopZoomSide(side);
+  };
+
+  const closeDesktopZoom = () => {
+    if (!desktopZoomSide || desktopZoomClosing) return;
+
+    setDesktopZoomClosing(true);
+    setDesktopZoomEntered(false);
+
+    window.setTimeout(() => {
+      setDesktopZoomSide(null);
+      setDesktopZoomClosing(false);
+      setDesktopZoomOrigin(null);
+    }, 560);
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (scanMode) return;
@@ -408,7 +488,59 @@ export function CardDetailClient({
               </div>
             ) : card ? (
               <DialogShell key={card.id} label={`Inspect ${card.name}`} onClose={closeInspection}>
-              {/* Existing card detail styling, now shown only during inspection. */}
+              {/* Desktop zoom overlay. Keeps the inspection visible and blurred behind it. */}
+              {desktopZoomSide && (
+                <div
+                  className="fixed inset-0 z-[80] hidden lg:flex items-center justify-center bg-black/25 backdrop-blur-md p-6"
+                  onClick={closeDesktopZoom}
+                >
+                  <div
+                    ref={desktopZoomTargetRef}
+                    className="relative w-auto max-w-[92vw] transform-gpu"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transition:
+                        "transform 560ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease",
+                      transform: desktopZoomEntered
+                        ? "translate3d(0px, 0px, 0px) scale(1) rotateY(360deg)"
+                        : `translate3d(${desktopZoomMotion.x}px, ${desktopZoomMotion.y}px, 0px) scale(${desktopZoomMotion.scale}) rotateY(0deg)`,
+                      opacity: desktopZoomEntered ? 1 : desktopZoomClosing ? 0.72 : 0.72,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="mx-auto mb-3 flex w-fit min-w-[420px] items-center justify-between gap-6">
+                      <div className="font-retro text-[10px] uppercase tracking-widest text-white drop-shadow">
+                        {card.name} / {desktopZoomSide === "front" ? "Front" : "Back"}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={closeDesktopZoom}
+                        className="rounded-xl border-2 border-ink-black bg-white px-4 py-2 text-xs font-bold shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] hover:bg-brand-yellow"
+                      >
+                        Back to card inspection
+                      </button>
+                    </div>
+
+                    <CardImageViewer
+                      src={
+                        desktopZoomSide === "front"
+                          ? card.imageUrl
+                          : card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg"
+                      }
+                      alt={`${card.name} ${desktopZoomSide} enlarged`}
+                    />
+
+                    {desktopZoomSide === "back" && !card.backImageUrl && (
+                      <p className="mt-2 text-center text-xs text-white/80">
+                        Reference back image ? not a scan of this individual card.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Existing card detail styling remains behind the zoom overlay. */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
                 {/* Left Column: Clean borderless, backgroundless layout */}
@@ -481,15 +613,25 @@ export function CardDetailClient({
                 </div>
 
                 {/* Desktop only: animated front and back side-by-side */}
-                <div className="hidden lg:flex flex-col items-center justify-start min-w-0">
+                <div className="desktop-front-column hidden lg:flex flex-col items-center justify-start min-w-0">
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Front
                   </span>
 
                   <div
-                    className="magnetic-card-wrapper w-full max-w-[300px]"
+                    className="magnetic-card-wrapper w-full max-w-[300px] cursor-zoom-in"
                     onMouseMove={(e) => handleDesktopCardMove(e, setDesktopFrontTilt, setDesktopFrontShine)}
                     onMouseLeave={() => resetDesktopCard(setDesktopFrontTilt, setDesktopFrontShine)}
+                    onClick={(e) => openDesktopZoom("front", e.currentTarget)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Enlarge ${card.name} front`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openDesktopZoom("front", e.currentTarget);
+                      }
+                    }}
                   >
                     <div
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
@@ -520,15 +662,25 @@ export function CardDetailClient({
                   <div className="mt-2 h-[15px]" aria-hidden="true" />
                 </div>
 
-                <div className="hidden lg:flex flex-col items-center justify-start min-w-0">
+                <div className="desktop-back-column hidden lg:flex flex-col items-center justify-start min-w-0">
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Back
                   </span>
 
                   <div
-                    className="magnetic-card-wrapper w-full max-w-[300px]"
+                    className="magnetic-card-wrapper w-full max-w-[300px] cursor-zoom-in"
                     onMouseMove={(e) => handleDesktopCardMove(e, setDesktopBackTilt, setDesktopBackShine)}
                     onMouseLeave={() => resetDesktopCard(setDesktopBackTilt, setDesktopBackShine)}
+                    onClick={(e) => openDesktopZoom("back", e.currentTarget)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Enlarge ${card.name} back`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openDesktopZoom("back", e.currentTarget);
+                      }
+                    }}
                   >
                     <div
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
