@@ -488,13 +488,13 @@ export function CardDetailClient({
 
                   <div
                     className="magnetic-card-wrapper w-full max-w-[300px]"
-                    onMouseMove={(e) => handleDesktopCardMove(e, setDesktopBackTilt, setDesktopBackShine)}
-                    onMouseLeave={() => resetDesktopCard(setDesktopBackTilt, setDesktopBackShine)}
+                    onMouseMove={(e) => handleDesktopCardMove(e, setDesktopFrontTilt, setDesktopFrontShine)}
+                    onMouseLeave={() => resetDesktopCard(setDesktopFrontTilt, setDesktopFrontShine)}
                   >
                     <div
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
                       style={{
-                        transform: `rotateX(${desktopBackTilt.x}deg) rotateY(${desktopBackTilt.y}deg)`,
+                        transform: `rotateX(${desktopFrontTilt.x}deg) rotateY(${desktopFrontTilt.y}deg)`,
                         transition,
                       }}
                     >
@@ -527,13 +527,15 @@ export function CardDetailClient({
 
                   <div
                     className="magnetic-card-wrapper w-full max-w-[300px]"
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={handleMouseLeave}
+                    onMouseMove={(e) => handleDesktopCardMove(e, setDesktopBackTilt, setDesktopBackShine)}
+                    onMouseLeave={() => resetDesktopCard(setDesktopBackTilt, setDesktopBackShine)}
                   >
                     <div
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
-                      style={{ transform, transition }}
+                      style={{
+                        transform: `rotateX(${desktopBackTilt.x}deg) rotateY(${desktopBackTilt.y}deg)`,
+                        transition,
+                      }}
                     >
                       <div className="magnetic-card-face magnetic-card-face--front">
                         <img
