@@ -128,6 +128,21 @@
     width: min(1460px, calc(100vw - 32px));
   }
 
+  .card-inspect-dialog .magnetic-card-wrapper {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .card-inspect-dialog .magnetic-card-inner {
+    aspect-ratio: 5 / 7;
+  }
+
+  .card-inspect-dialog .magnetic-card-face img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .card-inspect-dialog > div > .grid {
     grid-template-columns: minmax(220px, 0.8fr) minmax(220px, 0.8fr) minmax(430px, 1.4fr);
     gap: clamp(18px, 1.7vw, 30px);

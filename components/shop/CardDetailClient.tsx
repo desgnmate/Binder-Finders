@@ -438,35 +438,70 @@ export function CardDetailClient({
                   {!!card.additionalImages?.length&&<details className="mt-4"><summary className="cursor-pointer text-sm font-semibold">Additional photos ({card.additionalImages.length})</summary><div className="mt-3 space-y-4">{card.additionalImages.map((src,index)=><CardImageViewer key={src} src={src} alt={`${card.name} additional photo ${index+1}`}/>)}</div></details>}
                 </div>
 
-                {/* Desktop only: show front and back side-by-side */}
-                <div className="hidden lg:flex flex-col items-center justify-center min-w-0">
+                {/* Desktop only: animated front and back side-by-side */}
+                <div className="hidden lg:flex flex-col items-center justify-start min-w-0">
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Front
                   </span>
-                  <div className="w-full max-w-[300px]">
-                    <img
-                      src={card.imageUrl}
-                      alt={`${card.name} front`}
-                      className="block h-auto w-full rounded-[20px]"
-                      referrerPolicy="no-referrer"
-                    />
+
+                  <div
+                    className="magnetic-card-wrapper w-full max-w-[300px]"
+                    onMouseMove={handleMouseMove}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <div
+                      className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
+                      style={{ transform, transition }}
+                    >
+                      <div className="magnetic-card-face magnetic-card-face--front">
+                        <img
+                          src={card.imageUrl}
+                          alt={`${card.name} front`}
+                          referrerPolicy="no-referrer"
+                        />
+                        <div
+                          className={`magnetic-card-shine rounded-[20px] ${isSpecialRare ? "animate-holographic" : ""}`}
+                          style={{ background: shineBg, opacity: 1 }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="hidden lg:flex flex-col items-center justify-center min-w-0">
+                <div className="hidden lg:flex flex-col items-center justify-start min-w-0">
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Back
                   </span>
-                  <div className="w-full max-w-[300px]">
-                    <img
-                      src={card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg"}
-                      alt={`${card.name} ${card.backImageUrl ? "back" : "reference back"}`}
-                      className="block h-auto w-full rounded-[20px]"
-                      referrerPolicy="no-referrer"
-                    />
+
+                  <div
+                    className="magnetic-card-wrapper w-full max-w-[300px]"
+                    onMouseMove={handleMouseMove}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <div
+                      className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
+                      style={{ transform, transition }}
+                    >
+                      <div className="magnetic-card-face magnetic-card-face--front">
+                        <img
+                          src={card.backImageUrl || "/80680fbc635c78df8b860e0426ffe686.jpg"}
+                          alt={`${card.name} ${card.backImageUrl ? "back" : "reference back"}`}
+                          referrerPolicy="no-referrer"
+                        />
+                        <div
+                          className="magnetic-card-shine rounded-[20px]"
+                          style={{ background: shineBg, opacity: 1 }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    </div>
                   </div>
+
                   {!card.backImageUrl && (
-                    <p className="mt-2 max-w-[260px] text-center text-[10px] text-ink-black/50">
+                    <p className="mt-2 max-w-[300px] text-center text-[10px] text-ink-black/50">
                       Reference back image — not a scan of this individual card.
                     </p>
                   )}
