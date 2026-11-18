@@ -45,7 +45,7 @@ export function CardDetailClient({
   const { addCard, removeCard, hasCard } = useBag();
   const alreadyInBag = card ? hasCard(card.id) : false;
   const [added, setAdded] = useState(false);
-  const [columns, setColumns] = useState<GridColumns>(4);
+  const [columns, setColumns] = useState<GridColumns>(8);
   const [scanMode, setScanMode] = useState(false);
   const [inspectionEntryOrigin, setInspectionEntryOrigin] = useState<{
     left: number;
