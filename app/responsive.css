@@ -125,34 +125,35 @@
 
 @media (min-width: 1024px) {
   .card-inspect-dialog {
-    width: 100vw;
-    height: 100svh;
+    width: min(1240px, calc(100vw - 48px));
+    height: auto;
     max-width: none;
-    max-height: none;
-    margin: 0;
+    max-height: calc(100svh - 32px);
+    margin: auto;
     padding: 0;
     border: 0;
+    border-radius: 28px;
     overflow: hidden;
     background: transparent;
   }
 
   .card-inspect-dialog > div {
     width: 100%;
-    height: 100%;
+    height: auto;
     box-sizing: border-box;
-    border-radius: 0;
-    padding: 12px 16px;
+    border-radius: 28px;
+    padding: 20px 24px 24px;
     overflow: hidden;
   }
 
   .card-inspect-dialog > div > div:first-child {
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     padding-block: 2px;
   }
 
   .card-inspect-dialog .magnetic-card-wrapper {
     width: 100%;
-    max-width: min(560px, 58svh);
+    max-width: min(380px, calc((100svh - 115px) / 1.4));
   }
 
   .card-inspect-dialog .magnetic-card-inner {
@@ -166,37 +167,39 @@
   }
 
   .card-inspect-dialog > div > .grid {
-    height: calc(100svh - 72px);
+    height: calc(100svh - 118px);
     grid-template-columns:
-      minmax(0, 1.05fr)
-      minmax(0, 1.05fr)
-      minmax(540px, 1.15fr);
-    gap: clamp(4px, 0.45vw, 8px);
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(340px, 420px);
+    gap: 20px;
     align-items: center;
   }
 
   .card-inspect-dialog .desktop-front-column {
     justify-self: end;
     width: 100%;
+    min-width: 0;
     align-items: flex-end;
-    padding-right: 4px;
+    padding-right: 0;
   }
 
   .card-inspect-dialog .desktop-back-column {
     justify-self: start;
     width: 100%;
+    min-width: 0;
     align-items: flex-start;
-    padding-left: 4px;
+    padding-left: 0;
   }
 
   .card-inspect-dialog .desktop-front-column .magnetic-card-wrapper,
   .card-inspect-dialog .desktop-back-column .magnetic-card-wrapper {
-    max-width: min(560px, 58svh);
+    max-width: min(380px, calc((100svh - 115px) / 1.4));
   }
 
   .card-inspect-dialog .desktop-front-column > span,
   .card-inspect-dialog .desktop-back-column > span {
-    width: min(560px, 58svh);
+    width: min(380px, calc((100svh - 115px) / 1.4));
     max-width: 100%;
     text-align: center;
   }
@@ -210,20 +213,91 @@
   }
 
   .card-inspect-dialog > div > .grid > div:last-child {
-    width: min(100%, 600px);
-    min-height: 560px;
+    width: 100%;
+    max-width: 440px;
+    min-height: 0;
+    height: min(620px, calc(100svh - 180px));
     justify-self: center;
-    padding: clamp(24px, 1.8vw, 34px);
+    padding: 18px 20px;
   }
 
   .card-inspect-dialog > div > .grid > div:last-child > div {
     height: 100%;
     justify-content: space-between;
-    gap: 18px;
+    gap: 16px;
   }
 
   .card-inspect-dialog > div > .grid > div:last-child h2 {
     line-height: 0.95;
     margin-bottom: 2px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-inspect-panel {
+    animation: card-inspect-panel-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: center center;
+  }
+
+  @keyframes card-inspect-panel-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* SHOP DESKTOP — reveal card controls after entry flip */
+@media (min-width: 1024px) {
+  .card-inspect-dialog .desktop-front-column > span,
+  .card-inspect-dialog .desktop-back-column > span {
+    transition: opacity 300ms ease, transform 300ms ease;
+  }
+
+  .card-inspect-dialog .inspection-controls-pending > span {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .card-inspect-dialog .inspection-controls-ready > span {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card-inspect-dialog .inspection-controls-pending .magnetic-card-wrapper {
+    pointer-events: none;
+  }
+
+  .card-inspect-dialog .inspection-controls-ready .magnetic-card-wrapper {
+    pointer-events: auto;
+  }
+}
+/* SHOP ZOOM VIEWPORT FIX */
+@media (min-width: 1024px) {
+  .card-inspect-dialog:has(> .card-inspect-panel > .fixed) {
+    overflow: visible;
+  }
+
+  .card-inspect-dialog:has(> .card-inspect-panel > .fixed) > .card-inspect-panel {
+    animation: none;
+    transform: none;
+    overflow: visible;
+  }
+
+  .card-inspect-dialog > .card-inspect-panel > .fixed [aria-label="Enlarged card image; drag to pan or use arrow keys"] {
+    height: min(700px, calc(100svh - 180px));
+    max-height: calc(100svh - 180px);
+  }
+}
+/* LANDING BINDER ZOOM SIZE MATCH */
+@media (min-width: 1024px) {
+  .binder-zoom-viewer [aria-label="Enlarged card image; drag to pan or use arrow keys"] {
+    height: min(700px, calc(100svh - 180px));
+    max-height: calc(100svh - 180px);
   }
 }

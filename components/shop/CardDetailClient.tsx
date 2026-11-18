@@ -47,8 +47,28 @@ export function CardDetailClient({
   const [added, setAdded] = useState(false);
   const [columns, setColumns] = useState<GridColumns>(4);
   const [scanMode, setScanMode] = useState(false);
+  const [inspectionEntryOrigin, setInspectionEntryOrigin] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  const [inspectionEntryMotion, setInspectionEntryMotion] = useState({
+    x: 0,
+    y: 0,
+    scaleX: 1,
+    scaleY: 1,
+  });
+
+  const [inspectionEntryEntered, setInspectionEntryEntered] = useState(true);
+  const [inspectionControlsVisible, setInspectionControlsVisible] = useState(true);
+
+  const inspectionControlsReady = !inspectionEntryOrigin || inspectionControlsVisible;
+
   const [desktopZoomSide, setDesktopZoomSide] = useState<"front" | "back" | null>(null);
   const [desktopZoomEntered, setDesktopZoomEntered] = useState(false);
+  const [desktopZoomUiVisible, setDesktopZoomUiVisible] = useState(false);
   const [desktopZoomClosing, setDesktopZoomClosing] = useState(false);
   const [desktopZoomOrigin, setDesktopZoomOrigin] = useState<{
     left: number;
@@ -64,6 +84,7 @@ export function CardDetailClient({
   });
 
   const desktopZoomTargetRef = useRef<HTMLDivElement>(null);
+  const desktopInspectionFrontRef = useRef<HTMLDivElement>(null);
   const openedHere = useRef(false);
 
   // 3D tilt state — auto-animated gentle figure-8, overridden by mouse hover
@@ -104,6 +125,53 @@ export function CardDetailClient({
     setDesktopZoomOrigin(null);
     setDesktopZoomMotion({ x: 0, y: 0, scale: 1 });
   }, [card?.id]);
+
+  useEffect(() => {
+    if (!card || !inspectionEntryOrigin) {
+      setInspectionControlsVisible(true);
+      return;
+    }
+
+    setInspectionControlsVisible(false);
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const revealTimer = window.setTimeout(() => {
+      setInspectionControlsVisible(true);
+    }, reducedMotion ? 0 : 1000);
+
+    const frame = requestAnimationFrame(() => {
+      const target = desktopInspectionFrontRef.current;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+
+      const sourceCenterX =
+        inspectionEntryOrigin.left + inspectionEntryOrigin.width / 2;
+      const sourceCenterY =
+        inspectionEntryOrigin.top + inspectionEntryOrigin.height / 2;
+      const targetCenterX = rect.left + rect.width / 2;
+      const targetCenterY = rect.top + rect.height / 2;
+
+      setInspectionEntryEntered(false);
+      setInspectionEntryMotion({
+        x: sourceCenterX - targetCenterX,
+        y: sourceCenterY - targetCenterY,
+        scaleX: inspectionEntryOrigin.width / rect.width,
+        scaleY: inspectionEntryOrigin.height / rect.height,
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setInspectionEntryEntered(true);
+        });
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(revealTimer);
+    };
+  }, [card, inspectionEntryOrigin]);
 
   const closeInspection = () => {
     if (openedHere.current) {
@@ -232,6 +300,21 @@ export function CardDetailClient({
     return () => cancelAnimationFrame(frame);
   }, [desktopZoomSide]);
 
+  useEffect(() => {
+    if (!desktopZoomSide) {
+      setDesktopZoomUiVisible(false);
+      return;
+    }
+
+    setDesktopZoomUiVisible(false);
+
+    const timer = window.setTimeout(() => {
+      setDesktopZoomUiVisible(true);
+    }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 640);
+
+    return () => window.clearTimeout(timer);
+  }, [desktopZoomSide]);
+
   const openDesktopZoom = (
     side: "front" | "back",
     element: HTMLDivElement
@@ -267,6 +350,7 @@ export function CardDetailClient({
   const closeDesktopZoom = () => {
     if (!desktopZoomSide || desktopZoomClosing) return;
 
+    setDesktopZoomUiVisible(false);
     setDesktopZoomClosing(true);
     setDesktopZoomEntered(false);
 
@@ -346,12 +430,12 @@ export function CardDetailClient({
   const handleCardClick = () => {
     setIsFlipped(!isFlipped);
     setIsFlipping(true);
-    setTimeout(() => setIsFlipping(false), 600);
+    setTimeout(() => setIsFlipping(false), 800);
   };
 
   const transform = `rotateY(${(tilt.y + (isFlipped ? 180 : 0)).toFixed(2)}deg) rotateX(${tilt.x.toFixed(2)}deg)`;
   const transition = isFlipping
-    ? "transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1)"
+    ? "transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1)"
     : isHovered
       ? "transform 150ms ease-out"
       : "transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1)";
@@ -508,7 +592,16 @@ export function CardDetailClient({
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="mx-auto mb-3 flex w-fit min-w-[420px] items-center justify-between gap-6">
+                    <div className="mx-auto mb-3 flex w-fit min-w-[420px] items-center justify-between gap-6"
+                      style={{
+                        opacity: desktopZoomUiVisible ? 1 : 0,
+                        transform: desktopZoomUiVisible
+                          ? "translateY(0px)"
+                          : "translateY(-8px)",
+                        transition: "opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+                        pointerEvents: desktopZoomUiVisible ? "auto" : "none",
+                        visibility: desktopZoomUiVisible ? "visible" : "hidden",
+                      }}>
                       <div className="font-retro text-[10px] uppercase tracking-widest text-white drop-shadow">
                         {card.name} / {desktopZoomSide === "front" ? "Front" : "Back"}
                       </div>
@@ -522,6 +615,14 @@ export function CardDetailClient({
                       </button>
                     </div>
 
+                    <div
+                      className={
+                        "shop-zoom-viewer text-ink-black [&>div>div:first-child]:transition-all [&>div>div:first-child]:duration-300 " +
+                        (desktopZoomUiVisible
+                          ? "[&>div>div:first-child]:opacity-100 [&>div>div:first-child]:translate-y-0 [&>div>div:first-child]:pointer-events-auto"
+                          : "[&>div>div:first-child]:opacity-0 [&>div>div:first-child]:-translate-y-2 [&>div>div:first-child]:pointer-events-none [&>div>div:first-child]:invisible")
+                      }
+                    >
                     <CardImageViewer
                       src={
                         desktopZoomSide === "front"
@@ -530,10 +631,11 @@ export function CardDetailClient({
                       }
                       alt={`${card.name} ${desktopZoomSide} enlarged`}
                     />
+                    </div>
 
                     {desktopZoomSide === "back" && !card.backImageUrl && (
-                      <p className="mt-2 text-center text-xs text-white/80">
-                        Reference back image ? not a scan of this individual card.
+                      <p className="pointer-events-none absolute left-0 right-0 top-full mt-2 text-center text-xs text-white/80">
+                        Reference back image - not a scan of this individual card.
                       </p>
                     )}
                   </div>
@@ -562,7 +664,7 @@ export function CardDetailClient({
                       data-magnetic-card-inner="true"
                       className="magnetic-card-inner relative select-none pointer-events-none rounded-[20px]"
                       style={{
-                        transform: `rotateX(${desktopFrontTilt.x}deg) rotateY(${desktopFrontTilt.y}deg)`,
+                        transform: `rotateX(${desktopFrontTilt.x}deg) rotateY(${desktopFrontTilt.y + (isFlipped ? 180 : 0)}deg)`,
                         transition,
                       }}
                     >
@@ -613,20 +715,35 @@ export function CardDetailClient({
                 </div>
 
                 {/* Desktop only: animated front and back side-by-side */}
-                <div className="desktop-front-column hidden lg:flex flex-col items-center justify-start min-w-0">
+                <div className={`desktop-front-column hidden lg:flex flex-col items-center justify-start min-w-0 ${inspectionControlsReady ? "inspection-controls-ready" : "inspection-controls-pending"}`}>
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Front
                   </span>
 
                   <div
+                    ref={desktopInspectionFrontRef}
                     className="magnetic-card-wrapper w-full max-w-[300px] cursor-zoom-in"
+                    style={{
+                      transformOrigin: "center center",
+                      transform: inspectionEntryOrigin
+                        ? inspectionEntryEntered
+                          ? "translate3d(0px, 0px, 0px) scale(1, 1) rotateY(360deg)"
+                          : `translate3d(${inspectionEntryMotion.x}px, ${inspectionEntryMotion.y + 28}px, 0px) scale(${inspectionEntryMotion.scaleX}, ${inspectionEntryMotion.scaleY}) rotateY(0deg)`
+                        : undefined,
+                      transition: inspectionEntryOrigin
+                        ? "transform 950ms cubic-bezier(0.16, 1, 0.3, 1)"
+                        : undefined,
+                      transformStyle: "preserve-3d",
+                      willChange: inspectionEntryOrigin ? "transform" : undefined,
+                    }}
                     onMouseMove={(e) => handleDesktopCardMove(e, setDesktopFrontTilt, setDesktopFrontShine)}
                     onMouseLeave={() => resetDesktopCard(setDesktopFrontTilt, setDesktopFrontShine)}
                     onClick={(e) => openDesktopZoom("front", e.currentTarget)}
                     role="button"
-                    tabIndex={0}
+                    tabIndex={inspectionControlsReady ? 0 : -1}
                     aria-label={`Enlarge ${card.name} front`}
                     onKeyDown={(e) => {
+                      if (!inspectionControlsReady) return;
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         openDesktopZoom("front", e.currentTarget);
@@ -662,7 +779,7 @@ export function CardDetailClient({
                   <div className="mt-2 h-[15px]" aria-hidden="true" />
                 </div>
 
-                <div className="desktop-back-column hidden lg:flex flex-col items-center justify-start min-w-0">
+                <div className={`desktop-back-column hidden lg:flex flex-col items-center justify-start min-w-0 ${inspectionControlsReady ? "inspection-controls-ready" : "inspection-controls-pending"}`}>
                   <span className="mb-3 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
                     Back
                   </span>
@@ -673,9 +790,10 @@ export function CardDetailClient({
                     onMouseLeave={() => resetDesktopCard(setDesktopBackTilt, setDesktopBackShine)}
                     onClick={(e) => openDesktopZoom("back", e.currentTarget)}
                     role="button"
-                    tabIndex={0}
+                    tabIndex={inspectionControlsReady ? 0 : -1}
                     aria-label={`Enlarge ${card.name} back`}
                     onKeyDown={(e) => {
+                      if (!inspectionControlsReady) return;
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         openDesktopZoom("back", e.currentTarget);
@@ -846,7 +964,27 @@ export function CardDetailClient({
                         data-binder-source-cell="true"
                         className="rounded-[28px] border border-white/10 bg-white/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-colors hover:bg-white/[0.11] md:p-5"
                       >
-                        <OtherCardGridItem card={item} href={(() => { const params = new URLSearchParams(searchParams.toString()); params.set("card", item.id); return `${pathname}?${params}`; })()} onInspect={() => { openedHere.current = true; }} />
+                        <OtherCardGridItem card={item} href={(() => { const params = new URLSearchParams(searchParams.toString()); params.set("card", item.id); return `${pathname}?${params}`; })()} onInspect={(element) => {
+                          const rect = element.getBoundingClientRect();
+                          setInspectionEntryEntered(false);
+                          setInspectionEntryOrigin({
+                            left: rect.left,
+                            top: rect.top,
+                            width: rect.width,
+                            height: rect.height,
+                          });
+                          openedHere.current = true;
+                        }} />
+
+                        <div className="mt-3 hidden min-w-0 lg:block">
+                          <p className="truncate font-body text-[11px] font-bold uppercase tracking-wide text-white/50">
+                            {item.set}
+                          </p>
+                          <p className="mt-0.5 truncate font-body text-sm font-black text-white">
+                            {item.name}
+                          </p>
+                        </div>
+
                         <QuickAdd card={item} />
                       </div>
                     ))}
@@ -871,7 +1009,7 @@ export function CardDetailClient({
  * OtherCardGridItem — grid card matching the BinderSection card style.
  * Magnetic tilt + shine on hover, links to the card detail page.
  */
-function OtherCardGridItem({ card, href, onInspect }: { card: ShopCard; href: string; onInspect: () => void }) {
+function OtherCardGridItem({ card, href, onInspect }: { card: ShopCard; href: string; onInspect: (element: HTMLAnchorElement) => void }) {
   const formatPrice=usePriceFormatter();
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [shinePos, setShinePos] = useState({ x: 50, y: 50 });
@@ -901,7 +1039,7 @@ function OtherCardGridItem({ card, href, onInspect }: { card: ShopCard; href: st
     <Link
       href={href}
       scroll={false}
-      onClick={onInspect}
+      onClick={(e) => onInspect(e.currentTarget)}
       className="magnetic-card-wrapper relative block focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-yellow/50"
       aria-label={`Inspect ${card.name} — ${shortCondition(card.condition)} · ${formatPrice(card.price)}`}
       onMouseMove={handleMouseMove}

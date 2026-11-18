@@ -373,7 +373,23 @@ function BinderFocusOverlay({
   const [shinePos, setShinePos] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   const [isFlipped, setIsFlipped] = useState(false);
   const [scanMode, setScanMode] = useState(false);
+  const [zoomSide, setZoomSide] = useState<"front" | "back">("front");
+  const [backTilt, setBackTilt] = useState({ x: 0, y: 0 });
+  const [backShinePos, setBackShinePos] = useState({ x: 50, y: 50 });
+  const [isBackHovered, setIsBackHovered] = useState(false);
+
+  const [desktopZoomSide, setDesktopZoomSide] = useState<"front" | "back" | null>(null);
+  const [desktopZoomEntered, setDesktopZoomEntered] = useState(false);
+  const [desktopZoomClosing, setDesktopZoomClosing] = useState(false);
+  const [desktopZoomUiVisible, setDesktopZoomUiVisible] = useState(false);
+  const [desktopZoomMotion, setDesktopZoomMotion] = useState({
+    x: 0,
+    y: 0,
+    scale: 1,
+  });
+
   const overlayRef = useRef<HTMLDivElement>(null);
+  const frontCardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const trigger = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
@@ -415,6 +431,71 @@ function BinderFocusOverlay({
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
   }, [isHovered]);
+
+  useEffect(() => {
+    if (!desktopZoomSide) {
+      setDesktopZoomEntered(false);
+      setDesktopZoomUiVisible(false);
+      return;
+    }
+
+    setDesktopZoomUiVisible(false);
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setDesktopZoomEntered(true));
+    });
+
+    const controlsTimer = window.setTimeout(() => {
+      setDesktopZoomUiVisible(true);
+    }, 640);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(controlsTimer);
+    };
+  }, [desktopZoomSide]);
+
+  const openDesktopZoom = (
+    side: "front" | "back",
+    element: HTMLElement,
+  ) => {
+    const rect = element.getBoundingClientRect();
+
+    if (!rect.width || !rect.height) return;
+
+    const targetHeight = Math.min(window.innerHeight * 0.82, 900);
+    const targetWidth = targetHeight * (5 / 7);
+
+    const sourceCenterX = rect.left + rect.width / 2;
+    const sourceCenterY = rect.top + rect.height / 2;
+    const targetCenterX = window.innerWidth / 2;
+    const targetCenterY = window.innerHeight / 2;
+
+    setDesktopZoomClosing(false);
+    setDesktopZoomEntered(false);
+    setDesktopZoomMotion({
+      x: sourceCenterX - targetCenterX,
+      y: sourceCenterY - targetCenterY,
+      scale: rect.width / targetWidth,
+    });
+    setDesktopZoomSide(side);
+  };
+
+  const closeDesktopZoom = () => {
+    if (!desktopZoomSide || desktopZoomClosing) return;
+
+    setDesktopZoomUiVisible(false);
+    setDesktopZoomClosing(true);
+
+    window.setTimeout(() => {
+      setDesktopZoomEntered(false);
+
+      window.setTimeout(() => {
+        setDesktopZoomSide(null);
+        setDesktopZoomClosing(false);
+      }, 560);
+    }, 180);
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (stage !== "open") return;
@@ -464,6 +545,13 @@ function BinderFocusOverlay({
     [onClose, scanMode],
   );
 
+  const desktopSlots =
+    typeof window !== "undefined" && window.innerWidth >= 1024
+      ? binderDesktopSlots(window.innerWidth, window.innerHeight)
+      : null;
+
+  const viewerIsBack = desktopSlots ? zoomSide === "back" : isFlipped;
+
   const innerStyle: React.CSSProperties = {
     transform: `rotateX(${tilt.x.toFixed(2)}deg) rotateY(${tilt.y.toFixed(2)}deg)`,
     transition: "transform 100ms ease-out",
@@ -483,7 +571,27 @@ function BinderFocusOverlay({
       onClick={handleOverlayClick}
       onKeyDown={handleOverlayKeyDown}
     >
+      {desktopSlots && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute hidden lg:block rounded-[28px] border-4 border-ink-black bg-cream shadow-[10px_12px_0px_0px_rgba(26,26,26,0.32)]"
+          style={{
+            left: Math.max(desktopSlots.detailsRight - 22, 22),
+            right: Math.max(desktopSlots.detailsRight - 22, 22),
+            top: 22,
+            bottom: 22,
+            opacity: stage === "closing" ? 0 : 1,
+            transition: "opacity 300ms ease",
+          }}
+        >
+          <div className="absolute left-6 top-5 font-retro text-[9px] uppercase tracking-widest text-ink-black/45">
+            Card Inspection
+          </div>
+        </div>
+      )}
+
       <div
+        ref={frontCardRef}
         data-binder-focus-card="true"
         data-binder-focus-card-id={card.id}
         aria-label={`${card.name} focus card`}
@@ -491,7 +599,13 @@ function BinderFocusOverlay({
         style={{ ...cardStyleForStage(stage, sourceRect, isFlipped), perspective: "800px" }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={(e) => {
+          if (window.innerWidth >= 1024) {
+            openDesktopZoom("front", e.currentTarget);
+          } else {
+            setIsFlipped(!isFlipped);
+          }
+        }}
       >
         <div
           className="w-full h-full relative rounded-2xl pointer-events-none"
@@ -547,8 +661,108 @@ function BinderFocusOverlay({
         </div>
       </div>
 
+      {desktopSlots && (
+        <>
+          <span
+            className="pointer-events-none absolute z-10 hidden lg:block font-retro text-[9px] uppercase tracking-widest text-ink-black/55"
+            style={{
+              left: desktopSlots.frontCenter,
+              top: `calc(50% - ${(sourceRect.height * desktopSlots.cardWidth / sourceRect.width) / 2 + 30}px)`,
+              transform: "translateX(-50%)",
+              opacity: stage === "open" ? 1 : 0,
+            }}
+          >
+            Front
+          </span>
+
+          <div
+            className="absolute z-10 hidden lg:block"
+            style={{
+              left: desktopSlots.backLeft,
+              top: "50%",
+              width: desktopSlots.cardWidth,
+              transform: "translateY(-50%)",
+              opacity: stage === "open" ? 1 : 0,
+              pointerEvents: stage === "open" ? "auto" : "none",
+              transition: "opacity 300ms ease-out",
+            }}
+          >
+            <span className="pointer-events-none absolute -top-7 left-0 right-0 text-center font-retro text-[9px] uppercase tracking-widest text-ink-black/55">
+              Back
+            </span>
+
+            <button
+              type="button"
+              aria-label={`Enlarge ${card.name} back`}
+              onMouseMove={(e) => {
+                if (stage !== "open") return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                if (!rect.width || !rect.height) return;
+                const halfWidth = rect.width / 2;
+                const halfHeight = rect.height / 2;
+                setBackTilt({
+                  x: -((e.clientY - rect.top - halfHeight) / halfHeight) * MAX_TILT_DEG,
+                  y: ((e.clientX - rect.left - halfWidth) / halfWidth) * MAX_TILT_DEG,
+                });
+                setBackShinePos({
+                  x: 100 - ((e.clientX - rect.left) / rect.width) * 100,
+                  y: 100 - ((e.clientY - rect.top) / rect.height) * 100,
+                });
+                setIsBackHovered(true);
+              }}
+              onMouseLeave={() => {
+                setBackTilt({ x: 0, y: 0 });
+                setBackShinePos({ x: 50, y: 50 });
+                setIsBackHovered(false);
+              }}
+              style={{
+                transform: "perspective(850px) rotateX(" + backTilt.x + "deg) rotateY(" + backTilt.y + "deg)",
+                transition: "transform 150ms ease-out",
+                transformStyle: "preserve-3d",
+              }}
+              onClick={(e) => {
+                openDesktopZoom("back", e.currentTarget);
+              }}
+              className="relative block w-full overflow-hidden cursor-zoom-in rounded-[18px] focus-visible:outline focus-visible:outline-4 focus-visible:outline-brand-yellow"
+            >
+              <img
+                src={card.backImageUrl || CARD_BACK_IMAGE_SRC}
+                alt={`${card.name} back`}
+                referrerPolicy="no-referrer"
+                draggable={false}
+                className="block w-full rounded-[18px] object-cover"
+                style={{
+                  height: sourceRect.height * desktopSlots.cardWidth / sourceRect.width,
+                }}
+              />
+
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-[18px]"
+                style={{
+                  background: `radial-gradient(circle at ${backShinePos.x}% ${backShinePos.y}%, rgba(255,255,255,0.48) 0%, rgba(255,255,255,0.22) 26%, rgba(255,255,255,0.07) 48%, transparent 72%)`,
+                  mixBlendMode: "screen",
+                  opacity: isBackHovered ? 1 : 0,
+                  transition: "opacity 160ms ease-out",
+                }}
+              />
+            </button>
+
+            {!card.backImageUrl && (
+              <p className="pointer-events-none absolute left-0 right-0 top-full mt-2 text-center text-[10px] text-ink-black/55">
+                Reference back image - not a scan of this individual card.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
       <aside
         data-binder-focus-details={stage === "closing" ? "hidden" : "visible"}
+        style={desktopSlots ? {
+          right: `${desktopSlots.detailsRight}px`,
+          width: `${desktopSlots.detailsWidth}px`,
+        } : undefined}
         aria-hidden={stage === "closing" ? "true" : "false"}
         className="binder-focus-details relative flex flex-col gap-3 sm:gap-4 rounded-[24px] sm:rounded-[28px] border-4 border-ink-black bg-cream p-4 sm:p-5 text-ink-black shadow-[4px_4px_0_rgba(26,26,26,1)] sm:shadow-[8px_8px_0_rgba(26,26,26,1)] md:p-6"
       >
@@ -570,7 +784,14 @@ function BinderFocusOverlay({
             </h3>
           </div>
           <p className="mt-2 font-retro text-[10px] text-ink-black/60">{card.number}</p>
-          <button type="button" onClick={() => setScanMode(true)} className="mt-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">Enlarge image</button>
+          <button type="button" onClick={() => {
+            if (desktopSlots && frontCardRef.current) {
+              openDesktopZoom("front", frontCardRef.current);
+              return;
+            }
+            setZoomSide(isFlipped ? "back" : "front");
+            setScanMode(true);
+          }} className="mt-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-xs font-bold">Enlarge image</button>
           {isFlipped && !card.backImageUrl && <p className="mt-2 text-xs text-ink-black/60">Reference back image — not a scan of this individual card.</p>}
         </div>
 
@@ -646,14 +867,159 @@ function BinderFocusOverlay({
           </Link>
         </div>
       </aside>
-      {scanMode && <DialogShell label={`Enlarged ${card.name}`} onClose={() => setScanMode(false)}>
-        <h2 className="mb-3 font-headline text-2xl">{card.name}</h2>
-        <button type="button" className="mb-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-sm" onClick={() => setIsFlipped(!isFlipped)}>{isFlipped ? "Show front" : card.backImageUrl ? "Show back" : "Show reference back"}</button>
-        <CardImageViewer src={isFlipped ? card.backImageUrl || CARD_BACK_IMAGE_SRC : card.imageUrl} alt={`${card.name} ${isFlipped ? "back" : "front"} enlarged`} />
-        {isFlipped && !card.backImageUrl && <p className="mt-3 text-xs">Reference back image — not a scan of this individual card.</p>}
-      </DialogShell>}
+      {desktopZoomSide && desktopSlots && (
+        <div
+          className="fixed inset-0 z-[90] hidden lg:flex items-center justify-center bg-black/25 backdrop-blur-md p-6"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (e.target === e.currentTarget) closeDesktopZoom();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              e.stopPropagation();
+              closeDesktopZoom();
+            }
+          }}
+        >
+          <div
+            className="relative w-auto max-w-[92vw] transform-gpu"
+            style={{
+              transformStyle: "preserve-3d",
+              transition:
+                "transform 560ms cubic-bezier(0.22, 1, 0.36, 1), opacity 260ms ease",
+              transform: desktopZoomEntered
+                ? "translate3d(0px, 0px, 0px) scale(1) rotateY(360deg)"
+                : `translate3d(${desktopZoomMotion.x}px, ${desktopZoomMotion.y}px, 0px) scale(${desktopZoomMotion.scale}) rotateY(0deg)`,
+              opacity: desktopZoomEntered
+                ? 1
+                : desktopZoomClosing
+                  ? 0.72
+                  : 0.72,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="mx-auto mb-3 flex w-fit min-w-[420px] items-center justify-between gap-6"
+              style={{
+                opacity: desktopZoomUiVisible ? 1 : 0,
+                transform: desktopZoomUiVisible
+                  ? "translateY(0px)"
+                  : "translateY(-8px)",
+                transition:
+                  "opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
+                pointerEvents: desktopZoomUiVisible ? "auto" : "none",
+              }}
+            >
+              <div className="font-retro text-[10px] uppercase tracking-widest text-white drop-shadow">
+                {card.name} / {desktopZoomSide === "front" ? "Front" : "Back"}
+              </div>
+
+              <button
+                type="button"
+                onClick={closeDesktopZoom}
+                className="rounded-xl border-2 border-ink-black bg-white px-4 py-2 text-xs font-bold text-ink-black shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] hover:bg-brand-yellow"
+              >
+                Back to card inspection
+              </button>
+            </div>
+
+            <div
+              className={
+                "binder-zoom-viewer text-ink-black " +
+                "[&>div>div:first-child]:transition-all " +
+                "[&>div>div:first-child]:duration-300 " +
+                "[&>div>p]:transition-all " +
+                "[&>div>p]:duration-300 " +
+                (desktopZoomUiVisible
+                  ? "[&>div>div:first-child]:opacity-100 [&>div>div:first-child]:translate-y-0 [&>div>div:first-child]:pointer-events-auto [&>div>p]:opacity-100 [&>div>p]:translate-y-0"
+                  : "[&>div>div:first-child]:opacity-0 [&>div>div:first-child]:-translate-y-2 [&>div>div:first-child]:pointer-events-none [&>div>p]:opacity-0 [&>div>p]:translate-y-2")
+              }
+            >
+              <CardImageViewer
+                src={
+                  desktopZoomSide === "front"
+                    ? card.imageUrl
+                    : card.backImageUrl || CARD_BACK_IMAGE_SRC
+                }
+                alt={`${card.name} ${desktopZoomSide} enlarged`}
+              />
+            </div>
+
+            {desktopZoomSide === "back" && !card.backImageUrl && (
+              <p
+                className="pointer-events-none absolute left-0 right-0 top-full mt-2 text-center text-xs text-white/80"
+                style={{
+                  opacity: desktopZoomUiVisible ? 1 : 0,
+                  transform: desktopZoomUiVisible
+                    ? "translateY(0px)"
+                    : "translateY(6px)",
+                  transition: "opacity 260ms ease, transform 320ms ease",
+                }}
+              >
+                Reference back image - not a scan of this individual card.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {scanMode && !desktopSlots && (
+        <DialogShell
+          label={`Enlarged ${card.name}`}
+          onClose={() => setScanMode(false)}
+        >
+          <h2 className="mb-3 font-headline text-2xl">{card.name}</h2>
+
+          <button
+            type="button"
+            className="mb-3 rounded-xl border-2 border-ink-black bg-white px-3 py-2 text-sm"
+            onClick={() => setIsFlipped(!isFlipped)}
+          >
+            {isFlipped
+              ? "Show front"
+              : card.backImageUrl
+                ? "Show back"
+                : "Show reference back"}
+          </button>
+
+          <CardImageViewer
+            src={
+              isFlipped
+                ? card.backImageUrl || CARD_BACK_IMAGE_SRC
+                : card.imageUrl
+            }
+            alt={`${card.name} ${isFlipped ? "back" : "front"} enlarged`}
+          />
+
+          {isFlipped && !card.backImageUrl && (
+            <p className="mt-3 text-xs">
+              Reference back image - not a scan of this individual card.
+            </p>
+          )}
+        </DialogShell>
+      )}
     </div>
   );
+}
+
+function binderDesktopSlots(viewportWidth: number, viewportHeight: number) {
+  const gutter = 24;
+  const gap = 20;
+  const detailsWidth = Math.min(440, Math.max(320, viewportWidth * 0.28));
+  const availableWidth = (viewportWidth - gutter * 2 - detailsWidth - gap * 2) / 2;
+  const availableHeight = (viewportHeight - 160) / 1.4;
+  const cardWidth = Math.max(180, Math.min(340, availableWidth, availableHeight));
+  const groupWidth = cardWidth * 2 + detailsWidth + gap * 2;
+  const left = (viewportWidth - groupWidth) / 2;
+
+  return {
+    cardWidth,
+    detailsWidth,
+    frontCenter: left + cardWidth / 2,
+    backLeft: left + cardWidth + gap,
+    detailsRight: left,
+  };
 }
 
 function cardStyleForStage(
@@ -671,6 +1037,13 @@ function cardStyleForStage(
 
   if (typeof window !== "undefined") {
     const isMobile = window.innerWidth < 1024;
+
+    if (!isMobile) {
+      const slots = binderDesktopSlots(window.innerWidth, window.innerHeight);
+      targetScale = slots.cardWidth / cardWidth;
+      centeredX = `${slots.frontCenter - cardWidth / 2}px`;
+    }
+
     if (isMobile) {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
