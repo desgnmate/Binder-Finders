@@ -131,7 +131,7 @@ export function BinderSection() {
         style={{ borderRadius: "var(--radius-hero)" }}
       >
         {/* Full-width header and controls */}
-        <div className="grid w-full gap-8 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.15fr)] lg:items-end">
+        <div className="flex w-full flex-col gap-8">
           <div>
             <h2 className="font-headline text-3xl font-bold text-white sm:text-4xl md:text-6xl">
               The Binder
@@ -151,10 +151,25 @@ export function BinderSection() {
               </span>
             </div>
 
+            <div className="md:hidden">
+              <select
+                aria-label="Select binder era"
+                value={activeTabId}
+                onChange={(e) => setActiveTabId(e.target.value)}
+                className="w-full rounded-xl border-2 border-white/20 bg-ink-black px-4 py-3 font-body text-sm font-bold text-white outline-none transition-colors focus:border-brand-yellow"
+              >
+                {BINDER_TABS.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div
               role="tablist"
               aria-label="Binder eras"
-              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="hidden flex-wrap gap-2 pb-1 md:flex"
             >
               {BINDER_TABS.map((tab) => {
                 const active = tab.id === activeTabId;
