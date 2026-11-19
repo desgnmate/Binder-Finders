@@ -2,6 +2,7 @@ import { Hero } from "../../components/hero/Hero";
 import { PokedexSection } from "../../components/pokedex/PokedexSection";
 import { BinderSection } from "../../components/binder/BinderSection";
 import { AboutSection } from "../../components/about/AboutSection";
+import { ReviewsSection } from "../../components/about/ReviewsSection";
 import { SiteFooter } from "../../components/footer/SiteFooter";
 import { ScrollGradientZone } from "../../components/ScrollGradientZone";
 import { RevealFooterLayout } from "../../components/RevealFooterLayout";
@@ -58,6 +59,7 @@ export default async function Home() {
 
         <div className="relative z-10 -mt-8 bg-[#7b39ed] rounded-t-[2.5rem] overflow-hidden md:-mt-12">
           <AboutSection />
+          <ReviewsSection />
         </div>
       </RevealFooterLayout>
     </main>

@@ -43,6 +43,19 @@ const contentSections: {
     ],
   },
   {
+    title: "Reviews",
+    description: "Customer testimonials shown near the bottom of the homepage.",
+    fields: [
+      ["reviewsTitle", "Section title", 60, "text"],
+      ["review1Quote", "Review 1", 400, "long"],
+      ["review1Name", "Reviewer 1 name", 80, "text"],
+      ["review2Quote", "Review 2", 400, "long"],
+      ["review2Name", "Reviewer 2 name", 80, "text"],
+      ["review3Quote", "Review 3", 400, "long"],
+      ["review3Name", "Reviewer 3 name", 80, "text"],
+    ],
+  },
+  {
     title: "Footer",
     description: "Shown at the bottom of every storefront page.",
     fields: [
