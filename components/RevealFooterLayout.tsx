@@ -29,7 +29,7 @@ export function RevealFooterLayout({ children, footer }: RevealFooterLayoutProps
     const updateHeight = () => {
       setFooterHeight(footerEl.offsetHeight);
       // A fixed footer taller than the viewport cannot be fully reached.
-      setInlineFooter(window.innerWidth < 768 || footerEl.offsetHeight > window.innerHeight - 80);
+      setInlineFooter(footerEl.offsetHeight > window.innerHeight - 80);
     };
     updateHeight();
 

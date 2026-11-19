@@ -156,7 +156,7 @@ export function BinderSection() {
                 aria-label="Select binder era"
                 value={activeTabId}
                 onChange={(e) => setActiveTabId(e.target.value)}
-                className="w-full rounded-xl border-2 border-white/20 bg-ink-black px-4 py-3 font-body text-sm font-bold text-white outline-none transition-colors focus:border-brand-yellow"
+                className="binder-select w-full rounded-xl border-2 border-white/20 bg-ink-black px-4 py-3 font-body text-sm font-bold text-white outline-none transition-colors focus:border-brand-yellow"
               >
                 {BINDER_TABS.map((tab) => (
                   <option key={tab.id} value={tab.id}>
@@ -196,7 +196,7 @@ export function BinderSection() {
         {/* Full-width card wall */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <input aria-label="Search binder cards" placeholder="Search this era..." value={query} onChange={(event) => setQuery(event.target.value)} className="min-w-0 flex-1 rounded-xl border-2 border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/50" />
-          <select aria-label="Filter binder by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="rounded-xl border-2 border-white/20 bg-ink-black px-3 py-3 text-sm text-white">
+          <select aria-label="Filter binder by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="binder-select rounded-xl border-2 border-white/20 bg-ink-black px-3 py-3 text-sm text-white">
             <option value="all">All Types</option>
             {Array.from(new Set(BINDER_TABS.flatMap((tab) => tab.cards.map((card) => card.type)))).sort().map((type) => <option key={type} value={type}>{type}</option>)}
           </select>

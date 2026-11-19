@@ -33,7 +33,7 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
       className="pokeball-cursor relative bg-[#7b39ed] text-white"
     >
       <div
-        className="relative overflow-hidden bg-ink-black border-t-4 border-ink-black px-4 pt-12 pb-6 md:px-8 md:pt-16 md:pb-8"
+        className="relative overflow-hidden bg-ink-black border-t-4 border-ink-black px-4 pt-6 pb-4 md:px-8 md:pt-16 md:pb-8"
         style={{
           borderTopLeftRadius: "var(--radius-hero)",
           borderTopRightRadius: "var(--radius-hero)",
@@ -49,7 +49,7 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
         <div data-footer-content className="relative z-10 mx-auto max-w-7xl 2xl:max-w-none">
 
           {/* Row 1: Headline CTA + Mascot card */}
-          <div className="relative overflow-hidden rounded-[28px] border-4 border-ink-black bg-brand-yellow p-5 shadow-[6px_6px_0_0_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.005] md:p-8">
+          <div className="relative overflow-hidden rounded-[28px] border-4 border-ink-black bg-brand-yellow p-4 shadow-[6px_6px_0_0_rgba(26,26,26,1)] transition-transform duration-300 hover:scale-[1.005] md:p-8">
             {/* Diagonal stripe texture on yellow (properly constrained) */}
             <div
               aria-hidden="true"
@@ -86,7 +86,7 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
           </div>
 
           {/* Row 2: Brand Profile Left, Contact Right */}
-          <div className="mt-12 flex flex-col md:flex-row items-center md:items-start justify-between gap-8 md:gap-12 w-full text-center md:text-left">
+          <div className="mt-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-5 md:mt-12 md:gap-12 w-full text-center md:text-left">
             {/* Left Column: Logo & Description */}
             <div className="flex flex-col items-center md:items-start gap-4 max-w-md">
               <Link
@@ -129,7 +129,7 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
           </div>
 
           {/* Help and policy pages */}
-          <nav aria-label="Store information" className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3 md:justify-start">
+          <nav aria-label="Store information" className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 md:mt-10 md:justify-start">
             {[
               { label: "About", href: "/about" },
               { label: "Shipping & returns", href: "/shipping-returns" },
@@ -144,11 +144,11 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
           </nav>
 
           {/* Row 3: Fun fact ticker + copyright bar */}
-          <div className="mt-12 relative">
+          <div className="mt-6 relative md:mt-12">
             <div className="absolute bottom-full left-0 right-0 pointer-events-none z-10">
               <WalkingTrainer />
             </div>
-            <div className="flex flex-col flex-wrap gap-6 border-t-2 border-dashed border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col flex-wrap gap-3 border-t-2 border-dashed border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between md:gap-6 md:pt-8">
               {/* Copyright */}
               <p className="shrink-0 font-retro text-[7px] uppercase tracking-[2px] text-white/20">
                 © {new Date().getFullYear()} — Binder Finders Inc. All rights reserved.
