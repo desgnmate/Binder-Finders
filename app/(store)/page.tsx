@@ -47,7 +47,6 @@ export default async function Home() {
             zoneId="collection"
             gradient="transparent"
           >
-            <AboutSection />
             <PokedexSection />
           </ScrollGradientZone>
         </div>
@@ -55,6 +54,10 @@ export default async function Home() {
         {/* Binder sits on a separate blue → theme gradient zone. */}
         <div style={{ background: BINDER_TO_FOOTER_GRADIENT }} className="pb-8 md:pb-12">
           <BinderSection />
+        </div>
+
+        <div className="relative z-10 -mt-8 bg-[#7b39ed] rounded-t-[2.5rem] overflow-hidden md:-mt-12">
+          <AboutSection />
         </div>
       </RevealFooterLayout>
     </main>
