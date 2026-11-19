@@ -30,6 +30,19 @@ const rammetto = localFont({
   variable: "--font-heading-proxy",
 });
 
+const poppins = localFont({
+  src: [
+    { path: "./fonts/Poppins-400.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Poppins-500.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/Poppins-600.ttf", weight: "600", style: "normal" },
+    { path: "./fonts/Poppins-700.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/Poppins-800.ttf", weight: "800", style: "normal" },
+    { path: "./fonts/Poppins-900.ttf", weight: "900", style: "normal" },
+  ],
+  display: "swap",
+  variable: "--font-poppins-proxy",
+});
+
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(siteUrl()),
@@ -53,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable}`}
+      className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable} ${poppins.variable}`}
       suppressHydrationWarning
     >
       <head>

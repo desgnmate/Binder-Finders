@@ -926,3 +926,35 @@ html.motion-ok [data-motion="rise"] {
     opacity: 1;
   }
 }
+
+/* Site-wide Poppins typography. */
+:root {
+  --font-headline: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
+  --font-body: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
+  --font-retro: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-body) !important;
+}
+
+.font-headline,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-headline) !important;
+  font-weight: 900 !important;
+}
+
+.font-retro {
+  font-family: var(--font-retro) !important;
+  font-weight: 700 !important;
+}
