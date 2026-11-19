@@ -967,3 +967,22 @@ h6 {
   font-family: var(--font-retro) !important;
   font-weight: 700 !important;
 }
+
+/* MOBILE BINDER PRICE VISIBILITY FIX */
+@media (max-width: 767px) {
+  .binder-focus-details {
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .binder-focus-details > div:first-of-type {
+    order: -2;
+  }
+
+  .binder-focus-details > div:last-of-type {
+    order: -1;
+  }
+}

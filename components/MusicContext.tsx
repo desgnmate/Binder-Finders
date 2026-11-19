@@ -96,15 +96,16 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      if (audio.readyState < 3) {
-        wantsPlayRef.current = true;
-        setLoading(true);
-        return;
-      }
+      wantsPlayRef.current = false;
+      setLoading(audio.readyState < 3);
+
       await audio.play();
+
+      setLoading(false);
       setEnabled(true);
     } catch {
       wantsPlayRef.current = false;
+      setLoading(false);
       setEnabled(false);
     }
   };

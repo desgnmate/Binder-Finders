@@ -47,7 +47,7 @@ export function CardImageViewer({ src, alt }: { src: string; alt: string }) {
         <button type="button" onClick={reset} className="h-11 rounded-xl border-2 border-ink-black bg-white px-3 text-xs font-bold">Reset</button>
       </div>
       <div ref={frame} role="region" aria-label="Enlarged card image; drag to pan or use arrow keys" tabIndex={0}
-        className="relative mx-auto h-[82svh] max-h-[900px] aspect-[5/7] w-auto max-w-[calc(100vw-48px)] touch-none select-none overflow-hidden rounded-[22px] border-0 bg-transparent shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
+        className="relative mx-auto aspect-[5/7] h-auto w-[min(100%,35svh)] max-w-full lg:h-[82svh] lg:max-h-[900px] lg:w-auto lg:max-w-[calc(100vw-48px)] touch-none select-none overflow-hidden rounded-[22px] border-0 bg-transparent shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-blue"
         style={{ cursor: zoom === 1 ? "default" : dragging ? "grabbing" : "grab" }}
         onPointerDown={(event) => {
           if (event.button !== 0 || drag.current) return;
