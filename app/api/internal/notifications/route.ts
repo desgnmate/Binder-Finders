@@ -7,6 +7,10 @@ import {
   type HoldNotificationKind,
   type HoldNotificationPayload,
 } from "../../../../lib/notifications/hold-email";
+import {
+  renderGuestPurchaseNotification,
+  type GuestPurchaseNotificationPayload,
+} from "../../../../lib/notifications/guest-email";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -163,6 +167,96 @@ async function processNotifications(request: Request) {
     }
   }
 
+  const { data: guestNotifications, error: guestNotificationError } =
+    await db.rpc("cms_claim_guest_notification_outbox", {
+      p_limit: 5,
+    });
+
+  if (guestNotificationError) {
+    return Response.json(
+      { error: "Guest purchase notification queue is unavailable" },
+      { status: 503 },
+    );
+  }
+
+  let guestSent = 0;
+  let guestFailed = 0;
+  let guestAcknowledgementFailed = 0;
+
+  for (const row of guestNotifications || []) {
+    if (!row.claim_token) {
+      guestFailed += 1;
+      continue;
+    }
+
+    let deliveryError: string | null = null;
+
+    try {
+      let body = row.delivery_body;
+
+      if (!body) {
+        const payload = row.payload as GuestPurchaseNotificationPayload;
+        const email = renderGuestPurchaseNotification(payload);
+
+        const prepared = await db.rpc("cms_prepare_guest_notification", {
+          p_id: row.id,
+          p_claim_token: row.claim_token,
+          p_body: {
+            from: process.env.RESEND_FROM_EMAIL,
+            to: [row.to_email],
+            reply_to: payload.email,
+            subject: email.subject,
+            html: email.html,
+            text: email.text,
+          },
+        });
+
+        if (prepared.error || !prepared.data) {
+          throw new Error("Could not prepare guest purchase notification");
+        }
+
+        body = prepared.data;
+      }
+
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        signal: AbortSignal.timeout(8000),
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": `binderfinders-guest-notification-${row.id}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Email provider returned ${response.status}`);
+      }
+    } catch (error) {
+      deliveryError =
+        error instanceof Error ? error.message : "Delivery failed";
+    }
+
+    try {
+      const finished = await db.rpc("cms_finish_guest_notification", {
+        p_id: row.id,
+        p_claim_token: row.claim_token,
+        p_success: deliveryError === null,
+        p_error: deliveryError,
+      });
+
+      if (finished.error || finished.data !== true) {
+        guestAcknowledgementFailed += 1;
+      } else if (deliveryError) {
+        guestFailed += 1;
+      } else {
+        guestSent += 1;
+      }
+    } catch {
+      guestAcknowledgementFailed += 1;
+    }
+  }
+
   return Response.json(
     {
       expired: expired || 0,
@@ -173,11 +267,17 @@ async function processNotifications(request: Request) {
       sent,
       failed,
       acknowledgementFailed,
+      guestClaimed: (guestNotifications || []).length,
+      guestSent,
+      guestFailed,
+      guestAcknowledgementFailed,
     },
     {
       status:
         failed ||
         acknowledgementFailed ||
+        guestFailed ||
+        guestAcknowledgementFailed ||
         paymentReconciliation.errors ||
         guestPaymentReconciliation.errors
           ? 503
