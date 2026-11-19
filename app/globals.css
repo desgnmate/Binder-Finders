@@ -986,3 +986,27 @@ h6 {
     order: -1;
   }
 }
+/* MOBILE BINDER FULL-SCAN FIX */
+@media (max-width: 1023px) {
+  .binder-focus-card,
+  .binder-focus-card > div,
+  .binder-focus-card__face,
+  .binder-focus-card__face img {
+    border-radius: 0 !important;
+  }
+
+  .binder-focus-card__face {
+    background: transparent;
+  }
+
+  .binder-focus-card__face img {
+    object-fit: contain !important;
+  }
+}
+
+/* MOBILE BINDER - REMOVE ANIMATED SHINE */
+@media (max-width: 1023px) {
+  .binder-focus-card .magnetic-card-shine {
+    display: none !important;
+  }
+}

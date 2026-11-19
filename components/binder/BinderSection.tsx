@@ -848,7 +848,7 @@ function BinderFocusOverlay({
         </dl>
 
         {/* Price and CTA Block */}
-        <div className="relative mt-1 sm:mt-2 rounded-[18px] sm:rounded-[22px] border-2 border-ink-black bg-brand-yellow p-3 sm:p-4 shadow-[2px_2px_0_0_rgba(26,26,26,1)] sm:shadow-[4px_4px_0_0_rgba(26,26,26,1)] overflow-hidden">
+        <div className="relative mt-1 shrink-0 sm:mt-2 rounded-[18px] sm:rounded-[22px] border-2 border-ink-black bg-brand-yellow p-3 sm:p-4 shadow-[2px_2px_0_0_rgba(26,26,26,1)] sm:shadow-[4px_4px_0_0_rgba(26,26,26,1)] overflow-hidden">
           {/* Subtle diagonal background stripes for texture */}
           <div className="absolute inset-0 bg-[linear-gradient(45deg,#ffffff08_25%,transparent_25%,transparent_50%,#ffffff08_50%,#ffffff08_75%,transparent_75%,transparent)] bg-[size:16px_16px] pointer-events-none" />
 
@@ -1066,20 +1066,17 @@ function cardStyleForStage(
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      // Card width should not exceed 65% of viewport width to leave nice breathing room on sides,
-      // and max out at 240px.
-      let desiredWidth = Math.min(viewportWidth * 0.65, 240);
-      // Ensure a reasonable minimum size
+      // Mobile: show the whole card prominently without the excessive side gutters.
+      const cardAspect = cardHeight / cardWidth;
+      let desiredWidth = Math.min(viewportWidth - 24, 300);
       desiredWidth = Math.max(desiredWidth, 180);
 
-      const desiredHeight = desiredWidth * 1.4;
+      const desiredHeight = desiredWidth * cardAspect;
 
-      // Let's make sure the card height doesn't occupy more than 40% of viewport height
-      // to leave enough space for the details panel at the bottom.
-      if (desiredHeight > viewportHeight * 0.4) {
-        // Adjust width based on max height constraint
-        const maxAllowedHeight = viewportHeight * 0.4;
-        desiredWidth = maxAllowedHeight / 1.4;
+      // Keep the complete card above the details sheet.
+      if (desiredHeight > viewportHeight * 0.44) {
+        const maxAllowedHeight = viewportHeight * 0.44;
+        desiredWidth = maxAllowedHeight / cardAspect;
       }
 
       targetScale = desiredWidth / cardWidth;

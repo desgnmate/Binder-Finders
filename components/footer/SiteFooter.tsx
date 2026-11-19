@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowRight, Mail, MapPin, BookOpen } from "lucide-react";
 import { WalkingTrainer } from "../trainer/WalkingTrainer";
 import { useCatalog } from "../CatalogProvider";
@@ -18,6 +19,8 @@ const POKEMON_FACTS = [
 ] as const;
 
 export function SiteFooter({ content: suppliedContent }: { content?: StoreSettings["content"] } = {}) {
+  const pathname = usePathname();
+  const isCheckout = pathname === "/checkout";
   const {settings:{content: catalogContent}}=useCatalog();
   const content = suppliedContent ?? catalogContent;
   // Pick a deterministic fun fact (based on day-of-year for variety)
@@ -30,7 +33,7 @@ export function SiteFooter({ content: suppliedContent }: { content?: StoreSettin
     <footer
       id="contact"
       data-site-footer="true"
-      className="pokeball-cursor relative bg-[#7b39ed] text-white"
+      className={`pokeball-cursor relative text-white ${isCheckout ? "bg-transparent" : "bg-[#7b39ed]"}`}
     >
       <div
         className="relative overflow-hidden bg-ink-black border-t-4 border-ink-black px-4 pt-6 pb-4 md:px-8 md:pt-16 md:pb-8"
