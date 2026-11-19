@@ -43,6 +43,14 @@ const poppins = localFont({
   variable: "--font-poppins-proxy",
 });
 
+const montserrat = localFont({
+  src: "./fonts/Montserrat-wght.ttf",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+  variable: "--font-montserrat-proxy",
+});
+
 export function generateMetadata(): Metadata {
   return {
     metadataBase: new URL(siteUrl()),
@@ -66,7 +74,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable} ${poppins.variable}`}
+      className={`${pressStart.variable} ${fredoka.variable} ${rammetto.variable} ${poppins.variable} ${montserrat.variable}`}
       suppressHydrationWarning
     >
       <head>

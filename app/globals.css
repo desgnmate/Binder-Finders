@@ -77,8 +77,15 @@
 
 html,
 body {
-  background-color: #7b39ed;
+  background-color: #1a1a1a;
   color: #1a1a1a;
+}
+
+@media (min-width: 768px) {
+  html,
+  body {
+    background-color: #7b39ed;
+  }
 }
 
 /* Client revision styles are scoped to avoid changing existing surfaces. */
@@ -929,7 +936,7 @@ html.motion-ok [data-motion="rise"] {
 
 /* Site-wide Poppins typography. */
 :root {
-  --font-headline: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
+  --font-headline: var(--font-montserrat-proxy, "Montserrat"), system-ui, sans-serif;
   --font-body: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
   --font-retro: var(--font-poppins-proxy, "Poppins"), system-ui, sans-serif;
 }
@@ -952,6 +959,8 @@ h5,
 h6 {
   font-family: var(--font-headline) !important;
   font-weight: 900 !important;
+  -webkit-text-stroke: 0.5px currentColor;
+  paint-order: stroke fill;
 }
 
 .font-retro {

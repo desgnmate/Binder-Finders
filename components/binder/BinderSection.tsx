@@ -43,12 +43,15 @@ function prefersReducedMotion(): boolean {
 export function BinderSection() {
   const {cards,collections}=useCatalog();
   const BINDER_TABS=useMemo(()=>{
-    const tabs=collections.map(c=>({id:c.id,label:c.name,cards:c.cardIds.flatMap(id=>cards.find(c=>c.id===id)??[])}));
+    const tabs=[
+      {id:'all-cards',label:'All Cards',cards},
+      ...collections.map(c=>({id:c.id,label:c.name,cards:c.cardIds.flatMap(id=>cards.find(c=>c.id===id)??[])})),
+    ];
     const ungrouped=cards.filter(card=>!collections.some(c=>c.cardIds.includes(card.id)));
     if(ungrouped.length)tabs.push({id:'all-other-cards',label:'More cards',cards:ungrouped});
-    return tabs.length?tabs:[{id:'empty',label:'Collection',cards:[]}];
+    return tabs;
   },[cards,collections]);
-  const [columns, setColumns] = useState<GridColumns>(4);
+  const [columns, setColumns] = useState<GridColumns>(8);
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [activeTabId, setActiveTabId] = useState<string>(BINDER_TABS[0].id);

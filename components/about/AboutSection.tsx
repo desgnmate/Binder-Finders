@@ -59,7 +59,7 @@ export function AboutSection() {
             <div className="absolute left-[30px] md:left-[42px] top-0 bottom-0 border-l-[1.5px] border-brand-pink pointer-events-none" />
 
             {/* Vintage Sticky Tape & Magikarp Sticker Aesthetic in Top Corner */}
-            <div className="absolute right-4 top-2 pointer-events-none flex flex-col items-end">
+            <div className="absolute right-4 top-2 pointer-events-none hidden sm:flex flex-col items-end">
               <img
                 src="/sprites/gen3/129.png"
                 alt="Magikarp Sticker"
