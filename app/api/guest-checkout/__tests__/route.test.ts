@@ -273,7 +273,7 @@ it("rejects missing or short production rate-limit salts before touching invento
   const originalNodeEnv = process.env.NODE_ENV;
 
   try {
-    process.env.NODE_ENV = "production";
+    (process.env as { NODE_ENV: string | undefined }).NODE_ENV = "production";
 
     for (const salt of [undefined, "too-short"]) {
       mockRpc.mockClear();
@@ -297,7 +297,7 @@ it("rejects missing or short production rate-limit salts before touching invento
       expect(mockRevalidateTag).not.toHaveBeenCalled();
     }
   } finally {
-    process.env.NODE_ENV = originalNodeEnv;
+    (process.env as { NODE_ENV: string | undefined }).NODE_ENV = originalNodeEnv;
     delete process.env.GUEST_CHECKOUT_RATE_LIMIT_SALT;
   }
 });

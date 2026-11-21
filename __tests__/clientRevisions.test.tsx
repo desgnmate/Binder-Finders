@@ -80,7 +80,7 @@ it("retains card specifications and supports stable enlargement with an honest r
   await user.click(dialog.getByRole("button", { name: "Enlarge image" }));
   expect(dialog.getByRole("img", { name: "Charizard front enlarged" })).toBeInTheDocument();
   await user.click(dialog.getByRole("button", { name: "Show reference back" }));
-  expect(dialog.getByText(/not a scan of this individual card/)).toBeInTheDocument();
+  expect(dialog.getAllByText(/not a scan of this individual card/).length).toBeGreaterThan(0);
 });
 
 it("routes Escape through the close action so the URL and dialog cannot diverge", () => {
@@ -109,7 +109,7 @@ it("keeps the Binder era and search filters when changing density", async () => 
 
 it("shows cart images and respects a saved bag over a checkout card parameter", () => {
   localStorage.setItem("binderfinders:bag:v1", JSON.stringify(["blastoise-base1"]));
-  render(<BagProvider><CheckoutMartClient initialCardId="charizard-base1" customer={{ email: "ash@example.com", name: "Ash Ketchum" }} /></BagProvider>);
+  render(<BagProvider><CheckoutMartClient initialCardId="charizard-base1" customer={{ email: "ash@example.com", name: "Ash Ketchum" }}  guestPaymentReturn={null}/></BagProvider>);
   expect(screen.getByRole("img", { name: "Blastoise card" })).toHaveAttribute("src", SHOP_CARDS[1].imageUrl);
   expect(screen.queryByRole("img", { name: "Charizard card" })).not.toBeInTheDocument();
   expect(screen.getByRole("link", { name: "View Blastoise" })).toHaveAttribute("href", "/cards/blastoise-base1");

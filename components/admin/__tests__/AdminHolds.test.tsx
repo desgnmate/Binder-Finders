@@ -55,6 +55,55 @@ describe("Admin hold requests", () => {
     expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ status: "rejected" }));
   });
 
+  it("shows a manual review warning for a late paid expired Hold", () => {
+    const latePaid = hold({
+      status: "expired",
+      payment_status: "paid",
+      stripe_payment_review_required: true,
+      stripe_payment_review_reason:
+        "Stripe payment received after Hold closure; manual payment review required.",
+    });
+
+    const { rerender } = render(
+      <AdminHolds {...props} holds={[latePaid]} />,
+    );
+
+    const warning = screen.getByRole("alert", {
+      name: "Late Stripe payment requires manual review",
+    });
+
+    expect(warning).toHaveTextContent(
+      "Late Stripe Payment - Manual Review Required",
+    );
+    expect(warning).toHaveTextContent(
+      "Stripe payment received after Hold closure",
+    );
+    expect(warning).toHaveTextContent(
+      "Do not fulfill it as a normal paid order.",
+    );
+    expect(warning).toHaveTextContent(
+      "does not automatically issue a Stripe refund.",
+    );
+
+    rerender(
+      <AdminHolds
+        {...props}
+        holds={[
+          hold({
+            status: "expired",
+            payment_status: "unpaid",
+            stripe_payment_review_required: false,
+          }),
+        ]}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("alert", {
+        name: "Late Stripe payment requires manual review",
+      }),
+    ).not.toBeInTheDocument();
+  });
   it("keeps sales and paid requests", () => {
     expect(canDeleteHold(hold({ status: "pending" }))).toBe(true);
     expect(canDeleteHold(hold({ status: "cancelled", payment_status: "failed" }))).toBe(true);

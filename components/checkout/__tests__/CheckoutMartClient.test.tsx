@@ -57,7 +57,7 @@ async function fillAddress(user: ReturnType<typeof userEvent.setup>) {
 describe("CheckoutMartClient", () => {
   it.each(['', 'AUD', 'PHP'])('uses only the configured currency (%s) for totals and items', currency => {
     mockCurrency = currency;
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     const expected = currency ? `${currency} 8,500` : '8,500';
     const expectedTotal = currency ? `${currency} 8,510` : '8,510';
     expect(document.querySelector('[data-checkout-total]')?.textContent?.trim()).toBe(expectedTotal);
@@ -67,28 +67,28 @@ describe("CheckoutMartClient", () => {
   });
 
   it('labels selected cards as in the bag, not already on hold', () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(screen.getByText('1 Item in bag')).toBeInTheDocument();
     expect(screen.queryByText(/\bon hold\b/i)).not.toBeInTheDocument();
   });
 
   it('labels an empty bag without implying a reservation', () => {
-    renderWithBag(<CheckoutMartClient customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(screen.getByText('0 Items in bag')).toBeInTheDocument();
   });
 
   it("renders an empty-bag state when no items", () => {
-    renderWithBag(<CheckoutMartClient customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(screen.getByText(/empty|no items|your bag is empty/i)).toBeInTheDocument();
   });
 
   it("seeds a card from ?card= when bag is empty", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(screen.getByText("Charizard")).toBeInTheDocument();
   });
 
   it("renders bag items with prices", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     // The item appears in a checkout-item container
     const item = document.querySelector('[data-checkout-item="true"]');
     expect(item).not.toBeNull();
@@ -96,7 +96,7 @@ describe("CheckoutMartClient", () => {
   });
 
   it("renders a total based on bag contents", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     const totalEl = document.querySelector("[data-checkout-total]");
     expect(totalEl?.textContent).toContain("8,510");
   });
@@ -108,7 +108,7 @@ describe("CheckoutMartClient", () => {
       <CheckoutMartClient
         initialCardId="charizard-base1"
         customer={testCustomer}
-      />,
+       guestPaymentReturn={null}/>,
     );
 
     const total = document.querySelector("[data-checkout-total]");
@@ -126,7 +126,7 @@ describe("CheckoutMartClient", () => {
       <CheckoutMartClient
         initialCardId="charizard-base1"
         customer={testCustomer}
-      />,
+       guestPaymentReturn={null}/>,
     );
 
     const total = document.querySelector("[data-checkout-total]");
@@ -147,7 +147,7 @@ describe("CheckoutMartClient", () => {
       <CheckoutMartClient
         initialCardId="charizard-base1"
         customer={testCustomer}
-      />,
+       guestPaymentReturn={null}/>,
     );
 
     const total = document.querySelector("[data-checkout-total]");
@@ -168,7 +168,7 @@ describe("CheckoutMartClient", () => {
   });
   it("allows removing an item from the bag", async () => {
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     const removeBtn = screen.getByRole("button", { name: /remove/i });
     await user.click(removeBtn);
@@ -177,13 +177,13 @@ describe("CheckoutMartClient", () => {
   });
 
   it("renders contact form fields", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(screen.getByLabelText(/name|full name|contact name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email|e-mail/i)).toBeInTheDocument();
   });
 
   it("shows the Stripe checkout button for signed-in customers too", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     expect(
       screen.getByRole("button", { name: /pay securely with stripe/i }),
     ).toBeInTheDocument();
@@ -203,7 +203,7 @@ describe("CheckoutMartClient", () => {
     });
 
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
     expect(screen.getByLabelText(/email/i)).toHaveAttribute("readonly");
@@ -246,7 +246,7 @@ describe("CheckoutMartClient", () => {
   });
 
   it("prevents checkout while required details are incomplete", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     expect(
       screen.getByRole("button", { name: /pay securely with stripe/i }),
@@ -262,7 +262,7 @@ describe("CheckoutMartClient", () => {
     });
 
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     await user.type(screen.getByLabelText(/name/i), "Ash");
     await user.click(
@@ -283,7 +283,7 @@ describe("CheckoutMartClient", () => {
   });
 
   it("allows signed-out customers to use Guest Checkout without clearing the bag", () => {
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={null} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={null}  guestPaymentReturn={null}/>);
 
     expect(
       screen.getByRole("button", { name: /pay securely with stripe/i }),
@@ -309,7 +309,7 @@ describe("CheckoutMartClient", () => {
     });
 
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     await user.type(screen.getByLabelText(/name/i), "Ash");
     await user.click(
@@ -329,7 +329,7 @@ describe("CheckoutMartClient", () => {
 
   it("needs the terms box ticked before Stripe checkout can start", async () => {
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
 
     await user.type(screen.getByLabelText(/name/i), "Ash");
     await user.click(
@@ -351,7 +351,7 @@ describe("CheckoutMartClient", () => {
 
   it("needs a delivery address before a posted hold can be sent", async () => {
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     await user.type(screen.getByLabelText(/name/i), "Ash");
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));
     expect(screen.getByRole("button", { name: /pay securely with stripe/i })).toBeDisabled();
@@ -362,7 +362,7 @@ describe("CheckoutMartClient", () => {
 
   it("sends the shipping address to Guest Checkout", async () => {
     const user = userEvent.setup();
-    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer} />);
+    renderWithBag(<CheckoutMartClient initialCardId="charizard-base1" customer={testCustomer}  guestPaymentReturn={null}/>);
     await user.type(screen.getByLabelText(/name/i), "Ash Ketchum");
     await fillAddress(user);
     await user.click(screen.getByRole("checkbox", { name: /terms of sale/i }));

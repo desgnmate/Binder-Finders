@@ -36,6 +36,9 @@ const migrations = [
   "202611140002_order_qa_fixes.sql",
   "202611140017_guest_late_payment_review.sql",
   "20261116041608_guest_shipping_options.sql",
+  "20261120142739_hold_late_payment_review.sql",
+  "20261120172200_hold_payment_attempt_delete_protection.sql",
+  "20261120231659_hold_verified_refund_resolution.sql",
 
 ];
 await db.exec(`
@@ -1371,6 +1374,62 @@ await db.query("update public.notification_outbox set status='sent', sent_at=now
 await as("authenticated", customer);
 await assert.rejects(db.query("select public.cms_delete_hold($1)", [postHoldId]), /Administrator access required/);
 await as("authenticated", owner);
+// PERMANENT HOLD PAYMENT HISTORY DELETE REGRESSION
+for (const status of ["failed", "expired"]) {
+  await as("postgres");
+
+  const attemptId = (await db.query(
+    `insert into public.payment_attempts
+      (hold_id, customer_user_id, idempotency_key, amount_cents, currency, status)
+     values ($1, $2, $3, 1250, 'aud', $4)
+     returning id`,
+    [postHoldId, customer, crypto.randomUUID(), status],
+  )).rows[0].id;
+
+  const beforeCard = (await db.query(
+    "select reserved_by, availability from public.cards where id='phase4-card-17'",
+  )).rows[0];
+
+  await as("authenticated", owner);
+
+  await assert.rejects(
+    db.query("select public.cms_delete_hold($1)", [postHoldId]),
+    /Stripe payment history and cannot be deleted/,
+  );
+
+  await as("postgres");
+
+  const remaining = (await db.query(
+    `select
+      (select count(*)::int from public.hold_requests where id=$1) as holds,
+      (select count(*)::int from public.payment_attempts where id=$2) as attempts,
+      (select count(*)::int from public.hold_request_items where request_id=$1) as items`,
+    [postHoldId, attemptId],
+  )).rows[0];
+
+  assert.equal(remaining.holds, 1);
+  assert.equal(remaining.attempts, 1);
+  assert.ok(remaining.items > 0);
+
+  const afterCard = (await db.query(
+    "select reserved_by, availability from public.cards where id='phase4-card-17'",
+  )).rows[0];
+
+  assert.deepEqual(afterCard, beforeCard);
+
+  console.log(`HOLD_DELETE_${status.toUpperCase()}: BLOCKED_AND_PRESERVED`);
+
+  // Cleanup applies only to the isolated in-memory test database.
+  await db.query(
+    "delete from public.payment_attempts where id=$1",
+    [attemptId],
+  );
+
+  await as("authenticated", owner);
+}
+
+console.log("HOLD_DELETE_NO_ATTEMPT: EXISTING_DELETE_TEST");
+
 await db.query("select public.cms_delete_hold($1)", [postHoldId]);
 await as("postgres");
 assert.equal((await db.query("select count(*)::int as n from public.hold_requests where id=$1", [postHoldId])).rows[0].n, 0);

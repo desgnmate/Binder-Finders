@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin, serviceClient } from "../../lib/supabase/server";
 import { closeOpenCheckouts } from "../../lib/stripe-reconciliation";
+import { verifyHoldFullRefund } from "../../lib/hold-refund-verification";
 import {
   cardSchema,
   collectionSchema,
@@ -245,5 +246,104 @@ export async function inviteAdmin(email: string) {
     return { ok: true };
   } catch (e) {
     return { ok: false, error: message(e) };
+  }
+}
+
+// Verify an already completed Stripe refund; never issue a refund.
+export async function resolveVerifiedHoldRefund(holdId: string) {
+  try {
+    const id = z.string().uuid().parse(holdId);
+    const { user } = await requireAdmin(true);
+    const db = serviceClient();
+
+    const { data: rawHold, error: holdError } = await db
+      .from("hold_requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (holdError || !rawHold) {
+      throw new Error("Hold not found");
+    }
+
+    // Validate fields at runtime, including newly migrated columns.
+    const hold = z.object({
+      status: z.string(),
+      payment_status: z.string(),
+      currency: z.string(),
+      stripe_payment_intent_id: z.string().nullable(),
+      stripe_payment_review_required: z.boolean(),
+      stripe_payment_review_resolved_at: z.string().nullable(),
+    }).parse(rawHold);
+
+    if (
+      !["expired", "cancelled", "rejected"].includes(hold.status) ||
+      hold.payment_status !== "paid" ||
+      hold.stripe_payment_review_required !== true ||
+      hold.stripe_payment_review_resolved_at !== null
+    ) {
+      throw new Error("Hold is not eligible for refund resolution");
+    }
+
+    const intentId = hold.stripe_payment_intent_id;
+
+    if (!intentId || !intentId.startsWith("pi_")) {
+      throw new Error("No valid Stripe PaymentIntent");
+    }
+
+    const { data: attempts, error: attemptsError } = await db
+      .from("payment_attempts")
+      .select("amount_cents,currency")
+      .eq("hold_id", id)
+      .eq("payment_intent_id", intentId)
+      .eq("status", "paid")
+      .limit(2);
+
+    if (attemptsError || !attempts || attempts.length !== 1) {
+      throw new Error("Expected one matching paid attempt");
+    }
+
+    const attempt = z.object({
+      amount_cents: z.number().int().positive(),
+      currency: z.string().length(3),
+    }).parse(attempts[0]);
+
+    if (
+      !Number.isSafeInteger(attempt.amount_cents) ||
+      attempt.currency.toLowerCase() !== hold.currency.toLowerCase()
+    ) {
+      throw new Error("Payment history does not match Hold");
+    }
+
+    // Stripe confirms actual successful refunds and their full amount.
+    const verified = await verifyHoldFullRefund(
+      intentId,
+      attempt.amount_cents,
+      attempt.currency
+    );
+
+    // The database independently validates the Hold and payment history.
+    const { error: resolutionError } = await db.rpc(
+      "cms_record_verified_hold_refund",
+      {
+        p_hold_id: id,
+        p_payment_intent_id: intentId,
+        p_refund_ids: verified.refundIds,
+        p_amount_cents: verified.refundedCents,
+        p_verified_by: user.id,
+      }
+    );
+
+    if (resolutionError) {
+      throw new Error("Database refund resolution failed");
+    }
+
+    refresh();
+    return { ok: true };
+  } catch {
+    return {
+      ok: false,
+      error: "Could not verify and record this Stripe refund. Check the refund status before retrying.",
+    };
   }
 }

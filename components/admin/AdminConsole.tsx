@@ -47,6 +47,7 @@ import {
   saveCollection,
   saveSettings,
   updateHoldWorkflow,
+  resolveVerifiedHoldRefund,
   deleteHold,
 } from "../../app/admin/actions";
 import { AdminOverview, type AdminRequestTrend } from "./AdminOverview";
@@ -991,6 +992,12 @@ function Console(props: Props) {
             onSave={saveHoldWorkflow}
             onTransition={(hold, status) => void transitionHold(hold, status)}
             onDelete={(hold) => void removeHold(hold)}
+            onResolveRefund={(hold) =>
+              void run(
+                () => resolveVerifiedHoldRefund(hold.id),
+                "Stripe refund verified and recorded."
+              )
+            }
             onDirtyChange={setHoldDirty}
           />
         )}

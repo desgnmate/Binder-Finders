@@ -130,7 +130,8 @@ function workflowOptions(hold: Hold) {
     return { payment: [...paymentStatuses] as string[], fulfillment: [...fulfillmentStatuses] as string[] };
   const refundable = [...new Set([payment, "refunded"])];
   if (hold.status === "completed") return { payment: refundable, fulfillment: completedFulfillment };
-  return { payment: refundable, fulfillment: [fulfillment] };
+  if (hold.status === "cancelled") return { payment: refundable, fulfillment: [fulfillment] };
+  return { payment: [payment], fulfillment: [fulfillment] };
 }
 function localInput(value?: string | null) {
   const date = value ? new Date(value) : null;
@@ -362,6 +363,7 @@ export function AdminHolds({
   onSave,
   onTransition,
   onDelete,
+  onResolveRefund,
   onDirtyChange,
 }: {
   holds: Hold[];
@@ -370,6 +372,7 @@ export function AdminHolds({
   onSave: (hold: Hold, values: Record<string, string>) => Promise<boolean>;
   onTransition: (hold: Hold, status: string) => void;
   onDelete?: (hold: Hold) => void;
+  onResolveRefund?: (hold: Hold) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -603,6 +606,51 @@ export function AdminHolds({
                 ))}
               </ol>
             </header>
+            {hold.stripe_payment_review_required === true && !hold.stripe_payment_review_resolved_at && (
+              <div
+                className="cms-panel cms-stack"
+                role="alert"
+                aria-label="Late Stripe payment requires manual review"
+              >
+                <h3>Late Stripe Payment - Manual Review Required</h3>
+                <p>
+                  {hold.stripe_payment_review_reason ||
+                    "A successful Stripe payment was recorded after this Hold closed."}
+                </p>
+                <p>
+                  This Hold is closed and its cards are no longer reserved.
+                  Do not fulfill it as a normal paid order.
+                  Verify the payment in Stripe and arrange a refund or
+                  appropriate manual resolution.
+                </p>
+                <p>
+                  <strong>Important:</strong> Changing a payment status in
+                  this dashboard does not automatically issue a Stripe refund.
+                </p>
+                <p>
+                  Process the full refund in Stripe first, then verify it here.
+                  Owner authorization is required.
+                </p>
+                <button
+                  type="button"
+                  className="cms-btn"
+                  disabled={busy || !onResolveRefund}
+                  onClick={() => onResolveRefund?.(hold)}
+                >
+                  Verify Stripe Refund
+                </button>
+              </div>
+            )}
+            {hold.stripe_payment_review_required === true &&
+              Boolean(hold.stripe_payment_review_resolved_at) && (
+                <div className="cms-panel cms-stack" role="status">
+                  <h3>Late Stripe Payment - Refund Verified</h3>
+                  <p>
+                    The Stripe refund was verified and recorded.
+                    This Hold remains closed and its cards were not re-reserved.
+                  </p>
+                </div>
+              )}
             <div className="cms-panel cms-stack">
               <h3>Cards in this request</h3>
               <ul className="cms-request-items">

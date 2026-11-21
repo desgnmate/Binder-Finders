@@ -194,6 +194,12 @@ export interface Hold {
   stripe_payment_intent_id?: string | null;
   paid_at?: string | null;
   payment_failure_reason?: string | null;
+  stripe_payment_review_required?: boolean | null;
+  stripe_payment_review_reason?: string | null;
+  stripe_payment_review_resolved_at?: string | null;
+  stripe_payment_review_refund_ids?: string[] | null;
+  stripe_payment_review_refunded_cents?: number | null;
+  stripe_payment_review_verified_by?: string | null;
   fulfillment_status?:
     | "not_ready"
     | "ready"
